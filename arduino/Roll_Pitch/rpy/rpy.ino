@@ -27,9 +27,62 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 MPU9250 IMU(Wire,0x68);
 int status;
 
+#define AzimuthPWML 3
+#define AzimuthPWMR 5
+
+#define ElevatiePWMR 6
+#define ElevatiePWML 9
+
+void startAzimuth(){
+    analogWrite(AzimuthPWMR, 0);
+    analogWrite(AzimuthPWML, 255);
+    delay(100);
+}
+
+void moveAzimuth(bool sens, int putere){  
+  if(sens){
+    analogWrite(AzimuthPWMR, putere);
+    analogWrite(AzimuthPWML, 0);
+  } else {
+    analogWrite(AzimuthPWMR, 0);
+    analogWrite(AzimuthPWML, putere);
+  }
+}
+
+void moveElevation(bool sens, int putere){
+  if(sens){
+    analogWrite(ElevatiePWMR, putere);
+    analogWrite(ElevatiePWML, 0);
+  } else {
+    analogWrite(ElevatiePWMR, 0);
+    analogWrite(ElevatiePWML, putere);
+  }
+}
+
+
+void stopAzimuth(){ 
+  digitalWrite(AzimuthPWMR, LOW);
+  digitalWrite(AzimuthPWML, LOW);
+  
+}
+
+void stopElevation(){
+  digitalWrite(ElevatiePWMR, LOW);
+  digitalWrite(ElevatiePWML, LOW);
+  
+}
+
 void setup() {
   // serial to display data
-  Serial.begin(115200);
+  Serial.begin(9600);
+
+  pinMode(AzimuthPWMR, OUTPUT);
+  pinMode(AzimuthPWML, OUTPUT);
+  
+  pinMode(ElevatiePWMR, OUTPUT);
+  pinMode(ElevatiePWML, OUTPUT);
+
+  
   while(!Serial) {}
 
   // start communication with IMU 
@@ -41,6 +94,8 @@ void setup() {
     Serial.println(status);
     while(1) {}
   }
+
+  startAzimuth();
 }
 
 void loop() {
@@ -87,11 +142,16 @@ void loop() {
 
   yaw = 180 * atan2(-mag_y,mag_x)/M_PI;
 
-  Serial.print(roll);
-  Serial.print('\t');
-  Serial.print(pitch);
-  Serial.println('\t');
-  //Serial.println(yaw);
+  //Serial.print(roll);
+  //Serial.print('\t');
+  //Serial.print(pitch);
+  //Serial.println('\t');
+  Serial.println(yaw);
+
+  stopAzimuth();
+  stopElevation();
+  moveElevation(false, 255);
+  moveAzimuth(false, 100);
   
   delay(100);
 

@@ -1,0 +1,7 @@
+{
+    "port": "/dev/ttyUSB0",
+    "board": "arduino:avr:pro",
+    "configuration": "cpu=8MHzatmega328",
+    "programmer": "ArduinoISP",
+    "sketch": "arduino/RP_motoare_n2yo/RP_motoare_n2yo.ino"
+}

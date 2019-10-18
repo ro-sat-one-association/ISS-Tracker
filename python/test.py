@@ -62,6 +62,7 @@ while True:
 		elevationTLE = 0
 		
 	sendstr = "<" + str(int(azimuthTLE)) + " " + str(int(elevationTLE)) + ">"
+	sendstr = "<-2312 -2334>"
 	send(sendstr)
 	print sendstr
 	time.sleep(1.0)

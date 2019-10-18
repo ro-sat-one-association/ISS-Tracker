@@ -608,7 +608,7 @@ void loop()
     delt_t = millis() - count;
     if(delt_t > 500) {
 
-    if(SerialDebug) {
+    if(!SerialDebug) {
     // Print acceleration values in milligs!
     Serial.print("X-acceleration: "); Serial.print(1000*ax); Serial.print(" mg ");
     Serial.print("Y-acceleration: "); Serial.print(1000*ay); Serial.print(" mg ");
@@ -640,7 +640,7 @@ void loop()
     delt_t = millis() - count;
     if (delt_t > 500) { // update LCD once per half-second independent of read rate
 
-    if(SerialDebug) {
+    if(!SerialDebug) {
     Serial.print("ax = "); Serial.print((int)1000*ax);
     Serial.print(" ay = "); Serial.print((int)1000*ay);
     Serial.print(" az = "); Serial.print((int)1000*az); Serial.println(" mg");
