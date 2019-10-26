@@ -7,6 +7,11 @@ int status;
 int azimuth;
 int elevation;
 
+#define TOLERANTA_ELEVATIE 2.0f //in grade
+#define SENS_1_E 0 //pe astea le inversezi dupa teste, daca e nevoie
+#define SENS_2_E 1
+
+
 #define AzimuthPWML 3
 #define AzimuthPWMR 5
 
@@ -54,7 +59,7 @@ void stopElevation(){
 
 void setup() {
   azimuth = 0;
-  elevation = 0;
+  elevation = 45;
 
   Serial.begin(9600);
 
@@ -106,10 +111,13 @@ void readData(int &azi, int &elev){
 
 
 void loop() {
+  Serial.println("\n");
   readData(azimuth, elevation);
+  
+  /*Serial.print("Targeturi - Azimut:");
   Serial.print(azimuth);
-  Serial.print('\t');
-  Serial.println(elevation);
+  Serial.print("\t Elevatie:");
+  Serial.println(elevation); */
 
   
   IMU.readSensor();
@@ -152,18 +160,31 @@ void loop() {
 
   yaw = 180 * atan2(-mag_y,mag_x)/M_PI;
 
-  //Serial.print(roll);
-  //Serial.print('\t');
-  //Serial.print(pitch);
-  //Serial.println('\t');
-  //Serial.println(yaw);
+  Serial.print(roll);
+  Serial.print('\t');
+ // Serial.print("pitch: ");
+  Serial.print(pitch); 
+  Serial.print('\t');
+  Serial.println(yaw);
+
+
+  if(abs(abs(pitch) - elevation) > TOLERANTA_ELEVATIE){
+    if(abs(pitch) > (float)elevation){ //sunt mai sus
+      moveElevation(SENS_1_E, 150);
+    } else { //sunt mai jos
+      moveElevation(SENS_2_E, 150);
+    }
+  } else{
+    stopElevation();
+  }
 
   stopAzimuth();
-  stopElevation();
-  moveElevation(false, 255);
-  moveAzimuth(false, 100);
-  
-  delay(100);
 
+ /* Serial.print("Diferenta: ");
+  Serial.println(abs(pitch) - elevation);
+
+  Serial.println("\n"); */
+
+  delay(100);
 
 }

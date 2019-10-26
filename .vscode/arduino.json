@@ -3,5 +3,5 @@
     "board": "arduino:avr:pro",
     "configuration": "cpu=8MHzatmega328",
     "programmer": "ArduinoISP",
-    "sketch": "arduino/RP_motoare_n2yo/RP_motoare_n2yo.ino"
+    "sketch": "arduino/HMC5993L_Simple/HMC5993L_Simple/examples/Compass/Compass.ino"
 }
