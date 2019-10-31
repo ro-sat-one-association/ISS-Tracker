@@ -789,9 +789,9 @@ void getMPUData()
         //Serial.print("gx = "); //Serial.print( gx, 2);
         //Serial.print(" gy = "); //Serial.print( gy, 2);
         //Serial.print(" gz = "); //Serial.print( gz, 2); //Serial.println(" deg/s");
-        Serial.print("mx = ");  Serial.print( (int)mx );
-        Serial.print(" my = "); Serial.print( (int)my );
-        Serial.print(" mz = "); Serial.print( (int)mz ); Serial.println(" mG");
+        //Serial.print("mx = ");  Serial.print( (int)mx );
+        //Serial.print(" my = "); Serial.print( (int)my );
+        //Serial.print(" mz = "); Serial.print( (int)mz ); Serial.println(" mG");
 
         //Serial.print("q0 = "); //Serial.print(q[0]);
         //Serial.print(" qx = "); //Serial.print(q[1]);
@@ -890,8 +890,8 @@ bool startA;
 
 #define TOLERANTA_ELEVATIE 2.0f //in grade
 #define TOLERANTA_AZIMUTH  5.0f
-#define SENS_0_E 0              //pe astea le inversezi dupa teste, daca e nevoie
-#define SENS_1_E 1
+#define SENS_0_E 1             //pe astea le inversezi dupa teste, daca e nevoie
+#define SENS_1_E 0
 #define SENS_0_A 0              //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_A 1
 
@@ -1054,6 +1054,11 @@ int deltaAzimuth(int t, int h){
     return 360 - abs(t-h);
 }
 
+int deltaElevatie(int t, int r){
+  if(r < 0) r += 360;
+  return deltaAzimuth(t, r);
+}
+
 bool sensAzimuth(int t, int h){
   if(abs(t-h) < 180){
     if(h > t)
@@ -1068,16 +1073,35 @@ bool sensAzimuth(int t, int h){
   }
 }
 
+bool sensElevatie(int t, int r){
+  if(r < 0) r += 360;
+
+  if(abs(t-r) < 180){
+    if(r > t)
+      return SENS_0_E;
+    else
+      return SENS_1_E;
+  } else {
+    if(r > t)
+      return SENS_1_E;
+    else 
+      return SENS_0_E;
+  }
+}
+
 void alignAzimuth(int t, int h){
   if(deltaAzimuth(t, h) > TOLERANTA_AZIMUTH){
-    if(!startA){
-      startA = true;
-      startAzimuth();
-    }
-    moveAzimuth(sensAzimuth(t,h), 200);
+    moveAzimuth(sensAzimuth(t,h), 255);
   } else {
     stopAzimuth();
-    startA = false;
+  }
+}
+
+void alignElevation(int t, int r){
+  if(deltaElevatie(t, r) > TOLERANTA_ELEVATIE){
+    moveElevation(sensElevatie(t, r), 150);
+  } else{
+    stopElevation();
   }
 }
 
@@ -1086,16 +1110,15 @@ void loop()
   readData(azimuth, elevation);
   getMPUData();
   float heading = Compass.GetHeadingDegrees();
-  Serial.print("T: ");
+  /*Serial.print("T: ");
   Serial.print(azimuth);
   Serial.print('\t');
   Serial.print("H: ");
-  Serial.println(heading);
+  Serial.println(heading); */
   
   alignAzimuth(azimuth, heading);
-
-  //moveAzimuth(SENS_0_A, 120);
-  //moveElevation(SENS_0_E, 100);
+  alignElevation(elevation, roll);
+ 
   //stopAzimuth();
-  stopElevation();
+  //stopElevation();
 }
