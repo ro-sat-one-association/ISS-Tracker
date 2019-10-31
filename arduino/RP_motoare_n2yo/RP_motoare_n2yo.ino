@@ -168,15 +168,7 @@ void loop() {
   Serial.println(yaw);
 
 
-  if(abs(abs(pitch) - elevation) > TOLERANTA_ELEVATIE){
-    if(abs(pitch) > (float)elevation){ //sunt mai sus
-      moveElevation(SENS_1_E, 150);
-    } else { //sunt mai jos
-      moveElevation(SENS_2_E, 150);
-    }
-  } else{
-    stopElevation();
-  }
+  moveElevation(SENS_1_E, 150);
 
   stopAzimuth();
 

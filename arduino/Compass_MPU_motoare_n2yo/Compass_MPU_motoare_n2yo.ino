@@ -28,7 +28,8 @@
 #include <math.h>
 #include <SPI.h>
 #include <Wire.h>
-
+#include "HMC5883L_Simple.h"
+HMC5883L_Simple Compass;
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
 //
@@ -253,7 +254,7 @@ float zeta = sqrt(3.0f / 4.0f) * GyroMeasDrift; // compute zeta, the other free 
 
 uint32_t delt_t = 0;              // used to control display output rate
 uint32_t count = 0, sumCount = 0; // used to control display output rate
-float pitch, yaw, roll;
+float pitch, roll;
 float deltat = 0.0f, sum = 0.0f;          // integration interval for both filter schemes
 uint32_t lastUpdate = 0, firstUpdate = 0; // used to calculate integration interval
 uint32_t Now = 0;                         // used to calculate integration interval
@@ -808,19 +809,14 @@ void getMPUData()
       // Tait-Bryan angles as well as Euler angles are non-commutative; that is, the get the correct orientation the rotations must be
       // applied in the correct order which for this configuration is yaw, pitch, and then roll.
       // For more see http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles which has additional links.
-      yaw = atan2(2.0f * (q[1] * q[2] + q[0] * q[3]), q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3]);
       pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
       roll = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
       pitch *= 180.0f / PI;
-      yaw *= 180.0f / PI;
-      yaw -= 13.8; // Declination at Danville, California is 13 degrees 48 minutes and 47 seconds on 2014-04-04
       roll *= 180.0f / PI;
 
       if (SerialDebug)
       {
-        Serial.print("Yaw, Pitch, Roll: ");
-        Serial.print(yaw, 2);
-        Serial.print(", ");
+        Serial.print("Pitch, Roll: ");
         Serial.print(pitch, 2);
         Serial.print(", ");
         Serial.println(roll, 2);
@@ -846,13 +842,58 @@ void getMPUData()
     }
 }
 
+
+void initCompass(){   
+  // Magnetic Declination is the correction applied according to your present location
+  // in order to get True North from Magnetic North, it varies from place to place.
+  // 
+  // The declination for your area can be obtained from http://www.magnetic-declination.com/
+  // Take the "Magnetic Declination" line that it gives you in the information, 
+  //
+  // Examples:
+  //   Christchurch, 23° 35' EAST
+  //   Wellington  , 22° 14' EAST
+  //   Dunedin     , 25° 8'  EAST
+  //   Auckland    , 19° 30' EAST
+  //   Piatra-Neamt, 6°  15' EST
+  Compass.SetDeclination(6, 15, 'E');  
+  //   SINGLE simply means that it takes a reading when you request one
+  //   CONTINUOUS means that it is always taking readings
+  Compass.SetSamplingMode(COMPASS_SINGLE);
+  
+  // The scale can be adjusted to one of several levels, you can probably leave it at the default.
+  // Essentially this controls how sensitive the device is.
+  //   Options are 088, 130 (default), 190, 250, 400, 470, 560, 810
+  // Specify the option as COMPASS_SCALE_xxx
+  // Lower values are more sensitive, higher values are less sensitive.
+  // The default is probably just fine, it works for me.  If it seems very noisy
+  // (jumping around), incrase the scale to a higher one.
+  Compass.SetScale(COMPASS_SCALE_130);
+  
+  // The compass has 3 axes, but two of them must be close to parallel to the earth's surface to read it, 
+  // (we do not compensate for tilt, that's a complicated thing) - just like a real compass has a floating 
+  // needle you can imagine the digital compass does too.
+  //
+  // To allow you to mount the compass in different ways you can specify the orientation:
+  //   COMPASS_HORIZONTAL_X_NORTH (default), the compass is oriented horizontally, top-side up. when pointing North the X silkscreen arrow will point North
+  //   COMPASS_HORIZONTAL_Y_NORTH, top-side up, Y is the needle,when pointing North the Y silkscreen arrow will point North
+  //   COMPASS_VERTICAL_X_EAST,    vertically mounted (tall) looking at the top side, when facing North the X silkscreen arrow will point East
+  //   COMPASS_VERTICAL_Y_WEST,    vertically mounted (wide) looking at the top side, when facing North the Y silkscreen arrow will point West  
+  Compass.SetOrientation(COMPASS_HORIZONTAL_X_NORTH);
+}
+
+
 int status;
 int azimuth;
 int elevation;
+bool startA;
 
 #define TOLERANTA_ELEVATIE 2.0f //in grade
-#define SENS_1_E 0              //pe astea le inversezi dupa teste, daca e nevoie
-#define SENS_2_E 1
+#define TOLERANTA_AZIMUTH  5.0f
+#define SENS_0_E 0              //pe astea le inversezi dupa teste, daca e nevoie
+#define SENS_1_E 1
+#define SENS_0_A 0              //pe astea le inversezi dupa teste, daca e nevoie
+#define SENS_1_A 1
 
 #define AzimuthPWML 3
 #define AzimuthPWMR 5
@@ -860,11 +901,18 @@ int elevation;
 #define ElevatiePWMR 6
 #define ElevatiePWML 9
 
+void startAzimuth(int d = 100)
+{
+  analogWrite(AzimuthPWMR, 0);
+  analogWrite(AzimuthPWML, 255);
+  delay(d);
+}
+
 void setup()
 {
-
   azimuth = 0;
   elevation = 45;
+  startA = false;
 
   Serial.begin(9600);
 
@@ -883,6 +931,8 @@ void setup()
   digitalWrite(intPin, LOW);
   pinMode(myLed, OUTPUT);
   digitalWrite(myLed, HIGH);
+
+  initCompass();
 
   // Read the WHO_AM_I register, this is a good test of communication
   byte c = readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250); // Read WHO_AM_I register for MPU-9250
@@ -912,7 +962,6 @@ void setup()
     //Serial.print("AK8963 "); //Serial.print("I AM "); //Serial.print(d, HEX); //Serial.print(" I should be "); //Serial.println(0x48, HEX);
 
     // Get magnetometer calibration from AK8963 ROM
-    initAK8963(magCalibration); //Serial.println("AK8963 initialized for active data mode...."); // Initialize device for active mode read of magnetometer
   }
   else
   {
@@ -922,16 +971,14 @@ void setup()
       Serial.println("Teapa!");
     }
   }
+
+  //startAzimuth();
+
 }
 
 //MOTORASE
 
-void startAzimuth()
-{
-  analogWrite(AzimuthPWMR, 0);
-  analogWrite(AzimuthPWML, 255);
-  delay(100);
-}
+
 
 void moveAzimuth(bool sens, int putere)
 {
@@ -1000,9 +1047,55 @@ void readData(int &azi, int &elev)
   }
 }
 
+int deltaAzimuth(int t, int h){
+  if (abs(t-h) < 180)
+    return abs(t-h);
+  else
+    return 360 - abs(t-h);
+}
+
+bool sensAzimuth(int t, int h){
+  if(abs(t-h) < 180){
+    if(h > t)
+      return SENS_0_A;
+    else
+      return SENS_1_A;
+  } else {
+    if(h > t)
+      return SENS_1_A;
+    else 
+      return SENS_0_A;
+  }
+}
+
+void alignAzimuth(int t, int h){
+  if(deltaAzimuth(t, h) > TOLERANTA_AZIMUTH){
+    if(!startA){
+      startA = true;
+      startAzimuth();
+    }
+    moveAzimuth(sensAzimuth(t,h), 200);
+  } else {
+    stopAzimuth();
+    startA = false;
+  }
+}
+
 void loop()
 {
+  readData(azimuth, elevation);
   getMPUData();
-//  moveElevation(SENS_2_E, 255);
-  stopAzimuth();
+  float heading = Compass.GetHeadingDegrees();
+  Serial.print("T: ");
+  Serial.print(azimuth);
+  Serial.print('\t');
+  Serial.print("H: ");
+  Serial.println(heading);
+  
+  alignAzimuth(azimuth, heading);
+
+  //moveAzimuth(SENS_0_A, 120);
+  //moveElevation(SENS_0_E, 100);
+  //stopAzimuth();
+  stopElevation();
 }
