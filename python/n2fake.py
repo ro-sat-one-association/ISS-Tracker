@@ -56,8 +56,8 @@ while True:
 
 	azimuthTLE   = iss.az  * degrees_per_radian
 	elevationTLE = iss.alt * degrees_per_radian
-	if elevationTLE < 0:
-		elevationTLE = 0
+	#if elevationTLE < 0:
+	#	elevationTLE = elevationTLE + 360
 		
 	sendstr = "<" + str(int(azimuthTLE)) + " " + str(int(elevationTLE)) + ">"
 	ser.write(sendstr)
