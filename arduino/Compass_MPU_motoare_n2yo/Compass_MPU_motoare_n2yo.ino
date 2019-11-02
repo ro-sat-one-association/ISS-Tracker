@@ -1,38 +1,10 @@
-/* MPU9250 Basic Example Code
- by: Kris Winer
- date: April 1, 2014
- license: Beerware - Use this code however you'd like. If you 
- find it useful you can buy me a beer some time.
- 
- Demonstrate basic MPU-9250 functionality including parameterizing the register addresses, initializing the sensor, 
- getting properly scaled accelerometer, gyroscope, and magnetometer data out. Added display functions to 
- allow display to on breadboard monitor. Addition of 9 DoF sensor fusion using open source Madgwick and 
- Mahony filter algorithms. Sketch runs on the 3.3 V 8 MHz Pro Mini and the Teensy 3.1.
- 
- SDA and SCL should have external pull-up resistors (to 3.3V).
- 10k resistors are on the EMSENSR-9250 breakout board.
- 
- Hardware setup:
- MPU9250 Breakout --------- Arduino
- VDD ---------------------- 3.3V
- VDDI --------------------- 3.3V
- SDA ----------------------- A4
- SCL ----------------------- A5
- GND ---------------------- GND
- 
- Note: The MPU9250 is an I2C sensor and uses the Arduino Wire library. 
- Because the sensor is not 5V tolerant, we are using a 3.3 V 8 MHz Pro Mini or a 3.3 V Teensy 3.1.
- We have disabled the internal pull-ups used by the Wire library in the Wire.h/twi.c utility file.
- We are also using the 400 kHz fast I2C mode by setting the TWI_FREQ  to 400000L /twi.h utility file.
- */
 #include <math.h>
 #include <SPI.h>
 #include <Wire.h>
+
 #include "HMC5883L_Simple.h"
 HMC5883L_Simple Compass;
-// See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in
-// above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
-//
+
 //Magnetometer Registers
 #define AK8963_ADDRESS 0x0C
 #define AK8963_WHO_AM_I 0x00 // should return 0x48
@@ -55,16 +27,6 @@ HMC5883L_Simple Compass;
 #define SELF_TEST_X_GYRO 0x00
 #define SELF_TEST_Y_GYRO 0x01
 #define SELF_TEST_Z_GYRO 0x02
-
-/*#define X_FINE_GAIN      0x03 // [7:0] fine gain
-#define Y_FINE_GAIN      0x04
-#define Z_FINE_GAIN      0x05
-#define XA_OFFSET_H      0x06 // User-defined trim values for accelerometer
-#define XA_OFFSET_L_TC   0x07
-#define YA_OFFSET_H      0x08
-#define YA_OFFSET_L_TC   0x09
-#define ZA_OFFSET_H      0x0A
-#define ZA_OFFSET_L_TC   0x0B */
 
 #define SELF_TEST_X_ACCEL 0x0D
 #define SELF_TEST_Y_ACCEL 0x0E
@@ -241,14 +203,7 @@ float SelfTest[6];                                           // holds results of
 // global constants for 9 DoF fusion and AHRS (Attitude and Heading Reference System)
 float GyroMeasError = PI * (40.0f / 180.0f); // gyroscope measurement error in rads/s (start at 40 deg/s)
 float GyroMeasDrift = PI * (0.0f / 180.0f);  // gyroscope measurement drift in rad/s/s (start at 0.0 deg/s/s)
-// There is a tradeoff in the beta parameter between accuracy and response speed.
-// In the original Madgwick study, beta of 0.041 (corresponding to GyroMeasError of 2.7 degrees/s) was found to give optimal accuracy.
-// However, with this value, the LSM9SD0 response time is about 10 seconds to a stable initial quaternion.
-// Subsequent changes also require a longish lag time to a stable output, not fast enough for a quadcopter or robot car!
-// By increasing beta (GyroMeasError) by about a factor of fifteen, the response time constant is reduced to ~2 sec
-// I haven't noticed any reduction in solution accuracy. This is essentially the I coefficient in a PID control sense;
-// the bigger the feedback coefficient, the faster the solution converges, usually at the expense of accuracy.
-// In any case, this is the free parameter in the Madgwick filtering and fusion scheme.
+
 float beta = sqrt(3.0f / 4.0f) * GyroMeasError; // compute beta
 float zeta = sqrt(3.0f / 4.0f) * GyroMeasDrift; // compute zeta, the other free parameter in the Madgwick scheme usually set to a small or zero value
 
@@ -262,10 +217,6 @@ uint32_t Now = 0;                         // used to calculate integration inter
 float ax, ay, az, gx, gy, gz, mx, my, mz; // variables to hold latest sensor data values
 float q[4] = {1.0f, 0.0f, 0.0f, 0.0f};    // vector to hold quaternion
 float eInt[3] = {0.0f, 0.0f, 0.0f};       // vector to hold integral error for Mahony method
-
-//===================================================================================================================
-//====== Set of useful function to access acceleration. gyroscope, magnetometer, and temperature data
-//===================================================================================================================
 
 void getMres()
 {
@@ -350,7 +301,7 @@ void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t *dest
 {
   Wire.beginTransmission(address); // Initialize the Tx buffer
   Wire.write(subAddress);          // Put slave register address in Tx buffer
-  Wire.endTransmission(false);     // Send the Tx buffer, but send a restart to keep connection alive
+  Wire.endTransmission(false);     // Send the Tx buffer, but send a restart to keep connection aliveser.write(str(toSend))
   uint8_t i = 0;
   Wire.requestFrom(address, count); // Read bytes from slave register address
   while (Wire.available())
@@ -391,34 +342,6 @@ void readMagData(int16_t *destination)
       destination[2] = ((int16_t)rawData[5] << 8) | rawData[4];
     }
   }
-}
-
-int16_t readTempData()
-{
-  uint8_t rawData[2];                                     // x/y/z gyro register data stored here
-  readBytes(MPU9250_ADDRESS, TEMP_OUT_H, 2, &rawData[0]); // Read the two raw data registers sequentially into data array
-  return ((int16_t)rawData[0] << 8) | rawData[1];         // Turn the MSB and LSB into a 16-bit value
-}
-
-void initAK8963(float *destination)
-{
-  // First extract the factory calibration for each magnetometer axis
-  uint8_t rawData[3];                           // x/y/z gyro calibration data stored here
-  writeByte(AK8963_ADDRESS, AK8963_CNTL, 0x00); // Power down magnetometer
-  delay(10);
-  writeByte(AK8963_ADDRESS, AK8963_CNTL, 0x0F); // Enter Fuse ROM access mode
-  delay(10);
-  readBytes(AK8963_ADDRESS, AK8963_ASAX, 3, &rawData[0]); // Read the x-, y-, and z-axis calibration values
-  destination[0] = (float)(rawData[0] - 128) / 256. + 1.; // Return x-axis sensitivity adjustment values, etc.
-  destination[1] = (float)(rawData[1] - 128) / 256. + 1.;
-  destination[2] = (float)(rawData[2] - 128) / 256. + 1.;
-  writeByte(AK8963_ADDRESS, AK8963_CNTL, 0x00); // Power down magnetometer
-  delay(10);
-  // Configure the magnetometer for continuous read and highest resolution
-  // set Mscale bit 4 to 1 (0) to enable 16 (14) bit resolution in CNTL register,
-  // and enable continuous mode data acquisition Mmode (bits [3:0]), 0010 for 8 Hz and 0110 for 100 Hz sample rates
-  writeByte(AK8963_ADDRESS, AK8963_CNTL, Mscale << 4 | Mmode); // Set magnetometer data resolution and sample ODR
-  delay(10);
 }
 
 void initMPU9250()
@@ -766,133 +689,41 @@ void getMPUData()
   sum += deltat; // sum for averaging filter update rate
   sumCount++;
 
-  // Sensors x (y)-axis of the accelerometer is aligned with the y (x)-axis of the magnetometer;
-  // the magnetometer z-axis (+ down) is opposite to z-axis (+ up) of accelerometer and gyro!
-  // We have to make some allowance for this orientationmismatch in feeding the output to the quaternion filter.
-  // For the MPU-9250, we have chosen a magnetic rotation that keeps the sensor forward along the x-axis just like
-  // in the LSM9DS0 sensor. This rotation can be modified to allow any convenient orientation convention.
-  // This is ok by aircraft orientation standards!
-  // Pass gyro rate as rad/s
-  //  MadgwickQuaternionUpdate(ax, ay, az, gx*PI/180.0f, gy*PI/180.0f, gz*PI/180.0f,  my,  mx, mz);
   MahonyQuaternionUpdate(ax, ay, az, gx * PI / 180.0f, gy * PI / 180.0f, gz * PI / 180.0f, my, mx, mz);
 
-    // //Serial print and/or display at 0.5 s rate independent of data rates
-    delt_t = millis() - count;
-    if (delt_t > 500)
-    { // update LCD once per half-second independent of read rate
-
-      if (SerialDebug)
-      {
-        //Serial.print("ax = "); //Serial.print((int)1000*ax);
-        //Serial.print(" ay = "); //Serial.print((int)1000*ay);
-        //Serial.print(" az = "); //Serial.print((int)1000*az); //Serial.println(" mg");
-        //Serial.print("gx = "); //Serial.print( gx, 2);
-        //Serial.print(" gy = "); //Serial.print( gy, 2);
-        //Serial.print(" gz = "); //Serial.print( gz, 2); //Serial.println(" deg/s");
-        //Serial.print("mx = ");  Serial.print( (int)mx );
-        //Serial.print(" my = "); Serial.print( (int)my );
-        //Serial.print(" mz = "); Serial.print( (int)mz ); Serial.println(" mG");
-
-        //Serial.print("q0 = "); //Serial.print(q[0]);
-        //Serial.print(" qx = "); //Serial.print(q[1]);
-        //Serial.print(" qy = "); //Serial.print(q[2]);
-        //Serial.print(" qz = "); //Serial.println(q[3]);
-      }
-      
-
-      // Define output variables from updated quaternion---these are Tait-Bryan angles, commonly used in aircraft orientation.
-      // In this coordinate system, the positive z-axis is down toward Earth.
-      // Yaw is the angle between Sensor x-axis and Earth magnetic North (or true North if corrected for local declination, looking down on the sensor positive yaw is counterclockwise.
-      // Pitch is angle between sensor x-axis and Earth ground plane, toward the Earth is positive, up toward the sky is negative.
-      // Roll is angle between sensor y-axis and Earth ground plane, y-axis up is positive roll.
-      // These arise from the definition of the homogeneous rotation matrix constructed from quaternions.
-      // Tait-Bryan angles as well as Euler angles are non-commutative; that is, the get the correct orientation the rotations must be
-      // applied in the correct order which for this configuration is yaw, pitch, and then roll.
-      // For more see http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles which has additional links.
-      pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
-      roll = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
-      pitch *= 180.0f / PI;
-      roll *= 180.0f / PI;
-
-      if (SerialDebug)
-      {
-        Serial.print("Pitch, Roll: ");
-        Serial.print(pitch, 2);
-        Serial.print(", ");
-        Serial.println(roll, 2);
-
-        //Serial.print("rate = "); //Serial.print((float)sumCount/sum, 2); //Serial.println(" Hz");
-      }
-
-      // With these settings the filter is updating at a ~145 Hz rate using the Madgwick scheme and
-      // >200 Hz using the Mahony scheme even though the display refreshes at only 2 Hz.
-      // The filter update rate is determined mostly by the mathematical steps in the respective algorithms,
-      // the processor speed (8 MHz for the 3.3V Pro Mini), and the magnetometer ODR:
-      // an ODR of 10 Hz for the magnetometer produce the above rates, maximum magnetometer ODR of 100 Hz produces
-      // filter update rates of 36 - 145 and ~38 Hz for the Madgwick and Mahony schemes, respectively.
-      // This is presumably because the magnetometer read takes longer than the gyro or accelerometer reads.
-      // This filter update rate should be fast enough to maintain accurate platform orientation for
-      // stabilization control of a fast-moving robot or quadcopter. Compare to the update rate of 200 Hz
-      // produced by the on-board Digital Motion Processor of Invensense's MPU6050 6 DoF and MPU9150 9DoF sensors.
-      // The 3.3 V 8 MHz Pro Mini is doing pretty well!
-
+  //pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
+  roll = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
+  //pitch *= 180.0f / PI;
+  roll *= 180.0f / PI;
+  delt_t = millis() - count;
+  
+  if (delt_t > 500) { 
       count = millis();
       sumCount = 0;
       sum = 0;
-    }
+  }
 }
 
 
 void initCompass(){   
-  // Magnetic Declination is the correction applied according to your present location
-  // in order to get True North from Magnetic North, it varies from place to place.
-  // 
   // The declination for your area can be obtained from http://www.magnetic-declination.com/
-  // Take the "Magnetic Declination" line that it gives you in the information, 
-  //
-  // Examples:
-  //   Christchurch, 23° 35' EAST
-  //   Wellington  , 22° 14' EAST
-  //   Dunedin     , 25° 8'  EAST
-  //   Auckland    , 19° 30' EAST
-  //   Piatra-Neamt, 6°  15' EST
-  Compass.SetDeclination(6, 15, 'E');  
-  //   SINGLE simply means that it takes a reading when you request one
-  //   CONTINUOUS means that it is always taking readings
+  // Piatra-Neamt, 6°  15' EST
+  Compass.SetDeclination(6, 15, 'E');
+    
   Compass.SetSamplingMode(COMPASS_SINGLE);
-  
-  // The scale can be adjusted to one of several levels, you can probably leave it at the default.
-  // Essentially this controls how sensitive the device is.
-  //   Options are 088, 130 (default), 190, 250, 400, 470, 560, 810
-  // Specify the option as COMPASS_SCALE_xxx
-  // Lower values are more sensitive, higher values are less sensitive.
-  // The default is probably just fine, it works for me.  If it seems very noisy
-  // (jumping around), incrase the scale to a higher one.
-  Compass.SetScale(COMPASS_SCALE_130);
-  
-  // The compass has 3 axes, but two of them must be close to parallel to the earth's surface to read it, 
-  // (we do not compensate for tilt, that's a complicated thing) - just like a real compass has a floating 
-  // needle you can imagine the digital compass does too.
-  //
-  // To allow you to mount the compass in different ways you can specify the orientation:
-  //   COMPASS_HORIZONTAL_X_NORTH (default), the compass is oriented horizontally, top-side up. when pointing North the X silkscreen arrow will point North
-  //   COMPASS_HORIZONTAL_Y_NORTH, top-side up, Y is the needle,when pointing North the Y silkscreen arrow will point North
-  //   COMPASS_VERTICAL_X_EAST,    vertically mounted (tall) looking at the top side, when facing North the X silkscreen arrow will point East
-  //   COMPASS_VERTICAL_Y_WEST,    vertically mounted (wide) looking at the top side, when facing North the Y silkscreen arrow will point West  
+  Compass.SetScale(COMPASS_SCALE_130); 
   Compass.SetOrientation(COMPASS_HORIZONTAL_X_NORTH);
 }
 
-
-int status;
 int azimuth;
 int elevation;
 bool startA;
 
 #define TOLERANTA_ELEVATIE 2.0f //in grade
-#define TOLERANTA_AZIMUTH  5.0f
+#define TOLERANTA_AZIMUTH  3.0f
 #define SENS_0_E 1             //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_E 0
-#define SENS_0_A 0              //pe astea le inversezi dupa teste, daca e nevoie
+#define SENS_0_A 0             //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_A 1
 
 #define AzimuthPWML 3
@@ -911,7 +742,7 @@ void startAzimuth(int d = 100)
 void setup()
 {
   azimuth = 0;
-  elevation = 45;
+  elevation = 0;
   startA = false;
 
   Serial.begin(9600);
@@ -924,7 +755,7 @@ void setup()
 
   Wire.begin();
   //  TWBR = 12;  // 400 kbit/sec I2C speed
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   // Set up the interrupt pin, its set as active high, push-pull
   pinMode(intPin, INPUT);
@@ -939,46 +770,25 @@ void setup()
   //Serial.print("MPU9250 "); //Serial.print("I AM "); //Serial.print(c, HEX); //Serial.print(" I should be "); //Serial.println(0x71, HEX);
   delay(1000);
 
-  if (c == 0x71) // WHO_AM_I should always be 0x68
-  {
+  if (c == 0x71) { // WHO_AM_I should always be 0x68
     Serial.println("MPU9250 is online...");
 
     MPU9250SelfTest(SelfTest); // Start by performing self test and reporting values
-    //Serial.print("x-axis self test: acceleration trim within : "); //Serial.print(SelfTest[0],1); //Serial.println("% of factory value");
-    //Serial.print("y-axis self test: acceleration trim within : "); //Serial.print(SelfTest[1],1); //Serial.println("% of factory value");
-    //Serial.print("z-axis self test: acceleration trim within : "); //Serial.print(SelfTest[2],1); //Serial.println("% of factory value");
-    //Serial.print("x-axis self test: gyration trim within : "); //Serial.print(SelfTest[3],1); //Serial.println("% of factory value");
-    //Serial.print("y-axis self test: gyration trim within : "); //Serial.print(SelfTest[4],1); //Serial.println("% of factory value");
-    //Serial.print("z-axis self test: gyration trim within : "); //Serial.print(SelfTest[5],1); //Serial.println("% of factory value");
-
-    // calibrateMPU9250(gyroBias, accelBias); // Calibrate gyro and accelerometers, load biases in bias registers
     delay(1000);
 
     initMPU9250();
-    //Serial.println("MPU9250 initialized for active data mode...."); // Initialize device for active mode read of acclerometer, gyroscope, and temperature
 
-    // Read the WHO_AM_I register of the magnetometer, this is a good test of communication
     byte d = readByte(AK8963_ADDRESS, AK8963_WHO_AM_I); // Read WHO_AM_I register for AK8963
-    //Serial.print("AK8963 "); //Serial.print("I AM "); //Serial.print(d, HEX); //Serial.print(" I should be "); //Serial.println(0x48, HEX);
-
-    // Get magnetometer calibration from AK8963 ROM
-  }
-  else
-  {
+  } else {
     Serial.print("Could not connect to MPU9250: 0x");
     Serial.println(c, HEX);
     while (1){
       Serial.println("Teapa!");
     }
   }
-
-  //startAzimuth();
-
 }
 
 //MOTORASE
-
-
 
 void moveAzimuth(bool sens, int putere)
 {
@@ -1020,31 +830,31 @@ void stopElevation()
   digitalWrite(ElevatiePWML, LOW);
 }
 
-void readData(int &azi, int &elev)
+void readData(int &azi, int &ele)
 {
-  if (Serial.available() > 0)
-  {
-
-    String inString = "";
-
-    byte incomingByte = Serial.read();
-
-    if (incomingByte == '<')
-    {
-      while (incomingByte != '>')
-      {
-        if (incomingByte != '<')
-          inString += (char)incomingByte;
-        if (incomingByte == ' ')
-        {
-          azi = inString.toInt();
-          inString = "";
-        }
-        incomingByte = Serial.read();
+   String textPacket = "\0";
+   String A = "\0";
+   String E = "\0";
+   
+   if(Serial.available()) {
+    textPacket =  Serial.readString();
+      int i = 0;
+      for(i; textPacket[i] != '&'; ++i){
+        A += textPacket[i];
       }
-      elev = inString.toInt();
-    }
-  }
+      i += 1;
+      for(i; textPacket[i] != '\0'; ++i){
+        E += textPacket[i];
+      }
+      azi = A.toInt();
+      ele = E.toInt();
+      Serial.print("Azimuth: ");
+      Serial.print(azi);
+      Serial.print("\tElevatie: ");
+      Serial.println(ele);
+   } else {
+      return;
+   }
 }
 
 int deltaAzimuth(int t, int h){
@@ -1056,6 +866,7 @@ int deltaAzimuth(int t, int h){
 
 int deltaElevatie(int t, int r){
   if(r < 0) r += 360;
+  if(t < 0) t += 360;
   return deltaAzimuth(t, r);
 }
 
@@ -1075,7 +886,7 @@ bool sensAzimuth(int t, int h){
 
 bool sensElevatie(int t, int r){
   if(r < 0) r += 360;
-
+  if(t < 0) t += 360;
   if(abs(t-r) < 180){
     if(r > t)
       return SENS_0_E;
@@ -1089,17 +900,46 @@ bool sensElevatie(int t, int r){
   }
 }
 
+#define MIN_E 50 //puterea minima pwm  
+#define MIN_A 80
+
+#define K_E 15 //cu cate grade inainte sa incetinesc miscarea
+#define K_A 40
+
+#define MAX_E 255
+#define MAX_A 255
+
+int putereElevatie(int d){
+  if(d > K_E) {
+    return MAX_E;
+  } else {
+    int v = MIN_E + (MAX_E - MIN_E) * d / K_E;  
+    return v;
+  }
+}
+
+int putereAzimuth(int d){
+  if(d > K_E) {
+    return MAX_A;
+  } else {
+    int v = MIN_A + (MAX_A - MIN_A) * d / K_E;  
+    return v;
+  }
+}
+
 void alignAzimuth(int t, int h){
-  if(deltaAzimuth(t, h) > TOLERANTA_AZIMUTH){
-    moveAzimuth(sensAzimuth(t,h), 255);
+  int delta = deltaAzimuth(t, h);
+  if(delta > TOLERANTA_AZIMUTH){
+    moveAzimuth(sensAzimuth(t,h), putereAzimuth(delta));
   } else {
     stopAzimuth();
   }
 }
 
 void alignElevation(int t, int r){
-  if(deltaElevatie(t, r) > TOLERANTA_ELEVATIE){
-    moveElevation(sensElevatie(t, r), 150);
+  int delta = deltaElevatie(t, r);
+  if(delta > TOLERANTA_ELEVATIE){
+    moveElevation(sensElevatie(t, r), putereElevatie(delta));
   } else{
     stopElevation();
   }
@@ -1110,11 +950,19 @@ void loop()
   readData(azimuth, elevation);
   getMPUData();
   float heading = Compass.GetHeadingDegrees();
-  /*Serial.print("T: ");
+  
+  /*Serial.print("TA: ");
   Serial.print(azimuth);
   Serial.print('\t');
   Serial.print("H: ");
-  Serial.println(heading); */
+  Serial.println(heading);
+  
+  Serial.print("TE: ");
+  Serial.print(elevation);
+  Serial.print('\t');
+  Serial.print("R:");
+  Serial.println(roll);
+  Serial.println("-------------"); */
   
   alignAzimuth(azimuth, heading);
   alignElevation(elevation, roll);

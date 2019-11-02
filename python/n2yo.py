@@ -57,7 +57,7 @@ iss = ephem.readtle('ISS', tle[0], tle[1])
 
 
 #port = "/dev/ttyUSB" + str(sys.argv[1])
-ser = serial.Serial(port, 1200, timeout=0)
+ser = serial.Serial(port, 9600, timeout=0)
 
 lastE = 0
 lastA = 0
@@ -77,7 +77,7 @@ while True:
     if((lastE != elevationTLE) or (lastA != azimuthTLE)):
         lastE = elevationTLE
         lastA = azimuthTLE
-        sendstr = "<" + str(azimuthTLE) + " " + str(elevationTLE) + ">"
+        sendstr = str(azimuthTLE) + "&" + str(elevationTLE)
         ser.write(sendstr)
     	print sendstr
     time.sleep(1.0)
