@@ -61,9 +61,16 @@ def getTLE():
     tle = data["tle"].split("\r\n")
     return tle
 
+def getName():
+    response = urllib2.urlopen(urltle)
+    data = json.loads(response.read())
+    name = data["info"]["satname"]
+    return name
+
+
+satName = getName()
 tle = getTLE()
 iss = ephem.readtle('ISS', tle[0], tle[1])
-
 
 #port = "/dev/ttyUSB" + str(sys.argv[1])
 ser = serial.Serial(port, 9600, timeout=0)
@@ -84,13 +91,21 @@ while True:
     #    elevationTLE += 360
     
     if((lastE != elevationTLE) or (lastA != azimuthTLE)):
+#    if(True):
         log = open('/var/www/html/log.html', 'w') 
         lastE = elevationTLE
         lastA = azimuthTLE
         sendstr = str(azimuthTLE) + "&" + str(elevationTLE)
         ser.write(sendstr)
     	print sendstr
-    	log.write("Azimut:" + "<div id = \"azi\">" + str(azimuthTLE) + "</div>\n" + "Elevatie: <div id=\"ele\">" + str(elevationTLE) + "</div>")
+    	logstr  = "<div>Azimut: <span id = \"azi\">"
+        logstr += str(azimuthTLE) + "</span></div>\n"
+        logstr += "<div>Elevatie: <span id=\"ele\">"
+        logstr += str(elevationTLE)
+        logstr += "</span></div>\n"
+        logstr += "<div>" + str(satName) + " - " + str(sat_code) + "</div>"
+        log.write(logstr)
+        #log.write("Azimut:" + "<div id = \"azi\">" + str(azimuthTLE) + "</div>\n" + "Elevatie: <div id=\"ele\">" + str(elevationTLE) + "</div>" + "\n\n" + sat_code)
     	log.close()
     
     time.sleep(1.0)
