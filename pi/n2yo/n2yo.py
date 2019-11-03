@@ -84,13 +84,13 @@ while True:
     #    elevationTLE += 360
     
     if((lastE != elevationTLE) or (lastA != azimuthTLE)):
-        log = open('/var/www/html/log', 'w') 
+        log = open('/var/www/html/log.html', 'w') 
         lastE = elevationTLE
         lastA = azimuthTLE
         sendstr = str(azimuthTLE) + "&" + str(elevationTLE)
         ser.write(sendstr)
     	print sendstr
-    	log.write("Azimut:" + str(azimuthTLE) + "\n" + "Elevatie:" + str(elevationTLE))
+    	log.write("Azimut:" + "<div id = \"azi\">" + str(azimuthTLE) + "</div>\n" + "Elevatie: <div id=\"ele\">" + str(elevationTLE) + "</div>")
     	log.close()
     
     time.sleep(1.0)

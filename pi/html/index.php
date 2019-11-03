@@ -9,7 +9,7 @@ Altitudinea ta:  <input type="text" name="alt" value="359"><br>
 <input type="submit">
 </form>
 
-<iframe src="log" id="iframe"></iframe>
+<iframe src="log.html" id="iframe"></iframe>
 
 <script>
         window.setInterval(function() {
