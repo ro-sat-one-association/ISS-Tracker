@@ -9,6 +9,11 @@
   fwrite($f, $sat."\n".$lat."\n".$lon."\n".$alt."\n");
   fclose($f);
  
-  exec('sudo reboot');
-
+  exec('sudo systemctl restart track');
 ?>
+
+<html>
+  <head>
+   <meta http-equiv = "refresh" content = "2; url = index.php"/>
+  </head>
+</html>

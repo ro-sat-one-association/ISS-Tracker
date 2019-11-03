@@ -1,7 +1,0 @@
-{
-    "port": "/dev/ttyUSB0",
-    "board": "arduino:avr:pro",
-    "configuration": "cpu=8MHzatmega328",
-    "programmer": "ArduinoISP",
-    "sketch": "arduino/Compass_MPU_motoare_n2yo/Compass_MPU_motoare_n2yo.ino"
-}

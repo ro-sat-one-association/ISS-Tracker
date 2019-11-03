@@ -9,5 +9,19 @@ Altitudinea ta:  <input type="text" name="alt" value="359"><br>
 <input type="submit">
 </form>
 
+<iframe src="log" id="iframe"></iframe>
+
+<script>
+        window.setInterval(function() {
+            reloadIFrame()
+        }, 3000);
+
+        function reloadIFrame() {
+            console.log('reloading..,');
+            document.getElementById('iframe').contentWindow.location.reload();
+        }
+</script>
+
+
 </body>
 </html>

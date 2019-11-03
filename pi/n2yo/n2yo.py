@@ -8,6 +8,11 @@ import serial
 import sys
 import serial.tools.list_ports
 
+"""
+log = open('/var/www/html/log', 'w')
+log.close()
+"""
+
 f = open('/home/pi/n2yo/config.txt', 'r')
 l = f.readlines()
 
@@ -79,9 +84,13 @@ while True:
     #    elevationTLE += 360
     
     if((lastE != elevationTLE) or (lastA != azimuthTLE)):
+        log = open('/var/www/html/log', 'w') 
         lastE = elevationTLE
         lastA = azimuthTLE
         sendstr = str(azimuthTLE) + "&" + str(elevationTLE)
         ser.write(sendstr)
     	print sendstr
+    	log.write("Azimut:" + str(azimuthTLE) + "\n" + "Elevatie:" + str(elevationTLE))
+    	log.close()
+    
     time.sleep(1.0)
