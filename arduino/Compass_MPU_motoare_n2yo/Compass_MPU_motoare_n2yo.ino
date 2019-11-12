@@ -719,18 +719,21 @@ int azimuth;
 int elevation;
 bool startA;
 
-#define TOLERANTA_ELEVATIE 2.0f //in grade
-#define TOLERANTA_AZIMUTH  3.0f
+#define TOLERANTA_ELEVATIE 1.0f //in grade
+#define TOLERANTA_AZIMUTH  2.0f
 #define SENS_0_E 1             //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_E 0
 #define SENS_0_A 0             //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_A 1
 
-#define AzimuthPWML 3
-#define AzimuthPWMR 5
+#define AzimuthPWML 9
+#define AzimuthPWMR 3
 
-#define ElevatiePWMR 6
-#define ElevatiePWML 9
+#define ElevatiePWMR 10
+#define ElevatiePWML 11
+
+#define ElevatieEN 12
+#define AzimuthEN  7
 
 void startAzimuth(int d = 100)
 {
@@ -746,6 +749,9 @@ void setup()
   startA = false;
 
   Serial.begin(9600);
+
+  pinMode(ElevatieEN, OUTPUT);
+  pinMode(AzimuthEN,  OUTPUT);
 
   pinMode(AzimuthPWMR, OUTPUT);
   pinMode(AzimuthPWML, OUTPUT);
@@ -900,10 +906,10 @@ bool sensElevatie(int t, int r){
   }
 }
 
-#define MIN_E 50 //puterea minima pwm  
-#define MIN_A 80
+#define MIN_E 30 //puterea minima pwm  
+#define MIN_A 50
 
-#define K_E 15 //cu cate grade inainte sa incetinesc miscarea
+#define K_E 7 //cu cate grade inainte sa incetinesc miscarea
 #define K_A 40
 
 #define MAX_E 255
@@ -919,10 +925,10 @@ int putereElevatie(int d){
 }
 
 int putereAzimuth(int d){
-  if(d > K_E) {
+  if(d > K_A) {
     return MAX_A;
   } else {
-    int v = MIN_A + (MAX_A - MIN_A) * d / K_E;  
+    int v = MIN_A + (MAX_A - MIN_A) * d / K_A;  
     return v;
   }
 }
@@ -930,8 +936,10 @@ int putereAzimuth(int d){
 void alignAzimuth(int t, int h){
   int delta = deltaAzimuth(t, h);
   if(delta > TOLERANTA_AZIMUTH){
+    digitalWrite(AzimuthEN, HIGH);
     moveAzimuth(sensAzimuth(t,h), putereAzimuth(delta));
   } else {
+    digitalWrite(AzimuthEN, LOW);
     stopAzimuth();
   }
 }
@@ -939,19 +947,21 @@ void alignAzimuth(int t, int h){
 void alignElevation(int t, int r){
   int delta = deltaElevatie(t, r);
   if(delta > TOLERANTA_ELEVATIE){
+    digitalWrite(ElevatieEN, HIGH);
     moveElevation(sensElevatie(t, r), putereElevatie(delta));
   } else{
     stopElevation();
+    digitalWrite(ElevatieEN, LOW);
   }
 }
 
 void loop()
-{
+{ 
   readData(azimuth, elevation);
   getMPUData();
   float heading = Compass.GetHeadingDegrees();
   
-  /*Serial.print("TA: ");
+  Serial.print("TA: ");
   Serial.print(azimuth);
   Serial.print('\t');
   Serial.print("H: ");
@@ -962,7 +972,7 @@ void loop()
   Serial.print('\t');
   Serial.print("R:");
   Serial.println(roll);
-  Serial.println("-------------"); */
+  Serial.println("-------------");
   
   alignAzimuth(azimuth, heading);
   alignElevation(elevation, roll);
