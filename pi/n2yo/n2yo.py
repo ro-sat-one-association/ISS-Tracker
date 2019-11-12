@@ -84,24 +84,26 @@ while True:
 
     azimuthTLE   = sat.az  * degrees_per_radian
     elevationTLE = sat.alt * degrees_per_radian
-    azimuthTLE   = int(azimuthTLE)
-    elevationTLE = int(elevationTLE)
+    azimuthTLE   = float(azimuthTLE)
+    elevationTLE = float(elevationTLE)
 
     #if(elevationTLE < 0):
     #    elevationTLE += 360
     
-    if((lastE != elevationTLE) or (lastA != azimuthTLE)):
+    if((int(lastE) != int(elevationTLE)) or (int(lastA) != int(azimuthTLE))):
 #    if(True):
         log = open('/var/www/html/log.html', 'w') 
-        lastE = elevationTLE
-        lastA = azimuthTLE
-        sendstr = str(azimuthTLE) + "&" + str(elevationTLE)
+        lastE = int(elevationTLE)
+        lastA = int(azimuthTLE)
+	strA  = "%.2f" % azimuthTLE 
+	strE  = "%.2f" % elevationTLE 
+        sendstr = strA + "&" + strE
         ser.write(sendstr)
     	print sendstr
     	logstr  = "<div>Azimut: <span id = \"azi\">"
-        logstr += str(azimuthTLE) + "</span></div>\n"
+        logstr += strA + "</span></div>\n"
         logstr += "<div>Elevatie: <span id=\"ele\">"
-        logstr += str(elevationTLE)
+        logstr += strE
         logstr += "</span></div>\n"
         logstr += "<div>" + str(satName) + " - " + str(sat_code) + "</div>"
         log.write(logstr)
