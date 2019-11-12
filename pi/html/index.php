@@ -1,4 +1,16 @@
 <html>
+<?php
+
+$f = fopen("/home/pi/n2yo/config.txt", "r");
+$sat = fgets($f);
+$lat = fgets($f);
+$lon = fgets($f);
+$alt = fgets($f);
+
+fclose($f);
+
+?>
+
 
 <head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -12,19 +24,19 @@
     <tbody>
         <tr>
             <td>Cod NORAD:</td>
-            <td><input type="text" name="sat" value="25544"></td>
+            <td><input type="text" name="sat" value="<?php echo $sat;?>"></td>
         </tr>
         <tr>
             <td>Latitudinea ta:</td>
-            <td><input type="text" name="lat" value="46.9438779"></td>
+            <td><input type="text" name="lat" value="<?php echo $lat;?>"></td>
         </tr>
         <tr>
             <td>Longitudinea ta:</td>
-            <td><input type="text" name="lat" value="46.9438779"></td>
+            <td><input type="text" name="lon" value="<?php echo $lon;?>"</td>
         </tr>
         <tr>
             <td>Altitudinea ta:</td>
-            <td><input type="text" name="alt" value="359"></td>
+            <td><input type="text" name="alt" value="<?php echo $alt;?>"></td>
         </tr>
     </tbody>
 </table>

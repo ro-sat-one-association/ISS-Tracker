@@ -70,7 +70,7 @@ def getName():
 
 satName = getName()
 tle = getTLE()
-iss = ephem.readtle('ISS', tle[0], tle[1])
+sat = ephem.readtle(str(satName), tle[0], tle[1])
 
 #port = "/dev/ttyUSB" + str(sys.argv[1])
 ser = serial.Serial(port, 9600, timeout=0)
@@ -80,10 +80,10 @@ lastA = 0
 
 while True:
     home.date = datetime.utcnow()
-    iss.compute(home)
+    sat.compute(home)
 
-    azimuthTLE   = iss.az  * degrees_per_radian
-    elevationTLE = iss.alt * degrees_per_radian
+    azimuthTLE   = sat.az  * degrees_per_radian
+    elevationTLE = sat.alt * degrees_per_radian
     azimuthTLE   = int(azimuthTLE)
     elevationTLE = int(elevationTLE)
 
