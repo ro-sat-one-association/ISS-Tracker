@@ -747,6 +747,7 @@ void setup()
   elevation = 0;
 
   Serial.begin(9600);
+  Serial.setTimeout(50);
 
   pinMode(ElevatieEN, OUTPUT);
   pinMode(AzimuthEN,  OUTPUT);
@@ -834,6 +835,43 @@ void stopElevation()
   digitalWrite(ElevatiePWML, LOW);
 }
 
+
+int checkSum(String t){
+  unsigned int s = 0;
+  for(int i=0; t[i] != '\0'; ++i){
+    s += (int)t[i];
+  }
+  return s%10;
+}
+
+bool validPackage(String textPacket){ //SPAGHETTI CODE, stiu
+  bool et = false;
+  String C = "\0";
+  String P = "\0";
+  if(textPacket[0] == '!'){
+    P += '!';
+    int i=1;
+    for(i; textPacket[i] != '!'; ++i){
+      if(textPacket[i] == '\0') return false;
+      P += textPacket[i];
+      if(textPacket[i] == '&') et = true;
+    }
+    if(!et) return false;
+    ++i;
+    if(textPacket[i] == '\0') return false;
+    for(i; textPacket[i] != '\0'; ++i){
+      C += textPacket[i];
+    }
+    Serial.print("ctoint ");
+    Serial.println(C.toInt());
+    Serial.print("csum ");
+    Serial.println(checkSum(P));
+    if(C.toInt() == checkSum(P) && et) return true;
+  }
+  return false;
+}
+
+
 void readData(float &azi, float &ele)
 {
    String textPacket = "\0";
@@ -842,8 +880,10 @@ void readData(float &azi, float &ele)
    
    if(Serial.available()) {
     textPacket =  Serial.readString();
-      int i = 0;
-      for(i; textPacket[i] != '&'; ++i){
+    textPacket.trim();
+    if(validPackage(textPacket)){
+      int i = 1;
+      for(i; textPacket[i] != '&' ; ++i){
         A += textPacket[i];
       }
       i += 1;
@@ -852,10 +892,14 @@ void readData(float &azi, float &ele)
       }
       azi = A.toFloat();
       ele = E.toFloat();
-      Serial.print("Azimuth: ");
+      Serial.print("Pachet valid! Azimut:");
       Serial.print(azi);
-      Serial.print("\tElevatie: ");
+      Serial.print(" Elevatie:");
       Serial.println(ele);
+    } else {
+      Serial.println("Pachet nevalid");
+      return;
+    }
    } else {
       return;
    }

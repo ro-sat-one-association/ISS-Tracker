@@ -8,10 +8,8 @@ import serial
 import sys
 import serial.tools.list_ports
 
-"""
-log = open('/var/www/html/log', 'w')
-log.close()
-"""
+
+textLog = open('/home/pi/log.txt', 'w')
 
 f = open('/home/pi/n2yo/config.txt', 'r')
 l = f.readlines()
@@ -78,6 +76,9 @@ ser = serial.Serial(port, 9600, timeout=0)
 lastE = 0
 lastA = 0
 
+def csum(s):
+    return str(sum(bytearray(s)) % 10)
+
 while True:
     home.date = datetime.utcnow()
     sat.compute(home)
@@ -97,8 +98,10 @@ while True:
         lastA = int(azimuthTLE)
 	strA  = "%.2f" % azimuthTLE 
 	strE  = "%.2f" % elevationTLE 
-        sendstr = strA + "&" + strE
+        sendstr = "!" + strA + "&" + strE
+	sendstr = sendstr + "!" + csum(sendstr)
         ser.write(sendstr)
+	textLog.write(sendstr + "\n")
     	print sendstr
     	logstr  = "<div>Azimut: <span id = \"azi\">"
         logstr += strA + "</span></div>\n"
