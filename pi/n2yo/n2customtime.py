@@ -10,6 +10,9 @@ import sys
 import serial.tools.list_ports
 
 
+base = datetime(2019, 11, 18, 19, 9)
+
+
 textLog = open('/home/pi/log.txt', 'w')
 
 f = open('/home/pi/n2yo/config.txt', 'r')
@@ -81,7 +84,8 @@ def csum(s):
     return str(sum(bytearray(s)) % 10)
 
 while True:
-    home.date = datetime.utcnow()
+    base = base + timedelta(seconds=1)
+    home.date = base
     sat.compute(home)
 
     azimuthTLE   = sat.az  * degrees_per_radian
