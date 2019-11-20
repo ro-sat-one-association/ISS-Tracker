@@ -46,7 +46,6 @@ fclose($f);
 
 <div>
 <iframe src="log.html" id="iframe" onload="onLoadHandler()" width="500px"></iframe>
-<iframe src="livedata.html" id="liveframe" onload="onLoadHandler()" width="500px"></iframe>
 </div>
 <div>
 <canvas id="canvas1" width="250" height="250"></canvas>
@@ -56,12 +55,8 @@ fclose($f);
 <script>
 
 function reloadIFrame() {
-    //console.log('Incarc iframeul');
+    console.log('Incarc iframeul');
     document.getElementById('iframe').contentWindow.location.reload();
-}
-
-function reloadLiveFrame(){
-    document.getElementById('liveframe').contentWindow.location.reload();
 }
 
 var canvas1 = document.getElementById("canvas1");
@@ -78,7 +73,6 @@ ctx2.translate(radius,radius)
 radius = radius * 0.90;
 
 setInterval(reloadIFrame, 3000);
-setInterval(reloadLiveFrame, 500);
 
 function onLoadHandler(){
   drawBusola();
@@ -87,32 +81,24 @@ function onLoadHandler(){
 
 
 function drawElevatie(){
-  u = document.getElementById("iframe").contentWindow.document.getElementById("ele").innerHTML;
-  u = u - 90;
+  f = document.getElementById("iframe").contentWindow.document.getElementById("ele").innerHTML;
+  u = f - 90;
   if(u < 0) u += 360;
   u *= Math.PI/180;
-
-  l = document.getElementById("liveframe").contentWindow.document.getElementById("ele").innerHTML;
-  l = l - 90;
-  if(l < 0) l += 360;
-  l *= Math.PI/180;
-
   drawFace(ctx2, radius);
   drawCardinale(ctx2, radius, 2);
-  drawBratTarget(ctx2, radius, u);
-  drawBratLive(ctx2, radius, l);
+  drawBrat(ctx2, radius, u);
 }
 
 
 function drawBusola(){
-  u = document.getElementById("iframe").contentWindow.document.getElementById("azi").innerHTML;
+  f = document.getElementById("iframe").contentWindow.document.getElementById("azi").innerHTML;
+//f = document.getElementById("iframe").innerHTML;
+  u = f;
   u *=  Math.PI/180;
-  l = document.getElementById("liveframe").contentWindow.document.getElementById("azi").innerHTML;
-  l *=  Math.PI/180;
   drawFace(ctx1, radius);
   drawCardinale(ctx1, radius, 1);
-  drawBratTarget(ctx1, radius, u);
-  drawBratLive(ctx1, radius, l);
+  drawBrat(ctx1, radius, u);
 }
 
 function drawFace(ctx, radius){
@@ -157,23 +143,17 @@ function drawCardinale(ctx, radius, x) {
   }
 }
 
-function drawBratLive(ctx, radius, unghi) {
-  drawHand(ctx, unghi, radius*0.75, radius*0.02, 'white');
+function drawBrat(ctx, radius, unghi) {
+  drawHand(ctx, unghi, radius*0.75, radius*0.02);
 }
 
-function drawBratTarget(ctx, radius, unghi) {
-  drawHand(ctx, unghi, radius*0.6, radius*0.04, '#ff8c12');
-}
-
-
-function drawHand(ctx, pos, length, width, color) {
+function drawHand(ctx, pos, length, width) {
     ctx.beginPath();
     ctx.lineWidth = width;
     ctx.lineCap = "round";
     ctx.moveTo(0,0);
     ctx.rotate(pos);
     ctx.lineTo(0, -length);
-    ctx.strokeStyle = color;
     ctx.stroke();
     ctx.rotate(-pos);
 }

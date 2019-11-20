@@ -8,7 +8,7 @@ import time
 import serial
 import sys
 import serial.tools.list_ports
-
+import time
 
 textLog = open('/home/pi/log.txt', 'w')
 
@@ -34,8 +34,8 @@ alt = "359"
 port = "/dev/"
 ports = list(serial.tools.list_ports.comports())
 for p in ports:
-    if "UART" in p.description:
-    	port = port + p.name
+	if "UART" in p.description:
+    		port = port + p.name
 
 degrees_per_radian = 180.0 / math.pi
 home = ephem.Observer()
@@ -48,23 +48,23 @@ urltle += key
 #print urltle
 
 def getAE():
-    response = urllib2.urlopen(urlpos)
-    data = json.loads(response.read())
-    azimuth   = data["positions"][0]["azimuth"]
-    elevation = data["positions"][0]["elevation"]
-    return [azimuth, elevation]
+	response = urllib2.urlopen(urlpos)
+	data = json.loads(response.read())
+	azimuth   = data["positions"][0]["azimuth"]
+	elevation = data["positions"][0]["elevation"]
+	return [azimuth, elevation]
 
 def getTLE():
-    response = urllib2.urlopen(urltle)
-    data = json.loads(response.read())
-    tle = data["tle"].split("\r\n")
-    return tle
+	response = urllib2.urlopen(urltle)
+	data = json.loads(response.read())
+	tle = data["tle"].split("\r\n")
+	return tle
 
 def getName():
-    response = urllib2.urlopen(urltle)
-    data = json.loads(response.read())
-    name = data["info"]["satname"]
-    return name
+	response = urllib2.urlopen(urltle)
+	data = json.loads(response.read())
+	name = data["info"]["satname"]
+	return name
 
 
 satName = getName()
@@ -78,40 +78,53 @@ lastE = 0
 lastA = 0
 
 def csum(s):
-    return str(sum(bytearray(s)) % 10)
+	return str(sum(bytearray(s)) % 10)
+
+timeSerialWrite = 0
+timeSerialRead  = 0
 
 while True:
-    home.date = datetime.utcnow()
-    sat.compute(home)
+	home.date = datetime.utcnow()
+	sat.compute(home)
 
-    azimuthTLE   = sat.az  * degrees_per_radian
-    elevationTLE = sat.alt * degrees_per_radian
-    azimuthTLE   = float(azimuthTLE)
-    elevationTLE = float(elevationTLE)
-
-    #if(elevationTLE < 0):
-    #    elevationTLE += 360
-    
-#    if((int(lastE) != int(elevationTLE)) or (int(lastA) != int(azimuthTLE))):
-    if(True):
-        log = open('/var/www/html/log.html', 'w') 
-        lastE = int(elevationTLE)
-        lastA = int(azimuthTLE)
+	azimuthTLE   = sat.az  * degrees_per_radian
+	elevationTLE = sat.alt * degrees_per_radian
+	azimuthTLE   = float(azimuthTLE)
+	elevationTLE = float(elevationTLE)
+	
+	lastE = int(elevationTLE)
+	lastA = int(azimuthTLE)
 	strA  = "%.2f" % azimuthTLE 
 	strE  = "%.2f" % elevationTLE 
-        sendstr = "!" + strA + "&" + strE
-	sendstr = sendstr + "!" + csum(sendstr)
-        ser.write(sendstr)
-	textLog.write(sendstr + "\n")
-    	print sendstr
-    	logstr  = "<div>Azimut: <span id = \"azi\">"
-        logstr += strA + "</span></div>\n"
-        logstr += "<div>Elevatie: <span id=\"ele\">"
-        logstr += strE
-        logstr += "</span></div>\n"
-        logstr += "<div>" + str(satName) + " - " + str(sat_code) + "</div>"
-        log.write(logstr)
-        #log.write("Azimut:" + "<div id = \"azi\">" + str(azimuthTLE) + "</div>\n" + "Elevatie: <div id=\"ele\">" + str(elevationTLE) + "</div>" + "\n\n" + sat_code)
-    	log.close()
-    
-    time.sleep(1.0)
+	sendstr = "!" + strA + "&" + strE
+	sendstr = sendstr + "!" + csum(sendstr)	
+
+	logstr  = "<div>Azimut: <span id = \"azi\">"
+	logstr += strA + "</span></div>\n"
+	logstr += "<div>Elevatie: <span id=\"ele\">"
+	logstr += strE
+	logstr += "</span></div>\n"
+	logstr += "<div>" + str(satName) + " - " + str(sat_code) + "</div>"
+
+	if(time.time() - timeSerialWrite > 1.0):
+		log = open('/var/www/html/log.html', 'w') 
+		log.write(logstr)
+		log.close()
+		textLog.write(sendstr + "\n")
+		ser.write(sendstr)
+		print sendstr
+		timeSerialWrite = time.time()
+
+	if(time.time() - timeSerialRead > 0.5):
+		linie = ser.readline()
+		l = linie.split(" ")
+		if(len(l) == 2):
+			a = l[0]
+			e = l[1]
+			print a,e
+			live = open('/var/www/html/livedata.html', 'w')
+			livestr  = "<span id= \"azi\">"
+			livestr += a + "</span>\n<span id=\"ele\">"
+			livestr += e + "</span>"
+			live.write(livestr)
+		timeSerialRead = time.time()

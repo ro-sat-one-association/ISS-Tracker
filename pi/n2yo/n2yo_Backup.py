@@ -10,9 +10,6 @@ import sys
 import serial.tools.list_ports
 
 
-base = datetime(2019, 11, 14, 20, 46)
-
-
 textLog = open('/home/pi/log.txt', 'w')
 
 f = open('/home/pi/n2yo/config.txt', 'r')
@@ -84,8 +81,7 @@ def csum(s):
     return str(sum(bytearray(s)) % 10)
 
 while True:
-    base = base + timedelta(seconds=1)
-    home.date = base
+    home.date = datetime.utcnow()
     sat.compute(home)
 
     azimuthTLE   = sat.az  * degrees_per_radian
@@ -117,5 +113,7 @@ while True:
         log.write(logstr)
         #log.write("Azimut:" + "<div id = \"azi\">" + str(azimuthTLE) + "</div>\n" + "Elevatie: <div id=\"ele\">" + str(elevationTLE) + "</div>" + "\n\n" + sat_code)
     	log.close()
-    
+
+    linie = ser.readline()
+    print linie
     time.sleep(1.0)

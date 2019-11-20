@@ -741,10 +741,16 @@ void startAzimuth(int d = 100)
   delay(d);
 }
 
+bool debug;
+long long lastTime;
+
 void setup()
 {
   azimuth = 0;
   elevation = 0;
+
+  debug = false;
+  lastTime = 0;
 
   Serial.begin(9600);
   Serial.setTimeout(50);
@@ -862,10 +868,12 @@ bool validPackage(String textPacket){ //SPAGHETTI CODE, stiu
     for(i; textPacket[i] != '\0'; ++i){
       C += textPacket[i];
     }
-    Serial.print("ctoint ");
-    Serial.println(C.toInt());
-    Serial.print("csum ");
-    Serial.println(checkSum(P));
+    if(debug){
+      Serial.print("ctoint ");
+      Serial.println(C.toInt());
+      Serial.print("csum ");
+      Serial.println(checkSum(P));
+    }
     if(C.toInt() == checkSum(P) && et) return true;
   }
   return false;
@@ -881,6 +889,10 @@ void readData(float &azi, float &ele)
    if(Serial.available()) {
     textPacket =  Serial.readString();
     textPacket.trim();
+    if(textPacket == "D") {
+      debug = !debug;
+      return;
+     }
     if(validPackage(textPacket)){
       int i = 1;
       for(i; textPacket[i] != '&' ; ++i){
@@ -892,12 +904,16 @@ void readData(float &azi, float &ele)
       }
       azi = A.toFloat();
       ele = E.toFloat();
-      Serial.print("Pachet valid! Azimut:");
-      Serial.print(azi);
-      Serial.print(" Elevatie:");
-      Serial.println(ele);
+      if(debug){
+        Serial.print("Pachet valid! Azimut:");
+        Serial.print(azi);
+        Serial.print(" Elevatie:");
+        Serial.println(ele);
+      }
     } else {
-      Serial.println("Pachet nevalid");
+      if(debug){
+        Serial.println("Pachet nevalid");
+      }
       return;
     }
    } else {
@@ -1003,24 +1019,36 @@ void alignElevation(float t, float r){
   }
 }
 
+#define PRINT_DELAY 500
+
+
 void loop()
 { 
   readData(azimuth, elevation);
   getMPUData();
   float heading = Compass.GetHeadingDegrees();
-  
-/*Serial.print("TA: ");
-  Serial.print(azimuth);
-  Serial.print('\t');
-  Serial.print("H: ");
-  Serial.println(heading);
-  
-  Serial.print("TE: ");
-  Serial.print(elevation);
-  Serial.print('\t');
-  Serial.print("R:");
-  Serial.println(roll);
-  Serial.println("-------------");*/
+
+  if(debug){
+    Serial.print("TA: ");
+    Serial.print(azimuth);
+    Serial.print('\t');
+    Serial.print("H: ");
+    Serial.println(heading);
+    
+    Serial.print("TE: ");
+    Serial.print(elevation);
+    Serial.print('\t');
+    Serial.print("R:");
+    Serial.println(roll);
+    Serial.println("-------------");
+  }
+
+  if(millis() - lastTime > PRINT_DELAY){
+    Serial.print(heading);
+    Serial.print(" ");
+    Serial.println(roll);
+    lastTime = millis();
+  }
   
   alignAzimuth(azimuth, heading);
   alignElevation(elevation, roll);
