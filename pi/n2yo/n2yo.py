@@ -99,9 +99,9 @@ while True:
 	sendstr = "!" + strA + "&" + strE
 	sendstr = sendstr + "!" + csum(sendstr)	
 
-	logstr  = "<div>Azimut: <span id = \"azi\">"
+	logstr  = "<div>Azimut: <span id = \"target_azi\">"
 	logstr += strA + "</span></div>\n"
-	logstr += "<div>Elevatie: <span id=\"ele\">"
+	logstr += "<div>Elevatie: <span id=\"target_ele\">"
 	logstr += strE
 	logstr += "</span></div>\n"
 	logstr += "<div>" + str(satName) + " - " + str(sat_code) + "</div>"
@@ -117,14 +117,16 @@ while True:
 
 	if(time.time() - timeSerialRead > 0.5):
 		linie = ser.readline()
+		ser.reset_input_buffer()
 		l = linie.split(" ")
 		if(len(l) == 2):
-			a = l[0]
-			e = l[1]
-			print a,e
-			live = open('/var/www/html/livedata.html', 'w')
-			livestr  = "<span id= \"azi\">"
-			livestr += a + "</span>\n<span id=\"ele\">"
-			livestr += e + "</span>"
-			live.write(livestr)
+			if('.' in l[0] and '.' in l[1]):
+				a =l[0].strip()
+				e =l[1].strip()
+				print a,e
+				live = open('/var/www/html/livedata.html', 'w')
+				livestr  = "<span id= \"live_azi\">"
+				livestr += a + "</span>\n<span id=\"live_ele\">"
+				livestr += e + "</span>"
+				live.write(livestr)
 		timeSerialRead = time.time()

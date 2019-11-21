@@ -45,8 +45,17 @@ fclose($f);
 </form>
 
 <div>
-<iframe src="log.html" id="iframe" onload="onLoadHandler()" width="500px"></iframe>
-<iframe src="livedata.html" id="liveframe" onload="onLoadHandler()" width="500px"></iframe>
+	<div id="targetdata"> 
+		<div>Azimut: <span id = "target_azi">-</span></div>
+		<div>Elevatie: <span id="taget_ele">-</span></div>
+		<div>-</div>
+	</div>
+
+	<div id="livedata">
+		<span id= "target_azi">-</span>
+		<span id= "target_ele">-</span>
+	</div>
+
 </div>
 <div>
 <canvas id="canvas1" width="250" height="250"></canvas>
@@ -55,14 +64,42 @@ fclose($f);
 
 <script>
 
-function reloadIFrame() {
-    //console.log('Incarc iframeul');
-    document.getElementById('iframe').contentWindow.location.reload();
+var previous = "";
+
+function getLiveData() {
+    var ajax = new XMLHttpRequest();
+    ajax.onreadystatechange = function() {
+        if (ajax.readyState == 4) {
+            if (ajax.responseText != previous) {
+		previous = ajax.responseText;
+		if(this.responseText.search(".") != -1){
+                	document.getElementById("livedata").innerHTML = this.responseText;
+			drawAll();
+		}
+            }
+        }
+    };
+    ajax.open("POST", "livedata.html", true); //Use POST to avoid caching
+    ajax.send();
 }
 
-function reloadLiveFrame(){
-    document.getElementById('liveframe').contentWindow.location.reload();
+function getTargetData(){
+    var ajax = new XMLHttpRequest();
+    ajax.onreadystatechange = function() {
+        if (ajax.readyState == 4) {
+            if (ajax.responseText != previous) {
+                document.getElementById("targetdata").innerHTML = this.responseText;
+                previous = ajax.responseText;
+		drawAll();
+            }
+        }
+    };
+    ajax.open("POST", "log.html", true); //Use POST to avoid caching
+    ajax.send();
 }
+
+setInterval(getLiveData, 100);
+setInterval(getTargetData, 1000)
 
 var canvas1 = document.getElementById("canvas1");
 var canvas2 = document.getElementById("canvas2");
@@ -77,22 +114,20 @@ ctx2.translate(radius,radius)
 
 radius = radius * 0.90;
 
-setInterval(reloadIFrame, 3000);
-setInterval(reloadLiveFrame, 500);
 
-function onLoadHandler(){
+function drawAll(){
   drawBusola();
   drawElevatie();
 }
 
 
 function drawElevatie(){
-  u = document.getElementById("iframe").contentWindow.document.getElementById("ele").innerHTML;
+  u = document.getElementById("target_ele").innerHTML;
   u = u - 90;
   if(u < 0) u += 360;
   u *= Math.PI/180;
 
-  l = document.getElementById("liveframe").contentWindow.document.getElementById("ele").innerHTML;
+  l = document.getElementById("live_ele").innerHTML;
   l = l - 90;
   if(l < 0) l += 360;
   l *= Math.PI/180;
@@ -105,9 +140,9 @@ function drawElevatie(){
 
 
 function drawBusola(){
-  u = document.getElementById("iframe").contentWindow.document.getElementById("azi").innerHTML;
+  u = document.getElementById("target_azi").innerHTML;
   u *=  Math.PI/180;
-  l = document.getElementById("liveframe").contentWindow.document.getElementById("azi").innerHTML;
+  l = document.getElementById("live_azi").innerHTML;
   l *=  Math.PI/180;
   drawFace(ctx1, radius);
   drawCardinale(ctx1, radius, 1);
