@@ -8,8 +8,9 @@
   $f = fopen("/home/pi/n2yo/config.txt", "w");
   fwrite($f, $sat."\n".$lat."\n".$lon."\n".$alt."\n");
   fclose($f);
- 
+  exec('sudo systemctl stop unghi'); 
   exec('sudo systemctl restart track');
+
 ?>
 
 <html>
