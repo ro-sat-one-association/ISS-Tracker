@@ -30,8 +30,31 @@ fclose($f);
     </tbody>
 </table>
 
+
+
 <input type="submit">
 </form>
+
+<table> 
+    <tbody>
+	<tr>
+ 	  <td>
+		<a href="submit_unroll.php?a=A0" class="button">O rotatie Azimut Ceasornic</a>
+  	  </td>
+	  <td>
+		<a href="submit_unroll.php?a=A1" class="button">O rotatie Azimut Anti-Ceasornic</a>
+	  </td>
+	</tr>
+	<tr>
+          <td>
+		<a href="submit_unroll.php?a=E0" class="button">O rotatie Elevatie Ceasornic</a>
+          </td>
+	  <td>
+		<a href="submit_unroll.php?a=E1" class="button">O rotatie Elevatie Anti-Ceasornic</a>
+	  </td>
+	</tr>
+    </tbody>
+</table>
 
 <div>
 	Date actuale: 

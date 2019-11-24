@@ -8,6 +8,7 @@
   fclose($f);
  
   exec('sudo systemctl stop track');
+  exec('sudo systemctl stop unroll');
   exec('sudo systemctl restart unghi');
 
 ?>
