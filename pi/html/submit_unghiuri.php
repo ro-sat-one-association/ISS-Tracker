@@ -6,9 +6,6 @@
   $f = fopen("/home/pi/n2yo/unghiuri.txt", "w");
   fwrite($f, $azi."\n".$ele."\n");
   fclose($f);
- 
-  exec('sudo systemctl stop track');
-  exec('sudo systemctl stop unroll');
   exec('sudo systemctl restart unghi');
 
 ?>

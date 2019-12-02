@@ -9,6 +9,9 @@ $alt = fgets($f);
 
 fclose($f);
 
+$f = fopen("/home/pi/n2yo/customtime.txt", "r");
+$datestr = fgets($f);
+
 ?>
 
 
@@ -18,7 +21,7 @@ fclose($f);
 
 <body>
 
-<form action="track.php" method="post">
+<form action="submit_customtime.php" method="post">
 
 <table>
     <tbody>
@@ -38,6 +41,11 @@ fclose($f);
             <td>Altitudinea ta:</td>
             <td><input type="text" name="alt" value="<?php echo $alt;?>"></td>
         </tr>
+	<tr>
+		<td>Timp inceput</td>
+		<td>(AN-LUNA-ZI ORA:MINUT)</td>
+	 	<td><input type="text" name="datestr" value="<?php echo $datestr;?>"></td>
+	</tr>
     </tbody>
 </table>
 

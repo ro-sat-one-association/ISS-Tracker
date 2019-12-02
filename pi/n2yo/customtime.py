@@ -8,9 +8,12 @@ import time
 import serial
 import sys
 import serial.tools.list_ports
-import time
 
-textLog = open('/home/pi/log.txt', 'w')
+f = open('/home/pi/n2yo/customtime.txt', 'r')
+datestr = f.readline().strip()
+f.close()
+
+base = datetime.strptime(datestr, "%Y-%m-%d %H:%M")
 
 f = open('/home/pi/n2yo/config.txt', 'r')
 l = f.readlines()
@@ -34,8 +37,8 @@ alt = "359"
 port = "/dev/"
 ports = list(serial.tools.list_ports.comports())
 for p in ports:
-	if "UART" in p.description:
-    		port = port + p.name
+    if "UART" in p.description:
+    	port = port + p.name
 
 degrees_per_radian = 180.0 / math.pi
 home = ephem.Observer()
@@ -74,43 +77,41 @@ sat = ephem.readtle(str(satName), tle[0], tle[1])
 #port = "/dev/ttyUSB" + str(sys.argv[1])
 ser = serial.Serial(port, 9600, timeout=0)
 
-lastE = 0
-lastA = 0
-
 def csum(s):
-	return str(sum(bytearray(s)) % 10)
+    return str(sum(bytearray(s)) % 10)
 
 timeSerialWrite = 0
 timeSerialRead  = 0
+timeCalc 	= 0
 
 while True:
-	home.date = datetime.utcnow()
-	sat.compute(home)
+	if(time.time() - timeCalc > 1.0):
+		timeCalc = time.time()
+		base = base + timedelta(seconds=1)
+		home.date = base
+		sat.compute(home)
 
-	azimuthTLE   = sat.az  * degrees_per_radian
-	elevationTLE = sat.alt * degrees_per_radian
-	azimuthTLE   = float(azimuthTLE)
-	elevationTLE = float(elevationTLE)
-	
-	lastE = int(elevationTLE)
-	lastA = int(azimuthTLE)
-	strA  = "%.2f" % azimuthTLE 
-	strE  = "%.2f" % elevationTLE 
-	sendstr = "!" + strA + "&" + strE
-	sendstr = sendstr + "!" + csum(sendstr)	
+		azimuthTLE   = sat.az  * degrees_per_radian
+		elevationTLE = sat.alt * degrees_per_radian
+		azimuthTLE   = float(azimuthTLE)
+		elevationTLE = float(elevationTLE)
+		
+		strA  = "%.2f" % azimuthTLE 
+		strE  = "%.2f" % elevationTLE 
+		sendstr = "!" + strA + "&" + strE
+		sendstr = sendstr + "!" + csum(sendstr)	
 
-	logstr  = "<div>Azimut: <span id = \"target_azi\">"
-	logstr += strA + "</span></div>\n"
-	logstr += "<div>Elevatie: <span id=\"target_ele\">"
-	logstr += strE
-	logstr += "</span></div>\n"
-	logstr += "<div>" + str(satName) + " - " + str(sat_code) + "</div>"
+		logstr  = "<div>Azimut: <span id = \"target_azi\">"
+		logstr += strA + "</span></div>\n"
+		logstr += "<div>Elevatie: <span id=\"target_ele\">"
+		logstr += strE
+		logstr += "</span></div>\n"
+		logstr += "<div>" + str(satName) + " - " + str(sat_code) + "</div>"
 
 	if(time.time() - timeSerialWrite > 1.0):
 		log = open('/var/www/html/log.html', 'w') 
 		log.write(logstr)
 		log.close()
-		textLog.write(sendstr + "\n")
 		ser.write(sendstr)
 		print sendstr
 		timeSerialWrite = time.time()
