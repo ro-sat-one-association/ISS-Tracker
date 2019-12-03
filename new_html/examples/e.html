@@ -606,11 +606,11 @@ function drawElevatie(){
   if(u < 0) u += 360;
   u *= Math.PI/180;
 
-  ae = 0
-  le = 0
+  ae = parseFloat(actualElevatie);
+  le = parseFloat(liveElevatie);
 
-  if(parseInt(actualElevatie) < 0) ae = parseFloat(actualElevatie) + 360.0; 
-  if(parseInt(liveElevatie)   < 0) le = parseFloat(liveElevatie) + 360.0;
+  if(ae < 0) ae += 360.0; 
+  if(le < 0) le += 360.0;
 
 
   if(deltaAzimuth(le, ae) > 1) actualElevatie += sensAzimuth(le, ae) * dElevatie;
