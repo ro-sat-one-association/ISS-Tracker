@@ -14,6 +14,6 @@
 
 <html>
   <head>
-   <meta http-equiv = "refresh" content = "2; url = index.php"/>
+   <meta http-equiv = "refresh" content = "2; url = track.php"/>
   </head>
 </html>
