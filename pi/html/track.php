@@ -109,6 +109,7 @@ fclose($f);
                 <!-- Navbar -->
                 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top " id="navigation-example">
                     <div class="container-fluid">
+                        <span id="alerta_timp"></span>
                         <div class="navbar-wrapper">
                             <a class="navbar-brand" href="javascript:void(0)">Dashboard</a>
                         </div>
@@ -496,6 +497,9 @@ fclose($f);
         <script>
             var previous = "";
 
+            var time = "";
+            var utc_time = "";
+
             function getLiveData() {
                 var ajax = new XMLHttpRequest();
                 ajax.onreadystatechange = function() {
@@ -524,6 +528,8 @@ fclose($f);
                             document.getElementById("targetdata").innerHTML = this.responseText;
                             var doc = new DOMParser().parseFromString(this.responseText, "text/html")
                             document.getElementById("mini_sat").innerHTML = doc.getElementById("sat").innerHTML;
+                            time = doc.getElementById("time").innerHTML;
+                            utc_time = doc.getElementById("time_utc_now").innerHTML;
                             previous = ajax.responseText;
                             setTargetData();
                         }
@@ -537,6 +543,7 @@ fclose($f);
             setInterval(getTargetData, 1000);
             setInterval(drawBusola, 10);
             setInterval(drawElevatie, 10);
+            setInterval(verificaTimpul, 100);
 
             actualAzimuth = 0;
             liveAzimuth = 0;
@@ -731,6 +738,16 @@ fclose($f);
           });
       }
 
+      function verificaTimpul(){
+        if(time.length     > 19) time     = time.slice(0, -7);
+        if(utc_time.length > 19) utc_time = utc_time.slice(0, -7);
+        if(time != utc_time) {
+            document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-danger\" role=\"alert\">Ora UTC nu corespunde cu cea urmărită! Dați din nou Submit!</div>";
+        } else {
+            document.getElementById("alerta_timp").innerHTML = "";
+        }
+
+      }
 
         </script>
 

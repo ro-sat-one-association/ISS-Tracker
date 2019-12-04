@@ -22,7 +22,11 @@ $alt = fgets($f);
 
 fclose($f);
 
+$f = fopen("/home/pi/n2yo/customtime.txt", "r");
+$datestr = fgets($f);
+
 ?>
+
 
     <!DOCTYPE html>
     <html lang="en">
@@ -32,7 +36,7 @@ fclose($f);
         <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="assets/img/favicon.png">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>Urmărește Satelit</title>
+        <title>Timp simulat</title>
         <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
         <!--     Fonts and icons     -->
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
@@ -109,6 +113,7 @@ fclose($f);
                 <!-- Navbar -->
                 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top " id="navigation-example">
                     <div class="container-fluid">
+                        <span id="alerta_timp"></span>
                         <div class="navbar-wrapper">
                             <a class="navbar-brand" href="javascript:void(0)">Dashboard</a>
                         </div>
@@ -249,7 +254,26 @@ fclose($f);
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm"></div>
+
+                            <div class="col-sm">
+                                <div class="card card-stats">
+                                    <div class="card-header card-header-danger card-header-icon">
+                                        <div class="card-icon">
+                                            <i class="material-icons">watch</i>
+                                        </div>
+                                        <p class="card-category">Timpul simulat</p>
+                                        <h3 class="card-title">
+                                                <span id="mini_timp"></span>
+                                        </h3>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="stats">
+                                            <!--<i class="material-icons">date_range</i> Last 24 Hours-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="col-sm">
                                 <div class="card card-stats">
                                     <div class="card-header card-header-danger card-header-icon">
@@ -259,7 +283,7 @@ fclose($f);
                                         <p class="card-category">Setări</p>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
-                                        <form action="submit_track.php" method="post">
+                                        <form id="trackform" action="" method="post">
 
                                             <div class="form-group">
                                                 <label for="sat_field">Cod NORAD</label>
@@ -281,8 +305,18 @@ fclose($f);
                                                 <input type="text" class="form-control" name="alt" id="alt_field" value="<?php echo $alt;?>">
                                             </div>
 
-                                            <button type="submit" class="btn btn-danger">Submit</button>
+                                            <div class="form-group">
+                                                <label for="alt_field">Altitudinea ta</label>
+                                                <input type="text" class="form-control" name="alt" id="alt_field" value="<?php echo $alt;?>">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="date_field">Moment inițial timp simulat</label>
+                                                <input type="text" class="form-control" name="datestr" id="date_field" placeholder="YYYY-mm-DD HH:MM" value="<?php echo $datestr;?>">
+                                            </div>
+
                                         </form>
+                                         <button onclick="SubForm()" class="btn btn-danger">Submit</button>
                                     </div>
                                     <div class="card-footer">
                                         <div class="stats">
@@ -497,6 +531,9 @@ fclose($f);
         <script>
             var previous = "";
 
+            var time = "";
+            var utc_time = "";
+
             function getLiveData() {
                 var ajax = new XMLHttpRequest();
                 ajax.onreadystatechange = function() {
@@ -525,6 +562,9 @@ fclose($f);
                             document.getElementById("targetdata").innerHTML = this.responseText;
                             var doc = new DOMParser().parseFromString(this.responseText, "text/html")
                             document.getElementById("mini_sat").innerHTML = doc.getElementById("sat").innerHTML;
+                            document.getElementById("mini_timp").innerHTML = doc.getElementById("time").innerHTML;
+                            time = doc.getElementById("time").innerHTML;
+                            utc_time = doc.getElementById("time_utc_now").innerHTML;
                             previous = ajax.responseText;
                             setTargetData();
                         }
@@ -538,6 +578,7 @@ fclose($f);
             setInterval(getTargetData, 1000);
             setInterval(drawBusola, 10);
             setInterval(drawElevatie, 10);
+            setInterval(verificaTimpul, 100);
 
             actualAzimuth = 0;
             liveAzimuth = 0;
@@ -704,6 +745,46 @@ fclose($f);
                 ctx.stroke();
                 ctx.rotate(-pos);
             }
+
+      function showOKNotification(from, align) {
+
+          $.notify({
+              icon: "add_alert",
+              message: "Schimbat satelitul și timpul cu succes!"
+
+          }, {
+              type: 'success',
+              timer: 4000,
+              placement: {
+                  from: from,
+                  align: align
+              }
+          });
+      }
+
+      function SubForm(){
+          $.ajax({
+              url:'submit_customtime.php',
+              type:'post',
+              data:$('#trackform').serialize(),
+              success:function(){
+                  showOKNotification();
+              }
+          });
+      }
+
+
+      function verificaTimpul(){
+        if(time.length     > 19) time     = time.slice(0, -7);
+        if(utc_time.length > 19) utc_time = utc_time.slice(0, -7);
+        if(time != utc_time) {
+            document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-info\" role=\"alert\">Timpul modificat este setat</div>";
+        } else {
+            document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-warning\" role=\"alert\">Timpul modificat nu este setat!</div>";
+        }
+
+      }
+
         </script>
 
     </body>
