@@ -1085,9 +1085,9 @@ void loop()
         }
       } break;
       case 1:{//A0
-        float delta = deltaAzimuth(initUnrollAngle, heading + 10.0f);
+        float delta = deltaAzimuth(initUnrollAngle, heading + 30.0f);
         if(delta > 5.0f){
-          alignAzimuth(heading + 10.0f, heading);
+          alignAzimuth(heading + 30.0f, heading);
           stopElevation();
           if(debug){
             Serial.println("Unrolling... A0");
@@ -1100,9 +1100,9 @@ void loop()
       } break;
 
       case 2:{ //A1
-        float delta = deltaAzimuth(initUnrollAngle, heading - 10.0f);
+        float delta = deltaAzimuth(initUnrollAngle, heading - 30.0f);
         if(delta > 5.0f){
-          alignAzimuth(heading - 10.0f, heading);
+          alignAzimuth(heading - 30.0f, heading);
           stopElevation();
         } else {
           stopAzimuth();
