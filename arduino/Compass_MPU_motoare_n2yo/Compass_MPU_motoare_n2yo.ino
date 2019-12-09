@@ -917,6 +917,26 @@ void readData(float &azi, float &ele)
       return;
     }
     
+    if(textPacket[0] == 'A' && textPacket[1] == 'Z'){ //AZ239.0 EL3.0 UP000 XXX DN000 XXX
+      int i = 2;
+      for(i; textPacket[i] != ' ' ; ++i){
+        A += textPacket[i];
+      }
+      i += 3;
+      for(i; textPacket[i] != ' '; ++i){
+        E += textPacket[i];
+      }
+      azi = A.toFloat();
+      ele = E.toFloat();
+      if(debug){
+        Serial.print("Easycomm! Azimut:");
+        Serial.print(azi);
+        Serial.print(" Elevatie:");
+        Serial.println(ele);
+      }
+      return;
+    }
+
     if(validPackage(textPacket)){
       unroll_state = -1;
       int i = 1;
@@ -1065,7 +1085,7 @@ void loop()
     Serial.print('\t');
     Serial.print("R:");
     Serial.println(roll);
-    Serial.println("-------------");
+    Serial.println("-------------"); 
   }
 
   if(millis() - lastTime > PRINT_DELAY){
