@@ -289,7 +289,6 @@ fclose($f);
         <script src="assets/js/core/popper.min.js"></script>
         <script src="assets/js/core/bootstrap-material-design.min.js"></script>
         <script src="https://unpkg.com/default-passive-events"></script>
-        <script src="assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
         <!-- Place this tag in your head or just before your close body tag. -->
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!--  Google Maps Plugin    -->
@@ -603,6 +602,11 @@ fclose($f);
 
             function drawElevatie() {
                 u = targetElevatie;
+		if(targetElevatie < 0){
+			document.getElementById("canvas2").style.opacity="0.5";
+		} else{
+			document.getElementById("canvas2").style.opacity="1.0";	
+		}
                 u = u - 90;
                 if (u < 0) u += 360;
                 u *= Math.PI / 180;
@@ -624,7 +628,7 @@ fclose($f);
                 drawCardinale(ctx2, radius, 2);
                 drawBratTarget(ctx2, radius, u);
                 drawBratLive(ctx2, radius, l);
-            }
+	    }
 
             function drawFace(ctx, radius, style) {
                 var grad;

@@ -31,7 +31,8 @@ while True:
 	if(time.time() - timeSerialWrite > 1.0):
 		conf = open('/home/pi/n2yo/hrd.txt', 'r')
 		l = conf.readline()
-		ser.write(sendstr)
+		ser.write(l + "\n")
+		print l
 		timeSerialWrite = time.time()
 		
 	if(time.time() - timeSerialRead > 0.5):

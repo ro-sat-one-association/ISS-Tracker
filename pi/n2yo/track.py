@@ -105,7 +105,7 @@ while True:
 	logstr += "</span></div>\n"
 	logstr += "<div id=\"sat\">" + str(satName) + " - " + str(sat_code) + "</div>\n"
 	logstr += "<div id=\"time\">" + str(datetime.utcnow()) + "</div>\n"
-	logstr += "<duv id=\"time_utc_now\">" + str(datetime.utcnow()) + "</div>"
+	logstr += "<div id=\"time_utc_now\">" + str(datetime.utcnow()) + "</div>"
 	if(time.time() - timeSerialWrite > 1.0):
 		log = open('/var/www/html/log.html', 'w') 
 		log.write(logstr)

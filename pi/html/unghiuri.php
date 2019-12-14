@@ -14,19 +14,12 @@
 -->
 <?php
 
-$f = fopen("/home/pi/n2yo/config.txt", "r");
-$sat = fgets($f);
-$lat = fgets($f);
-$lon = fgets($f);
-$alt = fgets($f);
-
+$f = fopen("/home/pi/n2yo/unghiuri.txt", "r");
+$azi = fgets($f);
+$ele = fgets($f);
 fclose($f);
 
-$f = fopen("/home/pi/n2yo/customtime.txt", "r");
-$datestr = fgets($f);
-
 ?>
-
 
     <!DOCTYPE html>
     <html lang="en">
@@ -36,19 +29,17 @@ $datestr = fgets($f);
         <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="assets/img/favicon.png">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>Timp simulat</title>
+        <title>Dezcâlcește / Unghiuri</title>
         <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
         <!--     Fonts and icons     -->
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
         <!-- CSS Files -->
         <link href="assets/css/material-dashboard.css?v=2.1.0" rel="stylesheet" />
-        <!-- CSS Just for demo purpose, don't include it in your project -->
-        <link href="assets/demo/demo.css" rel="stylesheet" />
     </head>
 
     <body class="dark-edition">
-      
+
         <div class="wrapper ">
             <div class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
                 <!--
@@ -64,24 +55,18 @@ $datestr = fgets($f);
                                 <p>Urmărește Satelit</p>
                             </a>
                         </li>
-                        <li class="nav-item active">
+                        <li class="nav-item ">
                             <a class="nav-link" href="./customtime.php">
                                 <i class="material-icons">watch_later</i>
                                 <p>Timp modificat</p>
                             </a>
                         </li>
-                        <li class="nav-item ">
+                        <li class="nav-item active  ">
                             <a class="nav-link" href="./unghiuri.php">
                                 <i class="material-icons">cached</i>
                                 <p>Dezcâlcește/Unghiuri</p>
                             </a>
                         </li>
-                        <!-- <li class="nav-item active-pro ">
-                <a class="nav-link" href="./upgrade.html">
-                    <i class="material-icons">unarchive</i>
-                    <p>Upgrade to PRO</p>
-                </a>
-            </li> -->
                     </ul>
                 </div>
             </div>
@@ -105,7 +90,7 @@ $datestr = fgets($f);
                 <div class="content">
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-xl-4 col-lg-12">
+                            <div class="col-sm">
                                 <div class="card card-chart">
                                     <div class="card-header card-header-success">
                                         <div class="text-center">
@@ -124,7 +109,8 @@ $datestr = fgets($f);
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xl-4 col-lg-12">
+
+                            <div class="col-sm">
                                 <div class="card card-chart">
                                     <div class="card-header card-header-warning">
                                         <div class="text-center">
@@ -141,170 +127,102 @@ $datestr = fgets($f);
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
-                            <div class="col-xl-4 col-lg-12">
-                                <div class="card card-chart">
-                                    <div class="card-header card-header-info">
-                                        <div>
-                                            <div id="targetdata">
-                                                <div>Azimut: <span id="target_azi">-</span></div>
-                                                <div>Elevatie: <span id="taget_ele">-</span></div>
-                                                <div>-</div>
-                                            </div>
 
-                                            <div id="livedata">
-                                                <span id="target_azi">-</span>
-                                                <span id="target_ele">-</span>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                    <div class="card-body">
-                                        <h4 class="card-title">Date brute</h4>
-                                        <p class="card-category">Datele țintă și actuale</p>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm">
-                                <div class="card card-stats">
-                                    <div class="card-header card-header-success card-header-icon">
-                                        <div class="card-icon">
-                                            <i class="material-icons">360</i>
-                                        </div>
-                                        <p class="card-category">Azimut actual</p>
-                                        <h3 class="card-title">
-                    <span id="mini_live_azi"></span>
-                    <small>°</small>
-                  </h3>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!--<i class="material-icons">date_range</i> Last 24 Hours-->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm">
-                                <div class="card card-stats">
-                                    <div class="card-header card-header-warning card-header-icon">
-                                        <div class="card-icon">
-                                            <i class="material-icons">shuffle</i>
-                                        </div>
-                                        <p class="card-category">Elevație actuală</p>
-                                        <h3 class="card-title"><span id="mini_live_ele"></span>
-                    <small>°</small>
-                  </h3>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!--<i class="material-icons text-warning">warning</i>
-                    <a href="#pablo" class="warning-link">Get More Space...</a>-->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="col-sm">
                                 <div class="card card-stats">
                                     <div class="card-header card-header-info card-header-icon">
                                         <div class="card-icon">
-                                            <i class="material-icons">info_outline</i>
+                                            <i class="material-icons">cached</i>
                                         </div>
-                                        <p class="card-category">Satelit urmărit</p>
-                                        <h3 class="card-title"><span id="mini_sat"></span></h3>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!--<i class="material-icons">local_offer</i> Tracked from Github-->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-
-                            <div class="col-sm">
-                                <div class="card card-stats">
-                                    <div class="card-header card-header-danger card-header-icon">
-                                        <div class="card-icon">
-                                            <i class="material-icons">watch</i>
-                                        </div>
-                                        <p class="card-category">Timpul simulat</p>
-                                        <h3 class="card-title">
-                                                <span id="mini_timp"></span>
-                                        </h3>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!--<i class="material-icons">date_range</i> Last 24 Hours-->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm">
-                                <div class="card card-stats">
-                                    <div class="card-header card-header-danger card-header-icon">
-                                        <div class="card-icon">
-                                            <i class="material-icons">settings</i>
-                                        </div>
-                                        <p class="card-category">Setări</p>
+                                        <p class="card-category">Unghiuri</p>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
                                         <form id="trackform" action="" method="post">
 
                                             <div class="form-group">
-                                                <label for="sat_field">Cod NORAD</label>
-                                                <input type="text" class="form-control" name="sat" id="sat_field" value="<?php echo $sat;?>">
+                                                <label for="target_azi">Azimut dorit:</label>
+                                                <input type="text" class="form-control" name="azi" id="target_azi" value="<?php echo $azi;?>">
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="lat_field">Latitudinea ta</label>
-                                                <input type="text" class="form-control" name="lat" id="lat_field" value="<?php echo $lat;?>">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="lon_field">Longitudinea ta</label>
-                                                <input type="text" class="form-control" name="lon" id="lon_field" value="<?php echo $lon;?>">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="alt_field">Altitudinea ta</label>
-                                                <input type="text" class="form-control" name="alt" id="alt_field" value="<?php echo $alt;?>">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="date_field">Moment inițial timp simulat</label>
-                                                <input type="text" class="form-control" name="datestr" id="date_field" placeholder="YYYY-mm-DD HH:MM" value="<?php echo $datestr;?>">
+                                                <label for="target_ele">Elevație dorită</label>
+                                                <input type="text" class="form-control" name="ele" id="target_ele" value="<?php echo $ele;?>">
                                             </div>
 
                                         </form>
-                                         <button onclick="SubForm()" class="btn btn-danger">Submit</button>
+                                        <button onclick="SubForm()" class="btn btn-info">Submit</button>
                                     </div>
                                     <div class="card-footer">
                                         <div class="stats">
                                             <!--<i class="material-icons text-warning">warning</i>
-                                    <a href="#pablo" class="warning-link">Get More Space...</a>-->
+                                                                    <a href="#pablo" class="warning-link">Get More Space...</a>-->
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <div class="col-sm">
+                                <div class="card">
+                                        
+                                        
+
+<table>
+    <tbody>
+        <tr>
+            <td style="padding: 0 5px;">
+                <button onclick="clockAzi()" style="width:100%;" class="btn btn-success btn-lg">
+                    Azimut ceasornic
+                </button>
+
+            </td>
+            <td style="padding: 0 5px;">
+                <button onclick="clockEle()" style="width:100%;" class="btn btn-warning btn-lg">
+                    Elevație ceasornic
+                </button>
+
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 0 5px;">
+                <button onclick="anticlockAzi()" style="width:100%;" class="btn btn-success btn-lg">
+                    Azimut anti-ceasornic
+                </button>
+            </td>
+            <td style="padding: 0 5px;">
+                <button onclick="anticlockEle()" style="width:100%;" class="btn btn-warning btn-lg">
+                    Elevație anti-ceasornic
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm">
+                                <div style = "display:none;" id="livedata">
+                                    <span id="live_azi">-</span>
+                                    <span id="live_ele">-</span>
+                                </div>
+                            </div>
+                            <div class="col-sm"></div>
                             <div class="col-sm"></div>
 
                         </div>
                     </div>
                 </div>
             </div>
-           
+
+            <script>
+                const x = new Date().getFullYear();
+                let date = document.getElementById('date');
+                date.innerHTML = '&copy; ' + x + date.innerHTML;
+            </script>
         </div>
         </div>
         <!--   Core JS Files   -->
@@ -312,6 +230,7 @@ $datestr = fgets($f);
         <script src="assets/js/core/popper.min.js"></script>
         <script src="assets/js/core/bootstrap-material-design.min.js"></script>
         <script src="https://unpkg.com/default-passive-events"></script>
+        <script src="assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
         <!-- Place this tag in your head or just before your close body tag. -->
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!--  Google Maps Plugin    -->
@@ -507,9 +426,6 @@ $datestr = fgets($f);
                             previous = ajax.responseText;
                             if (this.responseText.search(".") != -1) {
                                 document.getElementById("livedata").innerHTML = this.responseText;
-                                var doc = new DOMParser().parseFromString(this.responseText, "text/html")
-                                document.getElementById("mini_live_azi").innerHTML = doc.getElementById("live_azi").innerHTML;
-                                document.getElementById("mini_live_ele").innerHTML = doc.getElementById("live_ele").innerHTML;
                                 setLiveData();
                             }
                         }
@@ -519,31 +435,10 @@ $datestr = fgets($f);
                 ajax.send();
             }
 
-            function getTargetData() {
-                var ajax = new XMLHttpRequest();
-                ajax.onreadystatechange = function() {
-                    if (ajax.readyState == 4) {
-                        if (ajax.responseText != previous) {
-                            document.getElementById("targetdata").innerHTML = this.responseText;
-                            var doc = new DOMParser().parseFromString(this.responseText, "text/html")
-                            document.getElementById("mini_sat").innerHTML = doc.getElementById("sat").innerHTML;
-                            document.getElementById("mini_timp").innerHTML = doc.getElementById("time").innerHTML;
-                            time = doc.getElementById("time").innerHTML;
-                            utc_time = doc.getElementById("time_utc_now").innerHTML;
-                            previous = ajax.responseText;
-                            setTargetData();
-                        }
-                    }
-                };
-                ajax.open("POST", "log.html", true); //Use POST to avoid caching
-                ajax.send();
-            }
-
             setInterval(getLiveData, 100);
-            setInterval(getTargetData, 1000);
+            setInterval(setTargetData, 10);
             setInterval(drawBusola, 10);
             setInterval(drawElevatie, 10);
-            setInterval(verificaTimpul, 100);
 
             actualAzimuth = 0;
             liveAzimuth = 0;
@@ -559,8 +454,8 @@ $datestr = fgets($f);
             }
 
             function setTargetData() {
-                targetAzimuth = document.getElementById("target_azi").innerHTML;
-                targetElevatie = document.getElementById("target_ele").innerHTML;
+                targetAzimuth = document.getElementById("target_azi").value;
+                targetElevatie = document.getElementById("target_ele").value;
             }
 
             var canvas1 = document.getElementById("canvas1");
@@ -711,44 +606,75 @@ $datestr = fgets($f);
                 ctx.rotate(-pos);
             }
 
-      function showOKNotification(from, align) {
+            function showOKNotification(from, align) {
 
-          $.notify({
-              icon: "add_alert",
-              message: "Schimbat satelitul și timpul cu succes!"
+                $.notify({
+                    icon: "add_alert",
+                    message: "Trimis unghiurile succes!"
 
-          }, {
-              type: 'success',
-              timer: 4000,
-              placement: {
-                  from: from,
-                  align: align
-              }
-          });
-      }
+                }, {
+                    type: 'success',
+                    timer: 4000,
+                    placement: {
+                        from: from,
+                        align: align
+                    }
+                });
+            }
 
-      function SubForm(){
-          $.ajax({
-              url:'submit_customtime.php',
-              type:'post',
-              data:$('#trackform').serialize(),
-              success:function(){
-                  showOKNotification();
-              }
-          });
-      }
+            function showUnrollOKNotification(from, align) {
 
+                $.notify({
+                    icon: "add_alert",
+                    message: "Am trimis comanda cu succes!"
 
-      function verificaTimpul(){
-        if(time.length     > 19) time     = time.slice(0, -7);
-        if(utc_time.length > 19) utc_time = utc_time.slice(0, -7);
-        if(time != utc_time) {
-            document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-info\" role=\"alert\">Timpul modificat este setat</div>";
-        } else {
-            document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-warning\" role=\"alert\">Timpul modificat nu este setat!</div>";
-        }
+                }, {
+                    type: 'success',
+                    timer: 4000,
+                    placement: {
+                        from: from,
+                        align: align
+                    }
+                });
+            }
 
-      }
+            function SubForm() {
+                $.ajax({
+                    url: 'submit_unghiuri.php',
+                    type: 'post',
+                    data: $('#trackform').serialize(),
+                    success: function() {
+                        showOKNotification();
+                    }
+                });
+            }
+
+            function SubUnroll(d){
+                $.ajax({
+                    url: 'submit_unroll.php',
+                    type: 'get',
+                    data: d,
+                    success: function() {
+                        showUnrollOKNotification();
+                    }
+                });
+            }
+
+            function clockAzi(){
+                SubUnroll("a=A0");
+            }
+
+            function anticlockAzi(){
+                SubUnroll("a=A1");
+            }
+
+            function clockEle(){
+                SubUnroll("a=E0");
+            }
+
+            function anticlockEle(){
+                SubUnroll("a=E1");
+            }
 
         </script>
 
