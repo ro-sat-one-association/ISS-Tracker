@@ -170,36 +170,32 @@ fclose($f);
                                         
                                         
 
-<table>
-    <tbody>
-        <tr>
-            <td style="padding: 0 5px;">
+        <div class = "row">
+            <div class = "col-sm">
                 <button onclick="clockAzi()" style="width:100%;" class="btn btn-success btn-lg">
                     Azimut ceasornic
                 </button>
 
-            </td>
-            <td style="padding: 0 5px;">
+            </div>
+            <div class="col-sm">
                 <button onclick="clockEle()" style="width:100%;" class="btn btn-warning btn-lg">
                     Elevație ceasornic
                 </button>
 
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 0 5px;">
+            </div>
+        </div>>
+        <div class = "row">
+            <div class="col-sm">
                 <button onclick="anticlockAzi()" style="width:100%;" class="btn btn-success btn-lg">
                     Azimut anti-ceasornic
                 </button>
-            </td>
-            <td style="padding: 0 5px;">
+            </div>
+            <div class="col-sm">
                 <button onclick="anticlockEle()" style="width:100%;" class="btn btn-warning btn-lg">
                     Elevație anti-ceasornic
                 </button>
-            </td>
-        </tr>
-    </tbody>
-</table>
+            </div>
+        </div>
                                 </div>
                             </div>
                         </div>
