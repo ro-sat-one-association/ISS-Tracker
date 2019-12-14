@@ -102,132 +102,133 @@ fclose($f);
                 <div class="content">
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-xl-4 col-lg-12">
-                                <div class="card card-chart">
-                                    <div class="card-header card-header-success">
-                                        <div class="text-center">
-                                            <canvas id="canvas1" width="250" height="250"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <h4 class="card-title">Indicator Azimut</h4>
-                                        <p class="card-category">
-                                            <!--<span class="text-success"><i class="fa fa-long-arrow-up"></i> 55% </span> increase in today sales.</p>-->
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!-- <i class="material-icons">access_time</i> updated 4 minutes ago -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-4 col-lg-12">
-                                <div class="card card-chart">
-                                    <div class="card-header card-header-warning">
-                                        <div class="text-center">
-                                            <canvas id="canvas2" width="250" height="250"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <h4 class="card-title">Indicator Elevație</h4>
-                                        <!--<p class="card-category">Last Campaign Performance</p>-->
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!--  <i class="material-icons">access_time</i> campaign sent 2 days ago -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-4 col-lg-12">
-                                <div class="card card-chart">
-                                    <div class="card-header card-header-info">
-                                        <div>
-                                            <div id="targetdata">
-                                                <div>Azimut: <span id="target_azi">-</span></div>
-                                                <div>Elevatie: <span id="taget_ele">-</span></div>
-                                                <div>-</div>
-                                            </div>
-
-                                            <div id="livedata">
-                                                <span id="target_azi">-</span>
-                                                <span id="target_ele">-</span>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                    <div class="card-body">
-                                        <h4 class="card-title">Date brute</h4>
-                                        <p class="card-category">Datele țintă și actuale</p>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
                             <div class="col-sm">
-                                <div class="card card-stats">
-                                    <div class="card-header card-header-success card-header-icon">
-                                        <div class="card-icon">
-                                            <i class="material-icons">360</i>
-                                        </div>
-                                        <p class="card-category">Azimut actual</p>
-                                        <h3 class="card-title">
+<div class="card card-chart">
+    <div class="card-header card-header-success">
+        <div class="text-center">
+            <canvas id="canvas1" width="250" height="250"></canvas>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+        <div class="col-sm">
+            <h4 class="card-title">Indicator Azimut</h4>
+        </div>
+        <div class="col-sm">
+        <p class="card-category">Azimut actual</p>
+        <h4 class="card-title">
                     <span id="mini_live_azi"></span>
                     <small>°</small>
-                  </h3>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!--<i class="material-icons">date_range</i> Last 24 Hours-->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm">
-                                <div class="card card-stats">
-                                    <div class="card-header card-header-warning card-header-icon">
-                                        <div class="card-icon">
-                                            <i class="material-icons">shuffle</i>
-                                        </div>
-                                        <p class="card-category">Elevație actuală</p>
-                                        <h3 class="card-title"><span id="mini_live_ele"></span>
+                  </h4>
+        </div>
+        <div class="col-sm">
+        <p class="card-category">Azimut țintă</p>
+        <h4 class="card-title">
+                    <span style="font-weight: bold; opacity: 0.5;" id="mini_target_azi">0</span>
                     <small>°</small>
-                  </h3>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!--<i class="material-icons text-warning">warning</i>
-                    <a href="#pablo" class="warning-link">Get More Space...</a>-->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                  </h4>
+        </div>
 
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="stats">
+            <!-- <i class="material-icons">access_time</i> updated 4 minutes ago -->
+        </div>
+    </div>
+</div>
+
+
+                            </div>
                             <div class="col-sm">
-                                <div class="card card-stats">
-                                    <div class="card-header card-header-info card-header-icon">
-                                        <div class="card-icon">
-                                            <i class="material-icons">info_outline</i>
-                                        </div>
-                                        <p class="card-category">Satelit urmărit</p>
-                                        <h3 class="card-title"><span id="mini_sat"></span></h3>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="stats">
-                                            <!--<i class="material-icons">local_offer</i> Tracked from Github-->
-                                        </div>
-                                    </div>
-                                </div>
+
+<div class="card card-chart">
+    <div class="card-header card-header-warning">
+        <div class="text-center">
+            <canvas id="canvas2" width="250" height="250"></canvas>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+        <div class="col-sm">
+            <h4 class="card-title">Indicator Elevație</h4>
+        </div>
+        <div class="col-sm">
+        <p class="card-category">Elevație actuală</p>
+        <h4 class="card-title">
+                    <span id="mini_live_ele"></span>
+                    <small>°</small>
+                  </h4>
+        </div>
+        <div class="col-sm">
+        <p class="card-category">Elevație țintă</p>
+        <h4 class="card-title">
+                    <span style="font-weight: bold; opacity: 0.5;" id="mini_target_ele">0</span>
+                    <small>°</small>
+                  </h4>
+        </div>
+
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="stats">
+            <!--  <i class="material-icons">access_time</i> campaign sent 2 days ago -->
+        </div>
+    </div>
+</div>
+
+
                             </div>
                         </div>
+
                         <div class="row">
-                            <div class="col-sm"></div>
+                            <div class="col-sm">
+   
+<div class="card card-stats">
+    <div class="card-header card-header-info card-header-icon">
+        <div class="card-icon">
+            <i class="material-icons">info_outline</i>
+        </div>
+        <p class="card-category">Satelit urmărit</p>
+        <h3 class="card-title"><span id="mini_sat"></span></h3>
+    </div>
+    <div class="card-footer">
+        <div class="stats">
+            <!--<i class="material-icons">local_offer</i> Tracked from Github-->
+        </div>
+    </div>
+</div>
+
+<div class="card card-chart">
+    <div class="card-header card-header-info">
+        <div>
+            <div id="targetdata">
+                <div>Azimut: <span id="target_azi">-</span></div>
+                <div>Elevatie: <span id="taget_ele">-</span></div>
+                <div>-</div>
+            </div>
+
+            <div id="livedata">
+                <span id="target_azi">-</span>
+                <span id="target_ele">-</span>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="card-body">
+        <h4 class="card-title">Date brute</h4>
+        <p class="card-category">Datele țintă și actuale</p>
+    </div>
+    <div class="card-footer">
+        <div class="stats">
+        </div>
+    </div>
+</div>
+
+
+
+                            </div>
                             <div class="col-sm">
                                 <div class="card card-stats">
                                     <div class="card-header card-header-danger card-header-icon">
@@ -270,8 +271,6 @@ fclose($f);
                                 </div>
                             </div>
 
-                            <div class="col-sm"></div>
-
                         </div>
                     </div>
                 </div>
@@ -289,6 +288,7 @@ fclose($f);
         <script src="assets/js/core/popper.min.js"></script>
         <script src="assets/js/core/bootstrap-material-design.min.js"></script>
         <script src="https://unpkg.com/default-passive-events"></script>
+        <script src="assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
         <!-- Place this tag in your head or just before your close body tag. -->
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!--  Google Maps Plugin    -->
@@ -503,6 +503,9 @@ fclose($f);
                         if (ajax.responseText != previous) {
                             document.getElementById("targetdata").innerHTML = this.responseText;
                             var doc = new DOMParser().parseFromString(this.responseText, "text/html")
+                            document.getElementById("mini_target_ele").innerHTML = doc.getElementById("target_ele").innerHTML;
+                            document.getElementById("mini_target_azi").innerHTML = doc.getElementById("target_azi").innerHTML;
+
                             document.getElementById("mini_sat").innerHTML = doc.getElementById("sat").innerHTML;
                             time = doc.getElementById("time").innerHTML;
                             utc_time = doc.getElementById("time_utc_now").innerHTML;
@@ -602,11 +605,6 @@ fclose($f);
 
             function drawElevatie() {
                 u = targetElevatie;
-		if(targetElevatie < 0){
-			document.getElementById("canvas2").style.opacity="0.5";
-		} else{
-			document.getElementById("canvas2").style.opacity="1.0";	
-		}
                 u = u - 90;
                 if (u < 0) u += 360;
                 u *= Math.PI / 180;
@@ -628,7 +626,7 @@ fclose($f);
                 drawCardinale(ctx2, radius, 2);
                 drawBratTarget(ctx2, radius, u);
                 drawBratLive(ctx2, radius, l);
-	    }
+            }
 
             function drawFace(ctx, radius, style) {
                 var grad;
