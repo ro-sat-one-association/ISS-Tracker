@@ -48,11 +48,6 @@ fclose($f);
         <script>refreshMode();</script>
         <div class="wrapper ">
             <div id = "sidebar" class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
-                <!--
-        Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
-
-        Tip 2: you can also add an image using data-image tag
-    -->
                 <div class="sidebar-wrapper">
                     <ul class="nav">
                         <li class="nav-item active  ">
@@ -73,13 +68,32 @@ fclose($f);
                                 <p>Dezcâlcește/Unghiuri</p>
                             </a>
                         </li>
-                        <li class="nav-item ">
-                            <a class="nav-link" onclick="changeMode()">
-                                <i id="mode-button" class="material-icons"></i>
-                                <p>Schimbă modul</p>
-                            </a>
-                        </li>
 
+<li class="nav-item">
+&nbsp;
+</li>
+
+<div class="text-center">
+<div class="dropdown">
+    <li class="nav-item btn btn-secondary dropdown-toggle " id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Opțiuni
+    </li>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" onclick="changeMode()">
+            <i id="mode-button" class="material-icons"></i>
+            <p>Schimbă modul</p>
+        </a>
+        <a class="dropdown-item" onclick="changeRedDot()">
+            <i id="mode-button" class="material-icons">stars</i>
+            <p id = "reddot_text">Arată indicatorul roșu</p>
+        </a>
+        <a class="dropdown-item" onclick="changeHorizon()">
+            <i id="mode-button" class="material-icons">horizontal_split</i>
+            <p id = "horizon_text">Arată orizontul</p>
+        </a>
+    </div>
+</div>
+</div>
                         <!-- <li class="nav-item active-pro ">
                 <a class="nav-link" href="./upgrade.html">
                     <i class="material-icons">unarchive</i>

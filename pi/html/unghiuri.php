@@ -200,8 +200,7 @@ fclose($f);
                                     </div>
                                     <div class="card-footer">
                                         <div class="stats">
-                                            <!--<i class="material-icons text-warning">warning</i>
-                                                                    <a href="#pablo" class="warning-link">Get More Space...</a>-->
+
                                         </div>
                                     </div>
                                 </div>

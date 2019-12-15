@@ -33,4 +33,16 @@ function refreshMode() {
 function changeMode() {
     setCookie("dark-edition", Boolean(!getCookie("dark-edition")), 1000);
     refreshMode();
+    document.querySelector('.navbar-toggler').click();
+}
+
+function changeRedDot(){
+    setCookie("showRedDot", Boolean(!getCookie("showRedDot")), 1000);
+    document.querySelector('.navbar-toggler').click();
+
+}
+
+function changeHorizon() {
+    setCookie("showHorizon", Boolean(!getCookie("showHorizon")), 1000);
+    document.querySelector('.navbar-toggler').click();
 }

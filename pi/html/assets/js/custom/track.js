@@ -217,6 +217,7 @@ setInterval(drawBusola, 10);
 setInterval(drawElevatie, 10);
 setInterval(verificaTimpul, 100);
 
+
 actualAzimuth = 0;
 liveAzimuth = 0;
 targetAzimuth = 0;
@@ -249,10 +250,48 @@ ctx2.translate(radius, radius)
 radius = radius * 0.95;
 
 busolastyle = "rgba(255, 255, 255, 0.2)";
-elevatiestyle = "rgba(255, 255, 255, 0.2)";
+
+elevatiestyle1 = "rgba(255, 255, 255, 0.1)";
+elevatiestyle2 = "rgba(255, 255, 255, 0.2)";
 
 dAzimuth = 10 * 360 / 4000;
 dElevatie = 10 * 360 / 30000;
+
+//constante pentru user
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return false;
+}
+
+
+showRedDot  = false;
+showHorizon = false;
+
+function refreshCookies(){
+    showRedDot  = Boolean(getCookie("showRedDot"));
+    showHorizon = Boolean(getCookie("showHorizon"));
+
+
+    if(showHorizon) {
+        document.getElementById("horizon_text").innerHTML = "Ascunde orizontul";
+    } else {
+        document.getElementById("horizon_text").innerHTML = "Arată orizontul";
+    }
+
+    if(showRedDot){
+        document.getElementById("reddot_text").innerHTML = "Ascunde indicatorul roșu";
+    } else {
+        document.getElementById("reddot_text").innerHTML = "Arată indicatorul roșu";
+    }
+}
+
+setInterval(refreshCookies, 1000);
 
 // u = document.getElementById("target_azi").innerHTML;
 // l = document.getElementById("live_azi").innerHTML;
@@ -290,14 +329,18 @@ function drawBusola() {
     l = actualAzimuth;
 
     l *= Math.PI / 180;
-    drawFace(ctx1, radius, busolastyle);
+    drawFace(ctx1, radius, busolastyle, busolastyle);
     drawCardinale(ctx1, radius, 1);
     drawBratTarget(ctx1, radius, u);
     drawBratLive(ctx1, radius, l);
 }
 
 function drawElevatie() {
+    var dot = false;
     u = targetElevatie;
+    if(u < 0) {
+        dot = true;
+    }
     u = u - 90;
     if (u < 0) u += 360;
     u *= Math.PI / 180;
@@ -314,19 +357,27 @@ function drawElevatie() {
     l = l - 90;
     if (l < 0) l += 360;
     l *= Math.PI / 180;
+    if(showHorizon)
+        drawFace(ctx2, radius, elevatiestyle1, elevatiestyle2);
+    else
+        drawFace(ctx2, radius, elevatiestyle2, elevatiestyle2);
 
-    drawFace(ctx2, radius, elevatiestyle);
     drawCardinale(ctx2, radius, 2);
     drawBratTarget(ctx2, radius, u);
     drawBratLive(ctx2, radius, l);
+    if(dot && showRedDot) drawRedDot(ctx2, radius);
 }
 
-function drawFace(ctx, radius, style) {
+function drawFace(ctx, radius, style1, style2) {
     var grad;
     ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = style;
+    ctx.arc(0, 0, radius, 0, Math.PI);
+    ctx.fillStyle = style1;
     ctx.clearRect(-500, -500, 1000, 1000);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, Math.PI, 2 * Math.PI);
+    ctx.fillStyle = style2;
     ctx.fill();
 
     grad = ctx.createRadialGradient(0, 0, radius * 0.8, 0, 0, radius * 1.35);
@@ -340,6 +391,13 @@ function drawFace(ctx, radius, style) {
     ctx.beginPath();
     ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
     ctx.fillStyle = "white";
+    ctx.fill();
+}
+
+function drawRedDot(ctx, radius){
+    ctx.beginPath();
+    ctx.arc(110, 110, radius * 0.04, 0, 2 * Math.PI);
+    ctx.fillStyle = "#e53935";
     ctx.fill();
 }
 
