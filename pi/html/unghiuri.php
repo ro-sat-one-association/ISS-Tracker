@@ -37,13 +37,13 @@ fclose($f);
         <!-- CSS Files -->
         <link href="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/css/material-dashboard.min.css" rel="stylesheet" >
         <link href="assets/css/dark-edition.css" rel="stylesheet" >
-
+        <script src="assets/js/custom/options.js"></script>
     </head>
 
-    <body class="dark-edition">
-
+    <body id = "body" class="dark-edition">
+        <script>refreshMode();</script>
         <div class="wrapper ">
-            <div class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
+            <div id = "sidebar" class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
                 <!--
         Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
 
@@ -69,6 +69,12 @@ fclose($f);
                                 <p>Dezcâlcește/Unghiuri</p>
                             </a>
                         </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" onclick="changeMode()">
+                                <i id="mode-button" class="material-icons"></i>
+                                <p>Schimbă modul</p>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -76,16 +82,15 @@ fclose($f);
                 <!-- Navbar -->
                 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top " id="navigation-example">
                     <div class="container-fluid">
-                        <span id="alerta_timp"></span>
                         <div class="navbar-wrapper">
-                            <a class="navbar-brand" href="javascript:void(0)">Dashboard</a>
-                        </div>
                         <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
                             <span class="sr-only">Toggle navigation</span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                         </button>
+                        </div>
+
                     </div>
                 </nav>
                 <!-- End Navbar -->
@@ -271,7 +276,9 @@ fclose($f);
         <script src="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/js/material-dashboard.js"></script>
 
         <script src="assets/js/custom/unghiuri.js"></script>
-
+        <script>
+            refreshMode();
+        </script>
     </body>
 
     </html>

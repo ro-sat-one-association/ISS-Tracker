@@ -41,10 +41,11 @@ $datestr = fgets($f);
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css"/>
         <link href="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/css/material-dashboard.min.css" rel="stylesheet" >
         <link href="assets/css/dark-edition.css" rel="stylesheet" >
+        <script src="assets/js/custom/options.js"></script>
     </head>
 
-    <body class="dark-edition">
-
+    <body id = "body" class="dark-edition">
+        <script>refreshMode();</script>
         <div class="wrapper ">
             <div class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
                 <div class="sidebar-wrapper">
@@ -67,6 +68,12 @@ $datestr = fgets($f);
                                 <p>Dezcâlcește/Unghiuri</p>
                             </a>
                         </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" onclick="changeMode()">
+                                <i id="mode-button" class="material-icons"></i>
+                                <p>Schimbă modul</p>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -74,16 +81,17 @@ $datestr = fgets($f);
                 <!-- Navbar -->
                 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top " id="navigation-example">
                     <div class="container-fluid">
-                        <span id="alerta_timp"></span>
+ 
                         <div class="navbar-wrapper">
-                            <a class="navbar-brand" href="javascript:void(0)">Dashboard</a>
+                            <span id="alerta_timp"></span>
+                            <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="navbar-toggler-icon icon-bar"></span>
+                                <span class="navbar-toggler-icon icon-bar"></span>
+                                <span class="navbar-toggler-icon icon-bar"></span>
+                            </button>
                         </div>
-                        <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="navbar-toggler-icon icon-bar"></span>
-                            <span class="navbar-toggler-icon icon-bar"></span>
-                            <span class="navbar-toggler-icon icon-bar"></span>
-                        </button>
+
                     </div>
                 </nav>
                 <!-- End Navbar -->
@@ -308,7 +316,9 @@ $datestr = fgets($f);
 
         <script src="assets/js/custom/customtime.js"></script>
 
-
+        <script>
+            refreshMode();
+        </script>
     </body>
 
     </html>
