@@ -175,9 +175,10 @@ while True:
 			base2 = getCustomTime('../n2yo/customtime.txt')
 			if(base != base2):
 				print "Am schimbat timpul simulat"
-				base = base2
 				home.date = base
 
+			base = base2
+			
 			timeCalc = time.time()
 			home.date = home.date.datetime() + timedelta(seconds=1)
 			sat.compute(home)
