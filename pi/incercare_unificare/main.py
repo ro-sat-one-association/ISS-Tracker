@@ -161,7 +161,6 @@ def standardRoutine():
 
 
 base  = 0
-delta = 0
 
 while True:
 	state = getState('./state.txt').strip()
@@ -176,15 +175,12 @@ while True:
 			base2 = getCustomTime('../n2yo/customtime.txt')
 			if(base != base2):
 				print "Am schimbat timpul simulat"
-				print base, base2
 				base = base2
-				delta = 0
 				home.date = base
 
 			timeCalc = time.time()
-			home.date = home.date.datetime() + timedelta(seconds=delta)
+			home.date = home.date.datetime() + timedelta(seconds=1)
 			sat.compute(home)
-			delta += 1
 		standardRoutine()
 
 """
