@@ -166,6 +166,7 @@ while True:
 	state = getState('./state.txt').strip()
 
 	if (state == "TRACK"):
+		base = 0
 		home.date = datetime.utcnow()
 		sat.compute(home)
 		standardRoutine()
@@ -175,10 +176,10 @@ while True:
 			base2 = getCustomTime('../n2yo/customtime.txt')
 			if(base != base2):
 				print "Am schimbat timpul simulat"
-				home.date = base
+				home.date = base2
 
 			base = base2
-			
+
 			timeCalc = time.time()
 			home.date = home.date.datetime() + timedelta(seconds=1)
 			sat.compute(home)
