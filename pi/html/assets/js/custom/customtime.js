@@ -417,10 +417,12 @@ function verificaTimpul() {
     utc_time = utc_time.trim();
     if (time.length > 19) time = time.slice(0, -7);
     if (utc_time.length > 19) utc_time = utc_time.slice(0, -7);
-    if (time != utc_time) {
-        document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-info\" role=\"alert\">Timpul modificat este setat</div>";
+    a = new Date(time + ".0000000 GMT+0000");
+    b = new Date(utc_time + ".0000000 GMT+0000");
+    delta = Math.abs(a-b)/1000;
+    if (delta > 2) {
+        document.getElementById("alerta_timp").innerHTML = ("<div class=\"alert alert-info\" role=\"alert\">Timpul modificat este setat - " + a + "</div>");
     } else {
-        document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-warning\" role=\"alert\">Timpul modificat nu este setat!</div>";
+        document.getElementById("alerta_timp").innerHTML = ("<div class=\"alert alert-warning\" role=\"alert\">Timpul modificat nu este setat!</div>");
     }
-
 }
