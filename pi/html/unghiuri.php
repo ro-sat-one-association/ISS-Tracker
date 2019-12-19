@@ -186,7 +186,7 @@ fclose($f);
                                         <form id="trackform" action="" method="post">
 
                                             <div class="form-group">
-                                                <label for="target_azi">Azimut dorit:</label>
+                                                <label for="target_azi">Azimut dorit</label>
                                                 <input type="text" class="form-control" name="azi" id="target_azi" value="<?php echo $azi;?>">
                                             </div>
 
