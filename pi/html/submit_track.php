@@ -8,7 +8,9 @@
   $f = fopen("/home/pi/n2yo/config.txt", "w");
   fwrite($f, $sat."\n".$lat."\n".$lon."\n".$alt."\n");
   fclose($f);
-  exec('sudo systemctl restart track');
+  $f = fopen("/home/pi/n2yo/state.txt", "w");
+  fwrite($f, "TRACK");
+  fclose($f);
 
 ?>
 

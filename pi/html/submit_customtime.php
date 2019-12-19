@@ -11,7 +11,10 @@
   $f = fopen("/home/pi/n2yo/customtime.txt", "w");
   fwrite($f, $datestr."\n");
   fclose($f);
-  exec('sudo systemctl restart customtime');
+  $f = fopen("/home/pi/n2yo/state.txt", "w");
+  fwrite($f, "CUSTOMTIME");
+  fclose($f);
+
 ?>
 
 <html>

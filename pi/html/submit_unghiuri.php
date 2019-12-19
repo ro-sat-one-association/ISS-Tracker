@@ -6,7 +6,9 @@
   $f = fopen("/home/pi/n2yo/unghiuri.txt", "w");
   fwrite($f, $azi."\n".$ele."\n");
   fclose($f);
-  exec('sudo systemctl restart unghi');
+  $f = fopen("/home/pi/n2yo/state.txt", "w");
+  fwrite($f, "UNGHI");
+  fclose($f);
 
 ?>
 

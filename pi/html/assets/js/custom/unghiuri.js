@@ -384,7 +384,7 @@ function showUnrollOKNotification(from, align) {
 
     }, {
         type: 'success',
-        timer: 4000,
+        timer: 2000,
         placement: {
             from: from,
             align: align

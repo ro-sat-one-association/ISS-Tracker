@@ -4,7 +4,9 @@
   $f = fopen("/home/pi/n2yo/unroll.txt", "w");
   fwrite($f, $a);
   fclose($f);
-  exec('sudo systemctl restart unroll');
+  $f = fopen("/home/pi/n2yo/state.txt", "w");
+  fwrite($f, "UNROLL");
+  fclose($f);
 ?>
 
 <html>
