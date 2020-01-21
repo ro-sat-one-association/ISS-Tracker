@@ -74,6 +74,12 @@ $datestr = fgets($f);
                                 <p>Arduino Upload</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="./config.php">
+                                <i class="material-icons">settings_applications</i>
+                                <p>Configurare</p>
+                            </a>
+                        </li>
                         <li class="nav-item ">
                             <a class="nav-link" onclick="changeMode()">
                                 <i id="mode-button" class="material-icons"></i>

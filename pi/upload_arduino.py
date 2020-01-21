@@ -8,15 +8,20 @@ import shlex
 
 sys.stdout = open('/var/www/html/arduino_upload_log.txt', 'w')
 
+def getFileContent(file):
+	f = open(file, 'r')
+	l = f.read()
+	f.close()
+	return l
+
 def getFTDIPort():
 	port = "/dev/"
 	ports = list(serial.tools.list_ports.comports())
 	for p in ports:
-		if "UART" in p.description:
+		serialDesc = getFileContent('/home/pi/n2yo/serial-desc.txt').strip()
+		if serialDesc in p.description:
 			port = port + p.name
-			print("Found " + port)
 			return str(port)
-	print("No FTDI port was found! Aborting.")
 	raise Exception("No FTDI port was found")
 
 def execAndPrint(command):
@@ -30,7 +35,7 @@ def execAndPrint(command):
 
 port = getFTDIPort()
 fqbn = "arduino:avr:pro:cpu=8MHzatmega328"
-
+fqbn = getFileContent('/home/pi/n2yo/fqbn.txt').strip()
 execAndPrint("systemctl stop track")
 
 os.chdir("/home/pi/upload/")
@@ -38,7 +43,7 @@ execAndPrint("unzip /home/pi/upload/*.zip")
 for i in glob.iglob('/home/pi/upload/*/'):
 	os.chdir(i)
 execAndPrint("arduino-cli compile --fqbn " + fqbn + " ./")
-execAndPrint("arduino-cli upload -p " + port + " --fqbn " + fqbn + " ./")
+execAndPrint("arduino-cli upload -v -p " + port + " --fqbn " + fqbn + " ./")
 os.chdir("/home/pi/")
 os.system("rm -r /home/pi/upload/*")
 execAndPrint("systemctl start track")

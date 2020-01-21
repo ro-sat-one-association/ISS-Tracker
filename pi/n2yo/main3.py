@@ -14,12 +14,18 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+def getFileContent(file):
+	f = open(file, 'r')
+	l = f.read()
+	f.close()
+	return l
 
 def getFTDIPort():
 	port = "/dev/"
 	ports = list(serial.tools.list_ports.comports())
 	for p in ports:
-		if "UART" in p.description:
+		serialDesc = getFileContent('/home/pi/n2yo/serial-desc.txt').strip()
+		if serialDesc in p.description:
 			port = port + p.name
 			return str(port)
 	raise Exception("No FTDI port was found")
@@ -70,12 +76,6 @@ def getObserver(configFile):
 
 	return home
 
-
-def getFileContent(file):
-	f = open(file, 'r')
-	l = f.read()
-	f.close()
-	return l
 
 def getLiveData(ser):
 	linie = ser.readline().decode('ascii')

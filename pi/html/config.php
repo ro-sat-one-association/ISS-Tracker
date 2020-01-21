@@ -14,9 +14,16 @@
 -->
 <?php
 
-$f = fopen("/home/pi/n2yo/unghiuri.txt", "r");
-$azi = fgets($f);
-$ele = fgets($f);
+$f = fopen("/home/pi/n2yo/serial-desc.txt", "r");
+$desc = fgets($f);
+fclose($f);
+
+$f = fopen("/home/pi/n2yo/n2yo-key.txt", "r");
+$key = fgets($f);
+fclose($f);
+
+$f = fopen("/home/pi/n2yo/fqbn.txt", "r");
+$fqbn = fgets($f);
 fclose($f);
 
 ?>
@@ -29,7 +36,7 @@ fclose($f);
         <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="assets/img/favicon.png">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>Dezcâlcește / Unghiuri</title>
+        <title>Configurare</title>
         <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
         <!--     Fonts and icons     -->
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
@@ -40,18 +47,14 @@ fclose($f);
         <script src="assets/js/custom/options.js"></script>
     </head>
 
+
     <body id = "body" class="dark-edition">
         <script>refreshMode();</script>
         <div class="wrapper ">
             <div id = "sidebar" class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
-                <!--
-        Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
-
-        Tip 2: you can also add an image using data-image tag
-    -->
                 <div class="sidebar-wrapper">
                     <ul class="nav">
-                        <li class="nav-item ">
+                        <li class="nav-item">
                             <a class="nav-link" href="./track.php">
                                 <i class="material-icons">explore</i>
                                 <p>Urmărește Satelit</p>
@@ -63,7 +66,7 @@ fclose($f);
                                 <p>Timp modificat</p>
                             </a>
                         </li>
-                        <li class="nav-item active  ">
+                        <li class="nav-item ">
                             <a class="nav-link" href="./unghiuri.php">
                                 <i class="material-icons">cached</i>
                                 <p>Dezcâlcește/Unghiuri</p>
@@ -75,8 +78,8 @@ fclose($f);
                                 <p>Arduino Upload</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="./config.php">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="./upload.php">
                                 <i class="material-icons">settings_applications</i>
                                 <p>Configurare</p>
                             </a>
@@ -87,7 +90,12 @@ fclose($f);
                                 <p>Schimbă modul</p>
                             </a>
                         </li>
-
+                        <!-- <li class="nav-item active-pro ">
+                <a class="nav-link" href="./upgrade.html">
+                    <i class="material-icons">unarchive</i>
+                    <p>Upgrade to PRO</p>
+                </a>
+            </li> -->
                     </ul>
                 </div>
             </div>
@@ -96,14 +104,14 @@ fclose($f);
                 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top " id="navigation-example">
                     <div class="container-fluid">
                         <div class="navbar-wrapper">
-                        <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
+                            <span id="alerta_timp"></span>
+                            <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
                             <span class="sr-only">Toggle navigation</span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                         </button>
                         </div>
-
                     </div>
                 </nav>
                 <!-- End Navbar -->
@@ -111,164 +119,46 @@ fclose($f);
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-sm">
-<div class="card card-chart">
-    <div class="card-header card-header-success">
-        <div class="text-center">
-            <canvas id="canvas1" width="250" height="250"></canvas>
-        </div>
-    </div>
-    <div class="card-body">
-        <div class="row">
-        <div class="col-sm">
-            <h4 class="card-title">Indicator Azimut</h4>
-        </div>
-        <div class="col-sm">
-        <p class="card-category">Azimut actual</p>
-        <h4 class="card-title">
-                    <span id="mini_live_azi"></span>
-                    <small>°</small>
-                  </h4>
-        </div>
-        <div class="col-sm">
-        <p class="card-category">Azimut țintă</p>
-        <h4 class="card-title">
-                    <span style="font-weight: bold; opacity: 0.5;" id="mini_target_azi">0</span>
-                    <small>°</small>
-                  </h4>
-        </div>
-
-        </div>
-    </div>
-    <div class="card-footer">
-        <div class="stats">
-            <!-- <i class="material-icons">access_time</i> updated 4 minutes ago -->
-        </div>
-    </div>
-</div>
-                            </div>
-
-                            <div class="col-sm">
-<div class="card card-chart">
-    <div class="card-header card-header-warning">
-        <div class="text-center">
-            <canvas id="canvas2" width="250" height="250"></canvas>
-        </div>
-    </div>
-    <div class="card-body">
-        <div class="row">
-        <div class="col-sm">
-            <h4 class="card-title">Indicator Elevație</h4>
-        </div>
-        <div class="col-sm">
-        <p class="card-category">Elevație actuală</p>
-        <h4 class="card-title">
-                    <span id="mini_live_ele"></span>
-                    <small>°</small>
-                  </h4>
-        </div>
-        <div class="col-sm">
-        <p class="card-category">Elevație țintă</p>
-        <h4 class="card-title">
-                    <span style="font-weight: bold; opacity: 0.5;" id="mini_target_ele">0</span>
-                    <small>°</small>
-                  </h4>
-        </div>
-
-        </div>
-    </div>
-    <div class="card-footer">
-        <div class="stats">
-            <!--  <i class="material-icons">access_time</i> campaign sent 2 days ago -->
-        </div>
-    </div>
-</div>
-
-                            </div>
-
-                        </div>
-                        <div class="row">
-                            <div class="col-sm">
                                 <div class="card card-stats">
-                                    <div class="card-header card-header-info card-header-icon">
+                                    <div class="card-header card-header-danger card-header-icon">
                                         <div class="card-icon">
-                                            <i class="material-icons">cached</i>
+                                            <i class="material-icons">settings</i>
                                         </div>
-                                        <p class="card-category">Unghiuri</p>
+                                        <p class="card-category">Setări</p>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
                                         <form id="trackform" action="" method="post">
 
                                             <div class="form-group">
-                                                <label for="target_azi">Azimut dorit</label>
-                                                <input type="text" class="form-control" name="azi" id="target_azi" value="<?php echo $azi;?>">
+                                                <label for="key">N2YO Key</label>
+                                                <input type="text" class="form-control" name="key" id="key" value="<?php echo $key;?>">
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="target_ele">Elevație dorită</label>
-                                                <input type="text" class="form-control" name="ele" id="target_ele" value="<?php echo $ele;?>">
+                                                <label for="fqbn">FQBN</label>
+                                                <input type="text" class="form-control" name="fqbn" id="fqbn" value="<?php echo $fqbn;?>">
                                             </div>
 
+                                            <div class="form-group">
+                                                <label for="desc">Descriere Serial</label>
+                                                <input type="text" placeholder="UART / Arduino / CH340 / etc." class="form-control" name="desc" id="desc" value="<?php echo $desc;?>">
+                                            </div>
                                         </form>
-                                        <button onclick="SubForm()" class="btn btn-info">Submit</button>
+                                         <button onclick="SubForm()" class="btn btn-danger">Submit</button>
                                     </div>
                                     <div class="card-footer">
                                         <div class="stats">
-
+                                            <!--<i class="material-icons text-warning">warning</i>
+                                    <a href="#pablo" class="warning-link">Get More Space...</a>-->
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="col-sm">
-                                <div class="card">
-                                        
-                                        
-
-        <div class = "row">
-            <div class = "col-sm">
-                <button onclick="clockAzi()" style="width:100%;" class="btn btn-success btn-lg">
-                    Azimut ceasornic
-                </button>
-
-            </div>
-            <div class="col-sm">
-                <button onclick="clockEle()" style="width:100%;" class="btn btn-warning btn-lg">
-                    Elevație ceasornic
-                </button>
-
-            </div>
-        </div>
-        &nbsp; 
-        <div class = "row">
-            <div class="col-sm">
-                <button onclick="anticlockAzi()" style="width:100%;" class="btn btn-success btn-lg">
-                    Azimut anti-ceasornic
-                </button>
-            </div>
-            <div class="col-sm">
-                <button onclick="anticlockEle()" style="width:100%;" class="btn btn-warning btn-lg">
-                    Elevație anti-ceasornic
-                </button>
-            </div>
-        </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm">
-                                <div style = "display:none;" id="livedata">
-                                    <span id="live_azi">-</span>
-                                    <span id="live_ele">-</span>
-                                </div>
-                            </div>
-                            <div class="col-sm"></div>
-                            <div class="col-sm"></div>
-
                         </div>
                     </div>
                 </div>
             </div>
-
+           
             <script>
                 const x = new Date().getFullYear();
                 let date = document.getElementById('date');
@@ -287,10 +177,56 @@ fclose($f);
         <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
         <script src="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/js/material-dashboard.js"></script>
 
-        <script src="assets/js/custom/unghiuri.js"></script>
         <script>
-            refreshMode();
+          previous = ""
+
+			function showOKNotification(from, align) {
+
+			    $.notify({
+			        icon: "add_alert",
+			        message: "Am trimis noile constante"
+
+			    }, {
+			        type: 'success',
+			        timer: 2000,
+			        placement: {
+			            from: from,
+			            align: align
+			        }
+			    });
+			}
+
+			function SubForm() {
+			    $.ajax({
+			        url: 'submit_conf.php',
+			        type: 'post',
+			        data: $('#trackform').serialize(),
+			        success: function() {
+			            showOKNotification();
+			        }
+			    });
+			}
+
         </script>
+
+        <script>
+            if ( window.history.replaceState ) {
+                window.history.replaceState( null, null, window.location.href );
+            }
+        </script>
+
+        <script>refreshMode();</script>
     </body>
 
     </html>
+
+<?php
+  if(!empty($_FILES['uploaded_file']))
+  {
+    $path = "/home/pi/upload/";
+    $path = $path . basename($_FILES['uploaded_file']['name']);
+    if(move_uploaded_file($_FILES['uploaded_file']['tmp_name'], $path)) {
+      exec("sudo python3 /home/pi/upload_arduino.py &");
+    }
+  }
+?>
