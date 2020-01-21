@@ -740,14 +740,27 @@ char unroll_state;
 float initUnrollAngle;
 float heading;
 
+bool ture[4];
+float ture_m[4];
+char last_semn[4];
+
+
 void getCompass(){
   heading = Compass.GetHeadingDegrees();
 }
 
+
+float normalizeazaCerc(float x){
+  if(x > 360.0f) return (x - 360.0f);
+  if(x < 0.0f)   return (x + 360.0f);
+  return x;
+}
+
+
 void setup()
 {
-  azimuth = 0;
-  elevation = 0;
+  azimuth = 0.0f;
+  elevation = 0.0f;
 
   unroll_state = -1;
 
@@ -799,6 +812,18 @@ void setup()
       Serial.println("Teapa!");
     }
   }
+
+  float startPoint = 25.0f;
+
+  for(int i=0; i<4; ++i) ture[i] = false;
+  
+  ture_m[0] = startPoint + 10.0f;
+  ture_m[1] = normalizeazaCerc(startPoint + 90.0f);
+  ture_m[2] = normalizeazaCerc(startPoint + 180.0f);
+  ture_m[3] = normalizeazaCerc(startPoint + 270.0f);
+
+  for(int i=0; i<4; ++i) last_semn[i] = -1;
+
 }
 
 //MOTORASE
@@ -1036,6 +1061,40 @@ int putereAzimuth(int d){
   }
 }
 
+template <typename type>
+type sign(type value) {
+ return type((value>0)-(value<0));
+}
+
+
+void rutinaTure(){
+  bool s = true;
+  for(int i = 0; i < 4; ++i){
+    if(sign(heading - ture_m[i]) != last_semn[i]){
+      ture[i] = !ture[i];
+    }
+    last_semn[i] = sign(heading - ture_m[i]);
+    s = s && ture[i];
+   }
+   if(s){
+      Serial.println("AM DETECTAT O TURA");
+      
+   }
+
+   for(int i=0; i < 4; ++i){
+    Serial.print(int(last_semn[i]));
+    Serial.print('\t');
+   }
+   Serial.println();
+   for(int i=0; i < 4; ++i){
+    Serial.print(int(ture_m[i]));
+    Serial.print('\t');
+   }
+   Serial.println();
+   
+}
+
+
 void alignAzimuth(float t, float h){
   float delta = deltaAzimuth(t, h);
   /*Serial.print(delta);
@@ -1159,6 +1218,8 @@ void loop()
     alignAzimuth(azimuth, heading);
     alignElevation(elevation, roll);
   }
+
+ // rutinaTure();
 
   //stopAzimuth();
   //stopElevation();

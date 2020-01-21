@@ -68,6 +68,12 @@ fclose($f);
                                 <p>Dezcâlcește/Unghiuri</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="./upload.php">
+                                <i class="material-icons">cloud_upload</i>
+                                <p>Arduino Upload</p>
+                            </a>
+                        </li>
 
 <li class="nav-item">
 &nbsp;
