@@ -17,11 +17,15 @@ def getFileContent(file):
 def getFTDIPort():
 	port = "/dev/"
 	ports = list(serial.tools.list_ports.comports())
+	print("Listing all available ports...")
+	for p in ports:
+		print(p.description)
 	for p in ports:
 		serialDesc = getFileContent('/home/pi/n2yo/serial-desc.txt').strip()
 		if serialDesc in p.description:
 			port = port + p.name
 			return str(port)
+	print ("No corresponding port was found for - " + serialDesc)
 	raise Exception("No FTDI port was found")
 
 def execAndPrint(command):
