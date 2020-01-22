@@ -14,6 +14,10 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+z = open('/var/www/html/debug_state.txt', 'w')
+z.write("0\n")
+z.close()
+
 def getFileContent(file):
 	f = open(file, 'r')
 	l = f.read()
