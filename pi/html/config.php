@@ -14,17 +14,12 @@
 -->
 <?php
 
-$f = fopen("/home/pi/n2yo/serial-desc.txt", "r");
-$desc = fgets($f);
-fclose($f);
+$string = file_get_contents("/home/pi/n2yo/config.json");
+$json_a = json_decode($string, true);
 
-$f = fopen("/home/pi/n2yo/n2yo-key.txt", "r");
-$key = fgets($f);
-fclose($f);
-
-$f = fopen("/home/pi/n2yo/fqbn.txt", "r");
-$fqbn = fgets($f);
-fclose($f);
+$key  = $json_a['observer']['n2yo-key'];
+$desc = $json_a['arduino']['serial-descriptor'];
+$fqbn = $json_a['arduino']['fqbn'];
 
 ?>
 
@@ -198,7 +193,7 @@ fclose($f);
 
 			function SubForm() {
 			    $.ajax({
-			        url: 'submit_conf.php',
+			        url: 'submit_config.php',
 			        type: 'post',
 			        data: $('#trackform').serialize(),
 			        success: function() {

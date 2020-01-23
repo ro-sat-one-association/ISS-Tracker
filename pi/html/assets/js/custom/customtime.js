@@ -403,7 +403,7 @@ function showOKNotification(from, align) {
 
 function SubForm() {
     $.ajax({
-        url: 'submit_customtime.php',
+        url: 'submit_config.php',
         type: 'post',
         data: $('#trackform').serialize(),
         success: function() {

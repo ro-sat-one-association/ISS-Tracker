@@ -14,10 +14,12 @@
 -->
 <?php
 
-$f = fopen("/home/pi/n2yo/unghiuri.txt", "r");
-$azi = fgets($f);
-$ele = fgets($f);
-fclose($f);
+$string = file_get_contents("/home/pi/n2yo/config.json");
+$json_a = json_decode($string, true);
+
+
+$azi = $json_a['custom-angles']['azimuth'];
+$ele = $json_a['custom-angles']['elevation'];
 
 ?>
 
@@ -207,6 +209,8 @@ fclose($f);
                                                 <label for="target_ele">Elevație dorită</label>
                                                 <input type="text" class="form-control" name="ele" id="target_ele" value="<?php echo $ele;?>">
                                             </div>
+
+                                            <input type="hidden" name="state" value="UNGHI">
 
                                         </form>
                                         <button onclick="SubForm()" class="btn btn-info">Submit</button>

@@ -14,16 +14,18 @@
 -->
 <?php
 
-$f = fopen("/home/pi/n2yo/config.txt", "r");
-$sat = fgets($f);
-$lat = fgets($f);
-$lon = fgets($f);
-$alt = fgets($f);
+$string = file_get_contents("/home/pi/n2yo/config.json");
+$json_a = json_decode($string, true);
+
+
+$sat = $json_a['sat']['NORAD'];
+$datestr = $json_a['sat']['customtime'];
+$lat = $json_a['observer']['latitude'];
+$lon = $json_a['observer']['longitude'];
+$alt = $json_a['observer']['altitude'];
 
 fclose($f);
 
-$f = fopen("/home/pi/n2yo/customtime.txt", "r");
-$datestr = fgets($f);
 
 ?>
 
@@ -283,6 +285,8 @@ $datestr = fgets($f);
                                                 <label for="date_field">Moment inițial timp simulat</label>
                                                 <input type="text" class="form-control" name="datestr" id="date_field" placeholder="YYYY-mm-DD HH:MM" value="<?php echo $datestr;?>">
                                             </div>
+
+                                            <input type="hidden" name="state" value="CUSTOMTIME">
 
                                         </form>
                                         <button onclick="SubForm()" class="btn btn-danger">Submit</button>

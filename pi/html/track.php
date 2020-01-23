@@ -14,11 +14,14 @@
 -->
 <?php
 
-$f = fopen("/home/pi/n2yo/config.txt", "r");
-$sat = fgets($f);
-$lat = fgets($f);
-$lon = fgets($f);
-$alt = fgets($f);
+$string = file_get_contents("/home/pi/n2yo/config.json");
+$json_a = json_decode($string, true);
+
+
+$sat = $json_a['sat']['NORAD'];
+$lat = $json_a['observer']['latitude'];
+$lon = $json_a['observer']['longitude'];
+$alt = $json_a['observer']['altitude'];
 
 fclose($f);
 
@@ -291,6 +294,7 @@ fclose($f);
                                                 <label for="alt_field">Altitudinea ta</label>
                                                 <input type="text" class="form-control" name="alt" id="alt_field" value="<?php echo $alt;?>">
                                             </div>
+                                            <input type="hidden" name="state" value="TRACK">  
                                         </form>
                                          <button onclick="SubForm()" class="btn btn-danger">Submit</button>
                                     </div>

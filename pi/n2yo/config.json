@@ -1,0 +1,22 @@
+{
+  "observer": {
+    "latitude": 46.947533,
+    "longitude": 26.370048,
+    "altitude": 359,
+    "n2yo-key": "BMDSE6-VEC9T4-Y6YANC-47A9"
+  },
+  "sat": {
+    "NORAD": "25544",
+    "customtime": "2019-04-16 11:16"
+  },
+  "custom-angles": {
+    "azimuth": "90",
+    "elevation": "45"
+  },
+  "arduino": {
+    "serial-descriptor": "ACM",
+    "fqbn": "arduino:avr:pro:cpu=8MHzatmega328"
+  },
+
+  "general-state": "TRACK"
+}

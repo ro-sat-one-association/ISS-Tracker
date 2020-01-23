@@ -459,7 +459,7 @@ function showOKNotification(from, align) {
 
 function SubForm() {
     $.ajax({
-        url: 'submit_track.php',
+        url: 'submit_config.php',
         type: 'post',
         data: $('#trackform').serialize(),
         success: function() {

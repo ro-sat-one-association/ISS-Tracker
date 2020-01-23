@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import math
 import urllib.request, urllib.error, urllib.parse
 import json
@@ -14,21 +13,20 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-z = open('/var/www/html/debug_state.txt', 'w')
-z.write("0\n")
-z.close()
+config = ""
 
-def getFileContent(file):
-	f = open(file, 'r')
-	l = f.read()
-	f.close()
-	return l
+def refreshConfig():
+	global config
+	with open('config.json') as json_file:
+		config = json.load(json_file)
+
+refreshConfig()
 
 def getFTDIPort():
 	port = "/dev/"
 	ports = list(serial.tools.list_ports.comports())
 	for p in ports:
-		serialDesc = getFileContent('/home/pi/n2yo/serial-desc.txt').strip()
+		serialDesc = config['arduino']['serial-descriptor']
 		if serialDesc in p.description:
 			port = port + p.name
 			return str(port)
@@ -37,52 +35,49 @@ def getFTDIPort():
 def csum(s):
 	return str(sum(bytearray(s, encoding='ascii')) % 10)
 
-def getSatCode(configFile):
-	f = open(configFile, 'r')
-	l = f.readlines()
+def getFileContent(file):
+	f = open(file, 'r')
+	l = f.read()
 	f.close()
-	sat_code = l[0].strip()
-	return sat_code
+	return l
 
-def getRequestURL(configFile):
+def getRequestURL():
 	urltle 	= "https://www.n2yo.com/rest/v1/satellite/tle/"
-	urltle += getSatCode(configFile)
-	urltle += "&apiKey=" + getFileContent('/home/pi/n2yo/n2yo-key.txt')
+	urltle += config['sat']['NORAD']
+	urltle += "&apiKey=" + config['observer']['n2yo-key']
 	return urltle
 
-
-def getTLE(configFile):
-	response = urllib.request.urlopen(getRequestURL(configFile))
+def getTLE():
+	response = urllib.request.urlopen(getRequestURL())
 	data = json.loads(response.read())
 	tle = data["tle"].split("\r\n")
 	return tle
 
-def getName(configFile):
-	response = urllib.request.urlopen(getRequestURL(configFile))
+def getName():
+	response = urllib.request.urlopen(getRequestURL())
 	data = json.loads(response.read())
 	name = data["info"]["satname"]
 	return str(name)
 
+def getCustomTime():
+	datestr = config['sat']['customtime']
+	base = datetime.strptime(datestr, "%Y-%m-%d %H:%M")
+	return base
 
-def getObserver(configFile):
-	f = open(configFile, 'r')
-	l = f.readlines()
-	f.close()
-
-	lat = l[1].strip()
-	lon = l[2].strip()
-	alt = l[3].strip()
-
+def getObserver():
 	home = ephem.Observer()
-	home.lon = lon
-	home.lat = lat
-	home.elevation = int(alt)
+	home.lon = config['observer']['longitude']
+	home.lat = config['observer']['latitude']
+	home.elevation = config['observer']['altitude']
 
 	return home
 
-
 def getLiveData(ser):
-	linie = ser.readline().decode('ascii')
+	linie = ""
+	try:
+		linie = ser.readline().decode('ascii')
+	except:
+		print("Am primit ceva gunoi pe serial")
 	ser.reset_input_buffer()
 	l = linie.split(" ")
 	if(len(l) == 2):
@@ -104,19 +99,11 @@ def getWriteLiveData(ser):
 		f.close()
 		print(data)
 
-def getCustomTime(customTimeFile):
-	datestr = getFileContent(customTimeFile).strip()
-	base = datetime.strptime(datestr, "%Y-%m-%d %H:%M")
-	return base
-
-config = "/home/pi/n2yo/config.txt"
-
-satName = getName(config)
-tle 	= getTLE(config)
-home 	= getObserver(config)
+satName = getName()
+tle 	= getTLE()
+home 	= getObserver()
 sat 	= ephem.readtle(satName, tle[0], tle[1])
 ser 	= serial.Serial(getFTDIPort(), 9600, timeout=0)
-
 
 timeSerialWrite = 0
 timeSerialRead  = 0
@@ -149,6 +136,7 @@ def standardRoutine():
 			f = open('/var/www/html/log.html', 'w')
 			f.write(log)
 			f.close()
+			print(sendstr)
 			ser.write(sendstr.encode('ascii'))
 			print(sendstr)
 			timeSerialWrite = time.time()
@@ -157,22 +145,24 @@ def standardRoutine():
 			getWriteLiveData(ser)
 			timeSerialRead = time.time()
 
-
 class MyHandler(FileSystemEventHandler):
 	def on_modified(self, event):
-		if event.src_path == config:
+		if 'config.json' in event.src_path:
 			global sat, satName, home
-			satName = getName(config)
-			tle 	= getTLE(config)
-			home 	= getObserver(config)
+			refreshConfig()
+			satName = getName()
+			tle 	= getTLE()
+			home 	= getObserver()
 			sat 	= ephem.readtle(satName, tle[0], tle[1])
-			if(state == 'CUSTOMTIME'):
+			if(config['general-state'] == 'CUSTOMTIME'):
 				home.date = base
 			print("Am schimbat configuratia")
+
 		if event.src_path == '/home/pi/n2yo/unroll.txt':
 			global sentCommand
 			print("Primit comanda de unroll")
 			sentCommand = False
+
 
 event_handler = MyHandler()
 observer = Observer()
@@ -181,16 +171,16 @@ observer.start()
 
 
 while True:
-	state = getFileContent('/home/pi/n2yo/state.txt').strip()
+	state = config['general-state']
 
-	if (state == "TRACK"):
+	if ("TRACK" in state):
 		base = 0
 		home.date = datetime.utcnow()
 		standardRoutine()
 
-	if (state == "CUSTOMTIME"):
+	if ("CUSTOMTIME" in state):
 		if(time.time() - timeCalc > 1.0):
-			base2 = getCustomTime('/home/pi/n2yo/customtime.txt')
+			base2 = config['sat']['customtime']
 			if(base != base2):
 				print("Am schimbat timpul simulat")
 				home.date = base2
@@ -201,22 +191,21 @@ while True:
 			home.date = home.date.datetime() + timedelta(seconds=1)
 		standardRoutine()
 
-	if (state == "UNGHI"):
+	if ("UNGHI" in state):
 		if(time.time() - timeSerialWrite > 1.0):
-			conf = open('/home/pi/n2yo/unghiuri.txt', 'r')
-			l = conf.readlines()
-			azi  = l[0].strip()
-			ele = l[1].strip()
+			azi  = config['custom-angles']['azimuth']
+			ele  = config['custom-angles']['elevation']
 			sendstr = "!" + azi + "&" + ele
 			sendstr = sendstr + "!" + csum(sendstr)
 			ser.write(sendstr.encode('ascii'))
+			print(sendstr)
 			timeSerialWrite = time.time()
 			
 		if(time.time() - timeSerialRead > 0.5):
 			getWriteLiveData(ser)
 			timeSerialRead = time.time()
 
-	if (state == "UNROLL"):
+	if ("UNROLL" in state):
 		if(sentCommand == False):
 			f = open('/home/pi/n2yo/unroll.txt', 'r')
 			sendstr = f.read().strip()

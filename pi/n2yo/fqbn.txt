@@ -1,2 +1,0 @@
-arduino:avr:pro:cpu=8MHzatmega328
-

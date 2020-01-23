@@ -394,7 +394,7 @@ function showUnrollOKNotification(from, align) {
 
 function SubForm() {
     $.ajax({
-        url: 'submit_unghiuri.php',
+        url: 'submit_config.php',
         type: 'post',
         data: $('#trackform').serialize(),
         success: function() {
