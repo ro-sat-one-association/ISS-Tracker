@@ -5,12 +5,18 @@ import serial.tools.list_ports
 import glob
 import subprocess
 import shlex
-
-z = open('/var/www/html/debug_state.txt', 'w')
-z.write("1\n")
-z.close()
+import json
 
 sys.stdout = open('/var/www/html/arduino_debug_log.txt', 'a')
+
+config = ""
+
+def refreshConfig():
+	global config
+	with open('/home/pi/n2yo/config.json') as json_file:
+		config = json.load(json_file)
+
+refreshConfig()
 
 def getFileContent(file):
 	f = open(file, 'r')
@@ -29,7 +35,7 @@ def getFTDIPort():
 	#for p in ports:
 	#	print(p.description)
 	for p in ports:
-		serialDesc = getFileContent('/home/pi/n2yo/serial-desc.txt').strip()
+		serialDesc = config['arduino']['serial-descriptor']
 		if serialDesc in p.description:
 			port = port + p.name
 			return str(port)
