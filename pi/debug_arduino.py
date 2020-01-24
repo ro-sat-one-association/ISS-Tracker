@@ -6,8 +6,7 @@ import glob
 import subprocess
 import shlex
 import json
-
-sys.stdout = open('/var/www/html/arduino_debug_log.txt', 'a')
+sys.stdout = open('/var/www/html/arduino_debug_log.txt', 'w')
 
 config = ""
 
@@ -44,6 +43,7 @@ def getFTDIPort():
 
 
 def getLiveData(ser):
+	line = False
 	try:
 		line = ser.readline().decode('utf-8')
 	except:
