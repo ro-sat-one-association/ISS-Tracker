@@ -17,7 +17,7 @@ config = ""
 
 def refreshConfig():
 	global config
-	with open('config.json') as json_file:
+	with open('/home/pi/n2yo/config.json') as json_file:
 		config = json.load(json_file)
 
 refreshConfig()
