@@ -224,12 +224,12 @@ void getMres()
   {
     // Possible magnetometer scales (and their register bit settings) are:
     // 14 bit resolution (0) and 16 bit resolution (1)
-  case MFS_14BITS:
-    mRes = 10. * 4912. / 8190.; // Proper scale to return milliGauss
-    break;
-  case MFS_16BITS:
-    mRes = 10. * 4912. / 32760.0; // Proper scale to return milliGauss
-    break;
+    case MFS_14BITS:
+      mRes = 10. * 4912. / 8190.; // Proper scale to return milliGauss
+      break;
+    case MFS_16BITS:
+      mRes = 10. * 4912. / 32760.0; // Proper scale to return milliGauss
+      break;
   }
 }
 
@@ -240,18 +240,18 @@ void getGres()
     // Possible gyro scales (and their register bit settings) are:
     // 250 DPS (00), 500 DPS (01), 1000 DPS (10), and 2000 DPS  (11).
     // Here's a bit of an algorith to calculate DPS/(ADC tick) based on that 2-bit value:
-  case GFS_250DPS:
-    gRes = 250.0 / 32768.0;
-    break;
-  case GFS_500DPS:
-    gRes = 500.0 / 32768.0;
-    break;
-  case GFS_1000DPS:
-    gRes = 1000.0 / 32768.0;
-    break;
-  case GFS_2000DPS:
-    gRes = 2000.0 / 32768.0;
-    break;
+    case GFS_250DPS:
+      gRes = 250.0 / 32768.0;
+      break;
+    case GFS_500DPS:
+      gRes = 500.0 / 32768.0;
+      break;
+    case GFS_1000DPS:
+      gRes = 1000.0 / 32768.0;
+      break;
+    case GFS_2000DPS:
+      gRes = 2000.0 / 32768.0;
+      break;
   }
 }
 
@@ -262,18 +262,18 @@ void getAres()
     // Possible accelerometer scales (and their register bit settings) are:
     // 2 Gs (00), 4 Gs (01), 8 Gs (10), and 16 Gs  (11).
     // Here's a bit of an algorith to calculate DPS/(ADC tick) based on that 2-bit value:
-  case AFS_2G:
-    aRes = 2.0 / 32768.0;
-    break;
-  case AFS_4G:
-    aRes = 4.0 / 32768.0;
-    break;
-  case AFS_8G:
-    aRes = 8.0 / 32768.0;
-    break;
-  case AFS_16G:
-    aRes = 16.0 / 32768.0;
-    break;
+    case AFS_2G:
+      aRes = 2.0 / 32768.0;
+      break;
+    case AFS_4G:
+      aRes = 4.0 / 32768.0;
+      break;
+    case AFS_8G:
+      aRes = 8.0 / 32768.0;
+      break;
+    case AFS_16G:
+      aRes = 16.0 / 32768.0;
+      break;
   }
 }
 
@@ -332,11 +332,11 @@ void readMagData(int16_t *destination)
 {
   uint8_t rawData[7]; // x/y/z gyro register data, ST2 register stored here, must read ST2 at end of data acquisition
   if (readByte(AK8963_ADDRESS, AK8963_ST1) & 0x01)
-  {                                                           // wait for magnetometer data ready bit to be set
+  { // wait for magnetometer data ready bit to be set
     readBytes(AK8963_ADDRESS, AK8963_XOUT_L, 7, &rawData[0]); // Read the six raw data and ST2 registers sequentially into data array
     uint8_t c = rawData[6];                                   // End data read by reading ST2 register
     if (!(c & 0x08))
-    {                                                           // Check if magnetic sensor overflow set, if not then report data
+    { // Check if magnetic sensor overflow set, if not then report data
       destination[0] = ((int16_t)rawData[1] << 8) | rawData[0]; // Turn the MSB and LSB into a signed 16-bit value
       destination[1] = ((int16_t)rawData[3] << 8) | rawData[2]; // Data stored as little Endian
       destination[2] = ((int16_t)rawData[5] << 8) | rawData[4];
@@ -364,21 +364,21 @@ void initMPU9250()
 
   // Set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
   writeByte(MPU9250_ADDRESS, SMPLRT_DIV, 0x04); // Use a 200 Hz rate; a rate consistent with the filter update rate
-                                                // determined inset in CONFIG above
+  // determined inset in CONFIG above
 
   // Set gyroscope full scale range
   // Range selects FS_SEL and GFS_SEL are 0 - 3, so 2-bit values are left-shifted into positions 4:3
   uint8_t c = readByte(MPU9250_ADDRESS, GYRO_CONFIG); // get current GYRO_CONFIG register value
-                                                      // c = c & ~0xE0; // Clear self-test bits [7:5]
+  // c = c & ~0xE0; // Clear self-test bits [7:5]
   c = c & ~0x03;                                      // Clear Fchoice bits [1:0]
   c = c & ~0x18;                                      // Clear GFS bits [4:3]
   c = c | Gscale << 3;                                // Set full scale range for the gyro
-                                                      // c =| 0x00; // Set Fchoice for the gyro to 11 by writing its inverse to bits 1:0 of GYRO_CONFIG
+  // c =| 0x00; // Set Fchoice for the gyro to 11 by writing its inverse to bits 1:0 of GYRO_CONFIG
   writeByte(MPU9250_ADDRESS, GYRO_CONFIG, c);         // Write new GYRO_CONFIG value to register
 
   // Set accelerometer full-scale range configuration
   c = readByte(MPU9250_ADDRESS, ACCEL_CONFIG); // get current ACCEL_CONFIG register value
-                                               // c = c & ~0xE0; // Clear self-test bits [7:5]
+  // c = c & ~0xE0; // Clear self-test bits [7:5]
   c = c & ~0x18;                               // Clear AFS bits [4:3]
   c = c | Ascale << 3;                         // Set full scale range for the accelerometer
   writeByte(MPU9250_ADDRESS, ACCEL_CONFIG, c); // Write new ACCEL_CONFIG register value
@@ -390,8 +390,8 @@ void initMPU9250()
   c = c & ~0x0F;                                // Clear accel_fchoice_b (bit 3) and A_DLPFG (bits [2:0])
   c = c | 0x03;                                 // Set accelerometer rate to 1 kHz and bandwidth to 41 Hz
   writeByte(MPU9250_ADDRESS, ACCEL_CONFIG2, c); // Write new ACCEL_CONFIG2 register value
-                                                // The accelerometer, gyro, and thermometer are set to 1 kHz sample rates,
-                                                // but all these rates are further reduced by a factor of 5 to 200 Hz because of the SMPLRT_DIV setting
+  // The accelerometer, gyro, and thermometer are set to 1 kHz sample rates,
+  // but all these rates are further reduced by a factor of 5 to 200 Hz because of the SMPLRT_DIV setting
 
   // Configure Interrupts and Bypass Enable
   // Set interrupt pin active high, push-pull, hold interrupt pin level HIGH until interrupt cleared,
@@ -652,7 +652,7 @@ void getMPUData()
 {
   // If intPin goes high, all data registers have new data
   if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
-  {                            // On interrupt, check if data ready interrupt
+  { // On interrupt, check if data ready interrupt
     readAccelData(accelCount); // Read the x/y/z adc values
     getAres();
 
@@ -696,22 +696,22 @@ void getMPUData()
   //pitch *= 180.0f / PI;
   roll *= 180.0f / PI;
   delt_t = millis() - count;
-  
-  if (delt_t > 500) { 
-      count = millis();
-      sumCount = 0;
-      sum = 0;
+
+  if (delt_t > 500) {
+    count = millis();
+    sumCount = 0;
+    sum = 0;
   }
 }
 
 
-void initCompass(){   
+void initCompass() {
   // The declination for your area can be obtained from http://www.magnetic-declination.com/
   // Piatra-Neamt, 6°  15' EST
   Compass.SetDeclination(6, 15, 'E');
-    
+
   Compass.SetSamplingMode(COMPASS_SINGLE);
-  Compass.SetScale(COMPASS_SCALE_130); 
+  Compass.SetScale(COMPASS_SCALE_130);
   Compass.SetOrientation(COMPASS_HORIZONTAL_X_NORTH);
 }
 
@@ -725,14 +725,17 @@ float elevation;
 #define SENS_0_A 0             //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_A 1
 
-#define AzimuthPWML 9
-#define AzimuthPWMR 3
+#define ELE_A_PIN 4
+#define ELE_B_PIN 9
 
-#define ElevatiePWMR 10
-#define ElevatiePWML 11
+#define AZI_A_PIN 7
+#define AZI_B_PIN 8
 
-#define ElevatieEN 12
-#define AzimuthEN  7
+#define AZI_PWM 5
+#define ELE_PWM 6
+
+#define ELE_EN A0
+#define AZI_EN  A1
 
 bool debug;
 long long lastTime;
@@ -745,14 +748,14 @@ float ture_m[4];
 char last_semn[4];
 
 
-void getCompass(){
+void getCompass() {
   heading = Compass.GetHeadingDegrees();
 }
 
 
-float normalizeazaCerc(float x){
-  if(x > 360.0f) return (x - 360.0f);
-  if(x < 0.0f)   return (x + 360.0f);
+float normalizeazaCerc(float x) {
+  if (x > 360.0f) return (x - 360.0f);
+  if (x < 0.0f)   return (x + 360.0f);
   return x;
 }
 
@@ -770,14 +773,20 @@ void setup()
   Serial.begin(9600);
   Serial.setTimeout(50);
 
-  pinMode(ElevatieEN, OUTPUT);
-  pinMode(AzimuthEN,  OUTPUT);
+  pinMode(ELE_EN, OUTPUT);
+  pinMode(AZI_EN,  OUTPUT);
 
-  pinMode(AzimuthPWMR, OUTPUT);
-  pinMode(AzimuthPWML, OUTPUT);
+  pinMode(ELE_A_PIN, OUTPUT);
+  pinMode(ELE_B_PIN, OUTPUT);
 
-  pinMode(ElevatiePWMR, OUTPUT);
-  pinMode(ElevatiePWML, OUTPUT);
+  pinMode(AZI_A_PIN, OUTPUT);
+  pinMode(AZI_B_PIN, OUTPUT);
+
+  pinMode(AZI_PWM, OUTPUT);
+  pinMode(ELE_PWM, OUTPUT);
+
+  digitalWrite(AZI_EN,  HIGH);
+  digitalWrite(ELE_EN,  HIGH);
 
   Wire.begin();
   //  TWBR = 12;  // 400 kbit/sec I2C speed
@@ -793,10 +802,8 @@ void setup()
 
   // Read the WHO_AM_I register, this is a good test of communication
   byte c = readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250); // Read WHO_AM_I register for MPU-9250
-  //Serial.print("MPU9250 "); //Serial.print("I AM "); //Serial.print(c, HEX); //Serial.print(" I should be "); //Serial.println(0x71, HEX);
-  delay(1000);
 
-  if (c == 0x71) { // WHO_AM_I should always be 0x68
+  if (c == 0x68) { // WHO_AM_I should always be 0x68
     Serial.println("MPU9250 is online...");
 
     MPU9250SelfTest(SelfTest); // Start by performing self test and reporting values
@@ -808,21 +815,22 @@ void setup()
   } else {
     Serial.print("Could not connect to MPU9250: 0x");
     Serial.println(c, HEX);
-    while (1){
+    while (1) {
       Serial.println("Teapa!");
+      Serial.println(c, HEX);
     }
   }
 
   float startPoint = 25.0f;
 
-  for(int i=0; i<4; ++i) ture[i] = false;
-  
+  for (int i = 0; i < 4; ++i) ture[i] = false;
+
   ture_m[0] = startPoint + 10.0f;
   ture_m[1] = normalizeazaCerc(startPoint + 90.0f);
   ture_m[2] = normalizeazaCerc(startPoint + 180.0f);
   ture_m[3] = normalizeazaCerc(startPoint + 270.0f);
 
-  for(int i=0; i<4; ++i) last_semn[i] = -1;
+  for (int i = 0; i < 4; ++i) last_semn[i] = -1;
 
 }
 
@@ -830,78 +838,74 @@ void setup()
 
 void moveAzimuth(bool sens, int putere)
 {
-  if (sens)
-  {
-    analogWrite(AzimuthPWMR, putere);
-    analogWrite(AzimuthPWML, 0);
+  if (sens) {
+    digitalWrite(AZI_A_PIN, HIGH);
+    digitalWrite(AZI_B_PIN, LOW);
+  } else {
+    digitalWrite(AZI_A_PIN, LOW);
+    digitalWrite(AZI_B_PIN, HIGH);
   }
-  else
-  {
-    analogWrite(AzimuthPWMR, 0);
-    analogWrite(AzimuthPWML, putere);
-  }
+  analogWrite(AZI_PWM, putere);
 }
 
 void moveElevation(bool sens, int putere)
 {
-  if (sens)
-  {
-    analogWrite(ElevatiePWMR, putere);
-    analogWrite(ElevatiePWML, 0);
+  if (sens) {
+    digitalWrite(ELE_A_PIN, HIGH);
+    digitalWrite(ELE_B_PIN, LOW);
+  } else {
+    digitalWrite(ELE_A_PIN, LOW);
+    digitalWrite(ELE_B_PIN, HIGH);
   }
-  else
-  {
-    analogWrite(ElevatiePWMR, 0);
-    analogWrite(ElevatiePWML, putere);
-  }
+  analogWrite(ELE_PWM, putere);
 }
 
 void stopAzimuth()
 {
-  digitalWrite(AzimuthPWMR, LOW);
-  digitalWrite(AzimuthPWML, LOW);
+  digitalWrite(AZI_A_PIN, LOW);
+  digitalWrite(AZI_A_PIN, LOW);
 }
 
 void stopElevation()
 {
-  digitalWrite(ElevatiePWMR, LOW);
-  digitalWrite(ElevatiePWML, LOW);
+  digitalWrite(ELE_A_PIN, LOW);
+  digitalWrite(ELE_A_PIN, LOW);
 }
 
 
-int checkSum(String t){
+int checkSum(String t) {
   unsigned int s = 0;
-  for(int i=0; t[i] != '\0'; ++i){
+  for (int i = 0; t[i] != '\0'; ++i) {
     s += (int)t[i];
   }
-  return s%10;
+  return s % 10;
 }
 
-bool validPackage(String textPacket){ //SPAGHETTI CODE, stiu
+bool validPackage(String textPacket) { //SPAGHETTI CODE, stiu
   bool et = false;
   String C = "\0";
   String P = "\0";
-  if(textPacket[0] == '!'){
+  if (textPacket[0] == '!') {
     P += '!';
-    int i=1;
-    for(i; textPacket[i] != '!'; ++i){
-      if(textPacket[i] == '\0') return false;
+    int i = 1;
+    for (i; textPacket[i] != '!'; ++i) {
+      if (textPacket[i] == '\0') return false;
       P += textPacket[i];
-      if(textPacket[i] == '&') et = true;
+      if (textPacket[i] == '&') et = true;
     }
-    if(!et) return false;
+    if (!et) return false;
     ++i;
-    if(textPacket[i] == '\0') return false;
-    for(i; textPacket[i] != '\0'; ++i){
+    if (textPacket[i] == '\0') return false;
+    for (i; textPacket[i] != '\0'; ++i) {
       C += textPacket[i];
     }
-    if(debug){
+    if (debug) {
       Serial.print("ctoint ");
       Serial.println(C.toInt());
       Serial.print("csum ");
       Serial.println(checkSum(P));
     }
-    if(C.toInt() == checkSum(P) && et) return true;
+    if (C.toInt() == checkSum(P) && et) return true;
   }
   return false;
 }
@@ -909,51 +913,51 @@ bool validPackage(String textPacket){ //SPAGHETTI CODE, stiu
 
 void readData(float &azi, float &ele)
 {
-   String textPacket = "\0";
-   String A = "\0";
-   String E = "\0";
-   
-   if(Serial.available()) {
+  String textPacket = "\0";
+  String A = "\0";
+  String E = "\0";
+
+  if (Serial.available()) {
     textPacket =  Serial.readString();
     textPacket.trim();
-    if(textPacket == "D") {
+    if (textPacket == "D") {
       debug = !debug;
       return;
-     }
+    }
 
-    if(textPacket == "A0"){     
+    if (textPacket == "A0") {
       unroll_state = 1;
       initUnrollAngle = heading;
-      return; 
+      return;
     }
-    if(textPacket == "A1"){
+    if (textPacket == "A1") {
       unroll_state = 2;
       initUnrollAngle = heading;
       return;
     }
-    if(textPacket == "E0"){
+    if (textPacket == "E0") {
       unroll_state = 3;
       initUnrollAngle = roll;
       return;
     }
-    if(textPacket == "E1"){
+    if (textPacket == "E1") {
       initUnrollAngle = roll;
       unroll_state = 4;
       return;
     }
-    
-    if(textPacket[0] == 'A' && textPacket[1] == 'Z'){ //AZ239.0 EL3.0 UP000 XXX DN000 XXX
+
+    if (textPacket[0] == 'A' && textPacket[1] == 'Z') { //AZ239.0 EL3.0 UP000 XXX DN000 XXX
       int i = 2;
-      for(i; textPacket[i] != ' ' ; ++i){
+      for (i; textPacket[i] != ' ' ; ++i) {
         A += textPacket[i];
       }
       i += 3;
-      for(i; textPacket[i] != ' '; ++i){
+      for (i; textPacket[i] != ' '; ++i) {
         E += textPacket[i];
       }
       azi = A.toFloat();
       ele = E.toFloat();
-      if(debug){
+      if (debug) {
         Serial.print("Easycomm! Azimut:");
         Serial.print(azi);
         Serial.print(" Elevatie:");
@@ -962,264 +966,266 @@ void readData(float &azi, float &ele)
       return;
     }
 
-    if(validPackage(textPacket)){
+    if (validPackage(textPacket)) {
       unroll_state = -1;
       int i = 1;
-      for(i; textPacket[i] != '&' ; ++i){
+      for (i; textPacket[i] != '&' ; ++i) {
         A += textPacket[i];
       }
       i += 1;
-      for(i; textPacket[i] != '\0'; ++i){
+      for (i; textPacket[i] != '\0'; ++i) {
         E += textPacket[i];
       }
       azi = A.toFloat();
       ele = E.toFloat();
-      if(debug){
+      if (debug) {
         Serial.print("Pachet valid! Azimut:");
         Serial.print(azi);
         Serial.print(" Elevatie:");
         Serial.println(ele);
       }
     } else {
-      if(debug){
+      if (debug) {
         Serial.println("Pachet nevalid");
       }
       return;
     }
-   } else {
-      return;
-   }
+  } else {
+    return;
+  }
 }
 
-float deltaAzimuth(float t, float h){
-  if (fabs(t-h) < 180)
-    return fabs(t-h);
+float deltaAzimuth(float t, float h) {
+  if (fabs(t - h) < 180)
+    return fabs(t - h);
   else
-    return 360 - fabs(t-h);
+    return 360 - fabs(t - h);
 }
 
-float deltaElevatie(float t, float r){
-  if(r < 0) r += 360.0f;
-  if(t < 0) t += 360.0f;
+float deltaElevatie(float t, float r) {
+  if (r < 0) r += 360.0f;
+  if (t < 0) t += 360.0f;
   return deltaAzimuth(t, r);
 }
 
-bool sensAzimuth(int t, int h){
-  if(fabs(t-h) < 180){
-    if(h > t)
+bool sensAzimuth(int t, int h) {
+  if (fabs(t - h) < 180) {
+    if (h > t)
       return SENS_0_A;
     else
       return SENS_1_A;
   } else {
-    if(h > t)
+    if (h > t)
       return SENS_1_A;
-    else 
+    else
       return SENS_0_A;
   }
 }
 
-bool sensElevatie(int t, int r){
-  if(r < 0) r += 360;
-  if(t < 0) t += 360;
-  if(fabs(t-r) < 180){
-    if(r > t)
+bool sensElevatie(int t, int r) {
+  if (r < 0) r += 360;
+  if (t < 0) t += 360;
+  if (fabs(t - r) < 180) {
+    if (r > t)
       return SENS_0_E;
     else
       return SENS_1_E;
   } else {
-    if(r > t)
+    if (r > t)
       return SENS_1_E;
-    else 
+    else
       return SENS_0_E;
   }
 }
 
-#define MIN_E 30 //puterea minima pwm  
-#define MIN_A 50
+#define MIN_E 50 //puterea minima pwm  
+#define MIN_A 20
 
-#define K_E 7 //cu cate grade inainte sa incetinesc miscarea
-#define K_A 40
+#define K_E 2 //cu cate grade inainte sa incetinesc miscarea
+#define K_A 5
 
 #define MAX_E 255
 #define MAX_A 255
 
-int putereElevatie(int d){
-  if(d > K_E) {
+int putereElevatie(int d) {
+  if (d > K_E) {
     return MAX_E;
   } else {
-    int v = MIN_E + (MAX_E - MIN_E) * d / K_E;  
+    int v = MIN_E + (MAX_E - MIN_E) * d / K_E;
     return v;
   }
 }
 
-int putereAzimuth(int d){
-  if(d > K_A) {
+int putereAzimuth(int d) {
+  if (d > K_A) {
     return MAX_A;
   } else {
-    int v = MIN_A + (MAX_A - MIN_A) * d / K_A;  
+    int v = MIN_A + (MAX_A - MIN_A) * d / K_A;
     return v;
   }
 }
 
 template <typename type>
 type sign(type value) {
- return type((value>0)-(value<0));
+  return type((value > 0) - (value < 0));
 }
 
 
-void rutinaTure(){
+void rutinaTure() {
   bool s = true;
-  for(int i = 0; i < 4; ++i){
-    if(sign(heading - ture_m[i]) != last_semn[i]){
+  for (int i = 0; i < 4; ++i) {
+    if (sign(heading - ture_m[i]) != last_semn[i]) {
       ture[i] = !ture[i];
     }
     last_semn[i] = sign(heading - ture_m[i]);
     s = s && ture[i];
-   }
-   if(s){
-      Serial.println("AM DETECTAT O TURA");
-      
-   }
+  }
+  if (s) {
+    Serial.println("AM DETECTAT O TURA");
 
-   for(int i=0; i < 4; ++i){
+  }
+
+  for (int i = 0; i < 4; ++i) {
     Serial.print(int(last_semn[i]));
     Serial.print('\t');
-   }
-   Serial.println();
-   for(int i=0; i < 4; ++i){
+  }
+  Serial.println();
+  for (int i = 0; i < 4; ++i) {
     Serial.print(int(ture_m[i]));
     Serial.print('\t');
-   }
-   Serial.println();
-   
+  }
+  Serial.println();
+
 }
 
 
-void alignAzimuth(float t, float h){
+void alignAzimuth(float t, float h) {
   float delta = deltaAzimuth(t, h);
   /*Serial.print(delta);
-  Serial.print('\t');
-  Serial.println(TOLERANTA_AZIMUTH);*/
-  if(delta > TOLERANTA_AZIMUTH){
-    digitalWrite(AzimuthEN, HIGH);
-    moveAzimuth(sensAzimuth(t,h), putereAzimuth(delta));
+    Serial.print('\t');
+    Serial.println(TOLERANTA_AZIMUTH);*/
+
+  if (delta > TOLERANTA_AZIMUTH) {
+    //digitalWrite(AZI_EN, HIGH);
+    moveAzimuth(sensAzimuth(t, h), putereAzimuth(delta));
+
   } else {
-    digitalWrite(AzimuthEN, LOW);
+   // digitalWrite(AZI_EN, LOW);
     stopAzimuth();
   }
 }
 
-void alignElevation(float t, float r){
+void alignElevation(float t, float r) {
   float delta = deltaElevatie(t, r);
   /*Serial.print(delta);
-  Serial.print('\t');
-  Serial.println(TOLERANTA_ELEVATIE);*/
-  if(delta > TOLERANTA_ELEVATIE){
-    digitalWrite(ElevatieEN, HIGH);
+    Serial.print('\t');
+    Serial.println(TOLERANTA_ELEVATIE);*/
+  if (delta > TOLERANTA_ELEVATIE) {
+    //digitalWrite(ELE_EN, HIGH);
     moveElevation(sensElevatie(t, r), putereElevatie(delta));
-  } else{
+  } else {
     stopElevation();
-    digitalWrite(ElevatieEN, LOW);
+    //digitalWrite(ELE_EN, LOW);
   }
 }
 
 #define PRINT_DELAY 500
 
 void loop()
-{ 
+{
   getMPUData();
   getCompass();
   readData(azimuth, elevation);
-  
-  
-  if(debug){
+
+
+  /*if(debug){
     Serial.print("TA: ");
     Serial.print(azimuth);
     Serial.print('\t');
     Serial.print("H: ");
     Serial.println(heading);
-    
+
     Serial.print("TE: ");
     Serial.print(elevation);
     Serial.print('\t');
     Serial.print("R:");
     Serial.println(roll);
-    Serial.println("-------------"); 
-  }
+    Serial.println("-------------");
+    }*/
 
-  if(millis() - lastTime > PRINT_DELAY){
+  if (millis() - lastTime > PRINT_DELAY) {
     Serial.print(heading);
     Serial.print(" ");
     Serial.println(roll);
     lastTime = millis();
   }
 
-  if(unroll_state != -1){
-    switch(unroll_state){
-      case 0:{
-        stopElevation();
-        stopAzimuth();
-        if(debug){
-          Serial.println("Done unrolling");
-        }
-      } break;
-      case 1:{//A0
-        float delta = deltaAzimuth(initUnrollAngle, heading + 30.0f);
-        if(delta > 5.0f){
-          alignAzimuth(heading + 30.0f, heading);
+  if (unroll_state != -1) {
+    switch (unroll_state) {
+      case 0: {
           stopElevation();
-          if(debug){
-            Serial.println("Unrolling... A0");
+          stopAzimuth();
+          if (debug) {
+            Serial.println("Done unrolling");
           }
-        } else {
-          stopAzimuth();
-          unroll_state = 0;
-        }
-       // Serial.println("A0");
-      } break;
+        } break;
+      case 1: { //A0
+          float delta = deltaAzimuth(initUnrollAngle, heading + 30.0f);
+          if (delta > 5.0f) {
+            alignAzimuth(heading + 30.0f, heading);
+            stopElevation();
+            if (debug) {
+              Serial.println("Unrolling... A0");
+            }
+          } else {
+            stopAzimuth();
+            unroll_state = 0;
+          }
+          // Serial.println("A0");
+        } break;
 
-      case 2:{ //A1
-        float delta = deltaAzimuth(initUnrollAngle, heading - 30.0f);
-        if(delta > 5.0f){
-          alignAzimuth(heading - 30.0f, heading);
-          stopElevation();
-        } else {
-          stopAzimuth();
-          unroll_state = 0;
-        }
-       // Serial.println("A1");
+      case 2: { //A1
+          float delta = deltaAzimuth(initUnrollAngle, heading - 30.0f);
+          if (delta > 5.0f) {
+            alignAzimuth(heading - 30.0f, heading);
+            stopElevation();
+          } else {
+            stopAzimuth();
+            unroll_state = 0;
+          }
+          // Serial.println("A1");
 
-      } break;
-      case 3:{
-        float delta = deltaElevatie(initUnrollAngle, roll + 10.0f);
-        if(delta > 5.0f){
-          alignElevation(roll + 10.0f, roll);
-          stopAzimuth();
-        } else {
-          stopElevation();
-          unroll_state = 0;
-        }
-       // Serial.println("E0");
-      } break;
-      case 4:{
-        float delta = deltaElevatie(initUnrollAngle, roll - 10.0f);
-        if(delta > 5.0f){
-          alignElevation(roll - 10.0f, roll);
-          stopAzimuth();
-        } else {
-          stopElevation();
-          unroll_state = 0;
-        }
-        //Serial.println("E1");
-      }break;
-      
+        } break;
+      case 3: {
+          float delta = deltaElevatie(initUnrollAngle, roll + 10.0f);
+          if (delta > 5.0f) {
+            alignElevation(roll + 10.0f, roll);
+            stopAzimuth();
+          } else {
+            stopElevation();
+            unroll_state = 0;
+          }
+          // Serial.println("E0");
+        } break;
+      case 4: {
+          float delta = deltaElevatie(initUnrollAngle, roll - 10.0f);
+          if (delta > 5.0f) {
+            alignElevation(roll - 10.0f, roll);
+            stopAzimuth();
+          } else {
+            stopElevation();
+            unroll_state = 0;
+          }
+          //Serial.println("E1");
+        } break;
+
     }
   } else {
     alignAzimuth(azimuth, heading);
     alignElevation(elevation, roll);
   }
 
- // rutinaTure();
+  // rutinaTure();
 
   //stopAzimuth();
   //stopElevation();

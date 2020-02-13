@@ -27,6 +27,7 @@
           <!-- CSS Files -->
         <link href="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/css/material-dashboard.min.css" rel="stylesheet" >
         <link href="assets/css/dark-edition.css" rel="stylesheet" >
+        <link href="assets/css/scroll.css" rel="stylesheet">
         <script src="assets/js/custom/options.js"></script>
     </head>
     <body id = "body" class="dark-edition">
@@ -120,10 +121,10 @@
                           <div class="card ">
                             <div class="card-body">
                               <p class="card-text">
-                                <div id = "log" style = "white-space:pre-wrap;overflow:scroll;overflow-x:hidden; height:400px;"></div>
+                                <div id = "log" style = "white-space:pre-wrap;overflow:scroll;overflow-x:hidden; word-break: break-word; height:400px;"></div>
                                 <div class="form-check">
                                   <label class="form-check-label">
-                                    <input class="form-check-input" id = "log_scroll" type="checkbox" value="">
+                                    <input class="form-check-input" id = "log_scroll" type="checkbox" value="" onclick = "scrollDownLog();">
                                               Autoscroll
                                               
                                       <span class="form-check-sign">
@@ -145,7 +146,7 @@
                                   </div>
                                   <div class="form-check">
                                     <label class="form-check-label">
-                                      <input class="form-check-input" id = "serial_scroll" type="checkbox" value="">
+                                      <input class="form-check-input" id = "serial_scroll" type="checkbox" value="" onclick = "scrollDownSerial();">
                                               Autoscroll
                                               
                                         <span class="form-check-sign">
@@ -191,6 +192,14 @@
           previous_debug = ""
 
           is_debug_on = false;
+
+          function scrollDownLog(){
+            if(document.getElementById("log_scroll").checked){
+              var elem = document.getElementById("log");
+              elem.scrollTop = elem.scrollHeight; 
+            }
+          }
+
           function loadDoc() {
               var ajax = new XMLHttpRequest();
               ajax.onreadystatechange = function() {
@@ -199,16 +208,19 @@
                           previous = ajax.responseText;
                           document.getElementById("log").innerHTML =
                                 this.responseText;  
-                          var elem = document.getElementById("log");
-                          previous_log = ajax.responseText;
-                          if(document.getElementById("log_scroll").checked){
-                            elem.scrollTop = elem.scrollHeight; 
-                          }
+                          scrollDownLog();
                       }
                   }
               };
               ajax.open("POST", "arduino_upload_log.txt", true); //Use POST to avoid caching
               ajax.send();
+          }
+
+          function scrollDownSerial(){
+            if(document.getElementById("serial_scroll").checked){
+              var elem = document.getElementById("serial");
+              elem.scrollTop = elem.scrollHeight; 
+            }
           }
 
           function loadSerial() {
@@ -219,11 +231,7 @@
                           previous = ajax.responseText;
                           document.getElementById("serial").innerHTML =
                                 this.responseText;  
-                          var elem = document.getElementById("serial");
-                          previous_serial = ajax.responseText;
-                          if(document.getElementById("serial_scroll").checked){
-                            elem.scrollTop = elem.scrollHeight; 
-                          }
+                          scrollDownSerial();
                       }
                   }
               };

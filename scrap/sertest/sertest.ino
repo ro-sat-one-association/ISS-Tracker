@@ -3,7 +3,7 @@ void setup(){
 }
 
 void loop(){
-   Serial.println("Nu primesc nimic...");
+  // Serial.println("Nu primesc nimic...");
 
    String textPacket = "\0";
    
