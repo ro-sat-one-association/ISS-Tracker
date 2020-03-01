@@ -20,6 +20,8 @@ $json_a = json_decode($string, true);
 $key  = $json_a['observer']['n2yo-key'];
 $desc = $json_a['arduino']['serial-descriptor'];
 $fqbn = $json_a['arduino']['fqbn'];
+$tle1 = $json_a['sat']['tle1'];
+$tle2 = $json_a['sat']['tle2'];
 
 ?>
 
@@ -137,6 +139,14 @@ $fqbn = $json_a['arduino']['fqbn'];
                                             <div class="form-group">
                                                 <label for="desc">Descriere Serial</label>
                                                 <input type="text" placeholder="UART / Arduino / CH340 / etc." class="form-control" name="desc" id="desc" value="<?php echo $desc;?>">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="desc">TLE Custom - 1</label>
+                                                <input type="text" placeholder="Lasă liber daca nu e necesar" class="form-control" name="tle1" id="desc" value="<?php echo $tle1;?>">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="desc">TLE Custom - 2</label>
+                                                <input type="text" placeholder="Lasă liber daca nu e necesar" class="form-control" name="tle2" id="desc" value="<?php echo $tle2;?>">
                                             </div>
                                         </form>
                                          <button onclick="SubForm()" class="btn btn-danger">Submit</button>

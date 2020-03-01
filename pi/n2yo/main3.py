@@ -29,6 +29,7 @@ def getFTDIPort():
 		serialDesc = config['arduino']['serial-descriptor']
 		if serialDesc in p.description:
 			port = port + p.name
+			print("Found port " + port) 
 			return str(port)
 	raise Exception("No FTDI port was found")
 
@@ -45,18 +46,35 @@ def getRequestURL():
 	urltle 	= "https://www.n2yo.com/rest/v1/satellite/tle/"
 	urltle += config['sat']['NORAD']
 	urltle += "&apiKey=" + config['observer']['n2yo-key']
+	print (urltle)
 	return urltle
 
 def getTLE():
-	response = urllib.request.urlopen(getRequestURL())
-	data = json.loads(response.read())
-	tle = data["tle"].split("\r\n")
+	if config['sat']['tle1'] and config['sat']['tle2']:
+		tle = ["", ""]
+		tle[0] = config['sat']['tle1']
+		tle[1] = config['sat']['tle2']
+		print("Custom TLE: ")
+		customTLE = True
+		for x in tle:
+			print(x)
+	else:
+		response = urllib.request.urlopen(getRequestURL())
+		data = json.loads(response.read())
+		print("TLE: ")
+		tle = data["tle"].split("\r\n")
+		customTLE = False
+		for x in tle:
+			print(x)
 	return tle
 
 def getName():
 	response = urllib.request.urlopen(getRequestURL())
 	data = json.loads(response.read())
-	name = data["info"]["satname"]
+	if config['sat']['tle1'] and config['sat']['tle2']:
+		name = "CUSTOM TLE"
+	else:
+		name = data["info"]["satname"]
 	return str(name)
 
 def getCustomTime():
@@ -66,8 +84,8 @@ def getCustomTime():
 
 def getObserver():
 	home = ephem.Observer()
-	home.lon = config['observer']['longitude']
-	home.lat = config['observer']['latitude']
+	home.lon = str(config['observer']['longitude'])
+	home.lat = str(config['observer']['latitude'])
 	home.elevation = config['observer']['altitude']
 
 	return home

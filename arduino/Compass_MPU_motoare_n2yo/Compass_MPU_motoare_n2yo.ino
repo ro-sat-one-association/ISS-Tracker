@@ -1039,10 +1039,10 @@ bool sensElevatie(int t, int r) {
 }
 
 #define MIN_E 50 //puterea minima pwm  
-#define MIN_A 20
+#define MIN_A 40
 
-#define K_E 2 //cu cate grade inainte sa incetinesc miscarea
-#define K_A 5
+#define K_E 10 //cu cate grade inainte sa incetinesc miscarea
+#define K_A 25
 
 #define MAX_E 255
 #define MAX_A 255
@@ -1060,7 +1060,9 @@ int putereAzimuth(int d) {
   if (d > K_A) {
     return MAX_A;
   } else {
-    int v = MIN_A + (MAX_A - MIN_A) * d / K_A;
+    int v = MIN_A + (float)(MAX_A - MIN_A) * (float)(d) / (float)(K_A);
+    Serial.println(v);
+    Serial.println((float)(d) / (float)(K_A));
     return v;
   }
 }

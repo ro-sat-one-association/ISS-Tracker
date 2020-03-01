@@ -63,19 +63,12 @@ void moveElevation(bool sens, int putere)
 
 
 void loop(){
- // s+=1;
- //s = 200;
-  if(Serial.available()){
-    char c = Serial.read();
-    if(c == '1') sens = true;
-    if(c == '0') sens = false;
-    if(c == '2') s = 0;
-    if(c == '3') s += 50;
-  }
-  //if(s<200 || s > 240) s = 200;
 	digitalWrite(AZI_EN, HIGH);
   digitalWrite(ELE_EN, HIGH);
-	// moveAzimuth(sens, s);
-  moveElevation(sens,s);
-
+  moveElevation(true,255);
+  moveAzimuth(true, 255);
+  delay(3000);
+  moveAzimuth(false, 255);
+  moveElevation(false, 255);
+  delay(3000);
 }

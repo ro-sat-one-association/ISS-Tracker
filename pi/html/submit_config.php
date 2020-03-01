@@ -47,6 +47,14 @@ if(isset($_POST["state"])){
 	$data['general-state'] = $_POST["state"];
 }
 
+if(isset($_POST["tle1"])){
+	$data['sat']['tle1'] = $_POST["tle1"];
+}
+
+if(isset($_POST["tle2"])){
+	$data['sat']['tle2'] = $_POST["tle2"];
+}
+
 
 $newJsonString = json_encode($data);
 file_put_contents('/home/pi/n2yo/config.json', $newJsonString);
