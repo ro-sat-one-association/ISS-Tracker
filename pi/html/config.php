@@ -22,6 +22,8 @@ $desc = $json_a['arduino']['serial-descriptor'];
 $fqbn = $json_a['arduino']['fqbn'];
 $tle1 = $json_a['sat']['tle1'];
 $tle2 = $json_a['sat']['tle2'];
+$dazi = $json_a['custom-angles']['delta-azimuth'];
+$dele = $json_a['custom-angles']['delta-elevation'];
 
 ?>
 
@@ -147,6 +149,14 @@ $tle2 = $json_a['sat']['tle2'];
                                             <div class="form-group">
                                                 <label for="desc">TLE Custom - 2</label>
                                                 <input type="text" placeholder="Lasă liber daca nu e necesar" class="form-control" name="tle2" id="desc" value="<?php echo $tle2;?>">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="desc">Delta Azimut</label>
+                                                <input type="text" placeholder="0" class="form-control" name="delta-azimuth" id="desc" value="<?php echo $dazi;?>">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="desc">Delta Elevatie</label>
+                                                <input type="text" placeholder="0" class="form-control" name="delta-elevation" id="desc" value="<?php echo $dele;?>">
                                             </div>
                                         </form>
                                          <button onclick="SubForm()" class="btn btn-danger">Submit</button>

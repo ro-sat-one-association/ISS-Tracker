@@ -138,38 +138,7 @@
                             </div>
                           </div>
                           <div class="col-sm">
-                            <div class="card ">
-                              <div class="card-body">
-                                <p class="card-text">
-                                  <div class="col-sm">
-                                    <div id = "serial" style = "white-space:pre-wrap;overflow:scroll;overflow-x:hidden; word-break: break-all; height:400px;"></div>
-                                  </div>
-                                  <div class="form-check">
-                                    <label class="form-check-label">
-                                      <input class="form-check-input" id = "serial_scroll" type="checkbox" value="" onclick = "scrollDownSerial();">
-                                              Autoscroll
-                                              
-                                        <span class="form-check-sign">
-                                          <span class="check"></span>
-                                        </span>
-                                      </label>
-                                    </div>
-                                  </p>
-                                  <div class="row" style="width:100%;">
-                                    <form id = "cmdform" action="#" method="post">
-                                      <div class="form-group">
-                                        <label for="cmd">Trimite o comanda</label>
-                                        <input type="text" class="form-control" name="cmd" id="cmd" value="">
-                                        </div>
-                                      </form>
-                                      <button onclick="SubCmdForm()" class="btn btn-info">Send</button>
-                                      <button onclick="SubDebug()" class="btn btn-danger" id="debug_button"></button>
-                                    </div>
-                                    <h4 class="card-title">Serial Log</h4>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
+
                           </div>
                         </div>
                       </div>
@@ -216,76 +185,8 @@
               ajax.send();
           }
 
-          function scrollDownSerial(){
-            if(document.getElementById("serial_scroll").checked){
-              var elem = document.getElementById("serial");
-              elem.scrollTop = elem.scrollHeight; 
-            }
-          }
-
-          function loadSerial() {
-              var ajax = new XMLHttpRequest();
-              ajax.onreadystatechange = function() {
-                  if (ajax.readyState == 4) {
-                      if (ajax.responseText != previous_serial) {
-                          previous = ajax.responseText;
-                          document.getElementById("serial").innerHTML =
-                                this.responseText;  
-                          scrollDownSerial();
-                      }
-                  }
-              };
-              ajax.open("POST", "arduino_debug_log.txt", true); //Use POST to avoid caching
-              ajax.send();
-          }
-
-          function loadDebugState() {
-              var ajax = new XMLHttpRequest();
-              ajax.onreadystatechange = function() {
-                  if (ajax.readyState == 4) {
-                      if (ajax.responseText != previous_debug) {
-                          previous = ajax.responseText;
-                          if (this.responseText.includes("1")){
-                              document.getElementById("debug_button").innerHTML = "Stop Debug";
-                              is_debug_on = false;
-
-                          } else {
-                              document.getElementById("debug_button").innerHTML = "Start Debug";
-                              is_debug_on = true;
-                          }
-                          previous_debug = ajax.responseText;
-                      }
-                  }
-              };
-              ajax.open("POST", "debug_state.txt", true); //Use POST to avoid caching
-              ajax.send();
-          }
-
-            function SubCmdForm() {
-                $.ajax({
-                    url: 'submit_cmd.php',
-                    type: 'post',
-                    data: $('#cmdform').serialize(),
-                    success: function() {
-                        console.log("trimis o comanda");
-                    }
-                });
-            }
-
-            function SubDebug() {
-                $.ajax({
-                    url: 'submit_debug.php',
-                    type: 'post',
-                    data: $('#cmdform').serialize(),
-                    success: function() {
-                        console.log("pornit/oprit dbg");
-                    }
-                });
-            }
-
           setInterval(loadDoc, 100);
-          setInterval(loadSerial, 50);
-          setInterval(loadDebugState, 200);
+
         </script>
         <script>
             if ( window.history.replaceState ) {

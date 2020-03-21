@@ -23,16 +23,7 @@ def refreshConfig():
 refreshConfig()
 
 def getFTDIPort():
-	port = "/dev/"
-	ports = list(serial.tools.list_ports.comports())
-	for p in ports:
-		print(p)
-		serialDesc = config['arduino']['serial-descriptor']
-		if serialDesc in p.description:
-			port = port + p.name
-			print("Found port " + port) 
-			return str(port)
-	raise Exception("No FTDI port was found")
+	port = "/dev/null"
 
 def csum(s):
 	return str(sum(bytearray(s, encoding='ascii')) % 10)
@@ -122,7 +113,7 @@ satName = getName()
 tle 	= getTLE()
 home 	= getObserver()
 sat 	= ephem.readtle(satName, tle[0], tle[1])
-ser 	= serial.Serial(getFTDIPort(), 9600, timeout=0)
+#ser 	= serial.Serial(getFTDIPort(), 9600, timeout=0)
 
 timeSerialWrite = 0
 timeSerialRead  = 0
@@ -158,12 +149,12 @@ def standardRoutine():
 			f.write(log)
 			f.close()
 			print(sendstr)
-			ser.write(sendstr.encode('ascii'))
+			#ser.write(sendstr.encode('ascii'))
 			print(sendstr)
 			timeSerialWrite = time.time()
 
 		if(time.time() - timeSerialRead > 0.5):
-			getWriteLiveData(ser)
+			#getWriteLiveData(ser)
 			timeSerialRead = time.time()
 
 class MyHandler(FileSystemEventHandler):
@@ -218,12 +209,12 @@ while True:
 			ele  = config['custom-angles']['elevation']
 			sendstr = "!" + azi + "&" + ele
 			sendstr = sendstr + "!" + csum(sendstr)
-			ser.write(sendstr.encode('ascii'))
+			#ser.write(sendstr.encode('ascii'))
 			print(sendstr)
 			timeSerialWrite = time.time()
 			
 		if(time.time() - timeSerialRead > 0.5):
-			getWriteLiveData(ser)
+			#getWriteLiveData(ser)
 			timeSerialRead = time.time()
 
 	if ("UNROLL" in state):
@@ -231,11 +222,11 @@ while True:
 			f = open('/home/pi/n2yo/unroll.txt', 'r')
 			sendstr = f.read().strip()
 			f.close()
-			ser.write(sendstr.encode('ascii'))
+			#ser.write(sendstr.encode('ascii'))
 			print(sendstr)
 			sentCommand = True
 
 		if(time.time() - timeSerialRead > 0.5):
-			getWriteLiveData(ser)
+			#getWriteLiveData(ser)
 			timeSerialRead = time.time()
 

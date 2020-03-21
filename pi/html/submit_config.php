@@ -55,6 +55,14 @@ if(isset($_POST["tle2"])){
 	$data['sat']['tle2'] = $_POST["tle2"];
 }
 
+if(isset($_POST["delta-azimuth"])){
+	$data['custom-angles']['delta-azimuth'] = $_POST["delta-azimuth"];
+}
+
+if(isset($_POST["delta-elevation"])){
+	$data['custom-angles']['delta-elevation'] = $_POST["delta-elevation"];
+}
+
 
 $newJsonString = json_encode($data);
 file_put_contents('/home/pi/n2yo/config.json', $newJsonString);
