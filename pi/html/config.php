@@ -24,6 +24,8 @@ $tle1 = $json_a['sat']['tle1'];
 $tle2 = $json_a['sat']['tle2'];
 $dazi = $json_a['custom-angles']['delta-azimuth'];
 $dele = $json_a['custom-angles']['delta-elevation'];
+$autos = $json_a['autostart'];
+
 
 ?>
 
@@ -158,7 +160,17 @@ $dele = $json_a['custom-angles']['delta-elevation'];
                                                 <label for="desc">Delta Elevatie</label>
                                                 <input type="text" placeholder="0" class="form-control" name="delta-elevation" id="desc" value="<?php echo $dele;?>">
                                             </div>
-                                        </form>
+                                            <input type="hidden" name="autostart" value="0" />
+                                            <div class="form-check float-left">
+                                                    <label class="form-check-label">
+                                                        <input class="form-check-input" id = "autostart" name = "autostart" value = "1" type="checkbox"  <?php if($autos){echo 'checked';}?> >
+                                                        Autostart
+                                                        <span class="form-check-sign">
+                                                            <span class="check"></span>
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </form>
                                          <button onclick="SubForm()" class="btn btn-danger">Submit</button>
                                     </div>
                                     <div class="card-footer">

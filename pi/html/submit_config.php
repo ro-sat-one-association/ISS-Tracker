@@ -63,8 +63,18 @@ if(isset($_POST["delta-elevation"])){
 	$data['custom-angles']['delta-elevation'] = $_POST["delta-elevation"];
 }
 
+if(isset($_POST["autostart"])){
+	if($_POST["autostart"] == "0"){
+		$data['autostart'] = false;
+		exec("sudo systemctl disable track");
+	} else {
+		$data['autostart'] = true;
+		exec("sudo systemctl enable track");
+	}
+} 
 
 $newJsonString = json_encode($data);
 file_put_contents('/home/pi/n2yo/config.json', $newJsonString);
+
 
 ?>
