@@ -59,10 +59,6 @@ def getTLE():
 		customTLE = True
 		for x in tle:
 			print(x)
-		return tle
-	elif config['sat']['NORAD'] == "SUN":
-		print("Folosim Soarele")
-		return "SUN"
 	else:
 		response = urllib.request.urlopen(getRequestURL())
 		data = json.loads(response.read())
@@ -71,7 +67,7 @@ def getTLE():
 		customTLE = False
 		for x in tle:
 			print(x)
-		return tle
+	return tle
 
 def getName():
 	response = urllib.request.urlopen(getRequestURL())
@@ -122,25 +118,10 @@ def getWriteLiveData(ser):
 		f.close()
 		print(data)
 
-home = None
-tle  = None
-sat  = None
-satName = None
-
-def redefineSettings():
-	global sat, satName, home, ser
-	refreshConfig()
-	tle  = getTLE()
-	home = getObserver()
-	ser  = serial.Serial(getFTDIPort(), 9600, timeout=0)
-	if tle == "SUN":
-		satName = "SUN"
-		sat  	= ephem.Sun()
-	else:
-		satName = getName()
-		sat 	= ephem.readtle(satName, tle[0], tle[1])
-
-redefineSettings()
+satName = "SUN"
+home 	= getObserver()
+sat 	= ephem.Sun()
+ser 	= serial.Serial(getFTDIPort(), 9600, timeout=0)
 
 timeSerialWrite = 0
 timeSerialRead  = 0
@@ -187,7 +168,12 @@ def standardRoutine():
 class MyHandler(FileSystemEventHandler):
 	def on_modified(self, event):
 		if 'config.json' in event.src_path:
-			redefineSettings()
+			global sat, satName, home
+			refreshConfig()
+			satName = getName()
+			tle 	= getTLE()
+			home 	= getObserver()
+			sat 	= ephem.readtle(satName, tle[0], tle[1])
 			if(config['general-state'] == 'CUSTOMTIME'):
 				home.date = base
 			print("Am schimbat configuratia")
