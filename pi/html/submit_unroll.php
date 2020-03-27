@@ -1,5 +1,5 @@
 <?php 
-
+  exec("sudo systemctl start track");
   $a = $_GET["a"]; 
   $f = fopen("/home/pi/n2yo/unroll.txt", "w");
   fwrite($f, $a."\n");

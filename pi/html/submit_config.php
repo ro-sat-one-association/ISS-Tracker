@@ -1,4 +1,5 @@
 <?php
+  exec("sudo systemctl start track");
 
 $jsonString = file_get_contents('/home/pi/n2yo/config.json');
 $data = json_decode($jsonString, true);
