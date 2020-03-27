@@ -6,7 +6,6 @@ import glob
 import subprocess
 import shlex
 import json
-
 sys.stdout = open('/var/www/html/arduino_upload_log.txt', 'w')
 
 config = ""
