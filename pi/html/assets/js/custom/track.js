@@ -445,7 +445,7 @@ function showOKNotification(from, align) {
 
     $.notify({
         icon: "add_alert",
-        message: "Schimbat satelitul cu succes!"
+        message: "Am trimis noile constante"
 
     }, {
         type: 'success',
@@ -481,5 +481,4 @@ function verificaTimpul() {
     } else {
         document.getElementById("alerta_timp").innerHTML = "";
     }
-
 }

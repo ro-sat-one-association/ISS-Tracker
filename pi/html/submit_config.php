@@ -21,15 +21,15 @@ if(isset($_POST["sat"])){
 }
 
 if(isset($_POST["lat"])){
-	$data['observer']['latitude'] = floatval($_POST["lat"]);
+	$data['observer']['latitude'] = $_POST["lat"];
 }
 
 if(isset($_POST["lon"])){
-	$data['observer']['longitude'] = floatval($_POST["lon"]);
+	$data['observer']['longitude'] = $_POST["lon"];
 }
 
 if(isset($_POST["alt"])){
-	$data['observer']['altitude'] = intval($_POST["alt"]);
+	$data['observer']['altitude'] = $_POST["alt"];
 }
 
 if(isset($_POST["datestr"])){
@@ -76,6 +76,5 @@ if(isset($_POST["autostart"])){
 
 $newJsonString = json_encode($data);
 file_put_contents('/home/pi/n2yo/config.json', $newJsonString);
-
 
 ?>

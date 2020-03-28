@@ -50,6 +50,33 @@ def getRequestURL():
 	print (urltle)
 	return urltle
 
+def representsInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def validLatitude(lat):
+	try:
+		lat = float(lat)
+		if lat < 90.0 and lat > -90.0:
+			return True
+		else:
+			return False
+	except ValueError:
+		return False
+
+def validLongitude(lon):
+	try:
+		lon = float(lon)
+		if lon < 180.0 and lon > -180.0:
+			return True
+		else:
+			return False
+	except ValueError:
+		return False
+
 def getTLE():
 	if config['sat']['tle1'] and config['sat']['tle2']:
 		tle = ["", ""]
@@ -60,18 +87,20 @@ def getTLE():
 		for x in tle:
 			print(x)
 		return tle
-	elif config['sat']['NORAD'] == "SUN":
-		print("Folosim Soarele")
-		return "SUN"
-	else:
+	elif representsInt(config['sat']['NORAD']):
 		response = urllib.request.urlopen(getRequestURL())
 		data = json.loads(response.read())
-		print("TLE: ")
-		tle = data["tle"].split("\r\n")
-		customTLE = False
-		for x in tle:
-			print(x)
-		return tle
+		if data["info"]["satname"]:
+			tle = data["tle"].split("\r\n")
+			print("TLE: ")
+			for x in tle:
+				print(x)
+			customTLE = False
+			return tle
+		else:
+			return None
+	else:
+		return config['sat']['NORAD']
 
 def getName():
 	response = urllib.request.urlopen(getRequestURL())
@@ -80,7 +109,7 @@ def getName():
 		name = "CUSTOM TLE"
 	else:
 		name = data["info"]["satname"]
-	return str(name)
+	return name
 
 def getCustomTime():
 	datestr = config['sat']['customtime']
@@ -89,10 +118,36 @@ def getCustomTime():
 
 def getObserver():
 	home = ephem.Observer()
-	home.lon = str(config['observer']['longitude'])
-	home.lat = str(config['observer']['latitude'])
-	home.elevation = config['observer']['altitude']
+	lon = str(config['observer']['longitude'])
+	lat = str(config['observer']['latitude'])
 
+	if validLatitude(lat):
+		home.lat = lat
+	else:
+		print("Latitudine nevalida")
+		home.lat = "0.0"
+		home.lon = "0.0"
+		home.elevation = 0
+		return home
+
+	if validLongitude(lon):
+		home.lon  = lon
+	else:
+		print("Longitudine nevalida")
+		home.lat = "0.0"
+		home.lon = "0.0"
+		home.elevation = 0
+		return home	
+		
+	try:
+		home.elevation = float(config['observer']['altitude'])
+	except ValueError:
+		print("Altitudine nevalida")
+		home.lat = "0.0"
+		home.lon = "0.0"
+		home.elevation = 0
+		return home
+		
 	return home
 
 def getLiveData(ser):
@@ -122,6 +177,20 @@ def getWriteLiveData(ser):
 		f.close()
 		print(data)
 
+def writeError(e):
+	log = getFileContent('/home/pi/n2yo/logTemplate.html')
+	log = log.format(
+		"-", 
+		"-", 
+		"-", 
+		str(datetime.utcnow()), 
+		str(datetime.utcnow()),
+		str(e)
+	)
+	f = open('/var/www/html/log.html', 'w')
+	f.write(log)
+	f.close()
+
 home = None
 tle  = None
 sat  = None
@@ -133,12 +202,28 @@ def redefineSettings():
 	tle  = getTLE()
 	home = getObserver()
 	ser  = serial.Serial(getFTDIPort(), 9600, timeout=0)
-	if tle == "SUN":
-		satName = "SUN"
-		sat  	= ephem.Sun()
-	else:
-		satName = getName()
-		sat 	= ephem.readtle(satName, tle[0], tle[1])
+	if tle is not None:
+		if (representsInt(config['sat']['NORAD'])):
+			satName = getName()
+			sat 	= ephem.readtle(satName, tle[0], tle[1])
+		elif tle.lower() == "sun":
+			satName = "Sun"
+			sat  	= ephem.Sun()
+		elif tle.lower() == "moon":
+			satName = "Moon"
+			sat 	= ephem.Moon()
+		elif tle.lower() == "venus":
+			satName = "Venus"
+			sat 	= ephem.Venus()
+		elif tle.lower() == "mars":
+			satName = "Mars"
+			sat 	= ephem.Mars()
+		else:
+			sat = None
+			satName = ""
+	else: 
+		sat = None
+		satName = ""
 
 redefineSettings()
 
@@ -152,37 +237,48 @@ sentCommand = False
 def standardRoutine():
 		global timeSerialRead
 		global timeSerialWrite
-		sat.compute(home)
+		if sat is not None:
+			if not (float(home.lat) == 0.0 and float(home.lon) == 0.0 and int(home.elevation) == 0):
+				sat.compute(home)
+				deltaAzimuth   = float(config['custom-angles']['delta-azimuth'])
+				deltaElevation = float(config['custom-angles']['delta-elevation'])
+				azi  = "%.2f" %  (sat.az  * 180.0 / math.pi + deltaAzimuth)
+				ele  = "%.2f" %  (sat.alt * 180.0 / math.pi + deltaElevation)
 
-		deltaAzimuth   = float(config['custom-angles']['delta-azimuth'])
-		deltaElevation = float(config['custom-angles']['delta-elevation'])
-		azi  = "%.2f" %  (sat.az  * 180.0 / math.pi + deltaAzimuth)
-		ele  = "%.2f" %  (sat.alt * 180.0 / math.pi + deltaElevation)
+				log = getFileContent('/home/pi/n2yo/logTemplate.html')
+				log = log.format(
+					azi, 
+					ele, 
+					satName, 
+					str(home.date.datetime()), 
+					str(datetime.utcnow()),
+					"No reported error"
+				)
 
-		log = getFileContent('/home/pi/n2yo/logTemplate.html')
-		log = log.format(
-			azi, 
-			ele, 
-			satName, 
-			str(home.date.datetime()), 
-			str(datetime.utcnow())
-		)
+				sendstr  = "!" + azi + "&" + ele 
+				sendstr += "!" + csum(sendstr)	
 
-		sendstr  = "!" + azi + "&" + ele 
-		sendstr += "!" + csum(sendstr)	
+				if(time.time() - timeSerialWrite > 1.0):
+					f = open('/var/www/html/log.html', 'w')
+					f.write(log)
+					f.close()
+					print(sendstr)
+					ser.write(sendstr.encode('ascii'))
+					print(sendstr)
+					timeSerialWrite = time.time()
 
-		if(time.time() - timeSerialWrite > 1.0):
-			f = open('/var/www/html/log.html', 'w')
-			f.write(log)
-			f.close()
-			print(sendstr)
-			ser.write(sendstr.encode('ascii'))
-			print(sendstr)
-			timeSerialWrite = time.time()
-
-		if(time.time() - timeSerialRead > 0.5):
+				if(time.time() - timeSerialRead > 0.5):
+					getWriteLiveData(ser)
+					timeSerialRead = time.time()
+			else:
+				writeError("Wrong Coordinates/Altitude")
+				getWriteLiveData(ser)
+				time.sleep(1.0)
+		else:
+			writeError("Wrong NORAD")
 			getWriteLiveData(ser)
-			timeSerialRead = time.time()
+			time.sleep(1.0)
+			
 
 class MyHandler(FileSystemEventHandler):
 	def on_modified(self, event):

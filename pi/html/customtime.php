@@ -98,6 +98,7 @@ fclose($f);
  
                         <div class="navbar-wrapper">
                             <span id="alerta_timp"></span>
+                            <span id="eroare"></span>
                             <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
                                 <span class="sr-only">Toggle navigation</span>
                                 <span class="navbar-toggler-icon icon-bar"></span>
@@ -195,7 +196,7 @@ fclose($f);
                                         <div class="card-icon">
                                             <i class="material-icons">info_outline</i>
                                         </div>
-                                        <p class="card-category">Satelit urmărit</p>
+                                        <p class="card-category">Satelit/corp urmărit</p>
                                         <h3 class="card-title"><span id="mini_sat"></span></h3>
                                     </div>
                                     <div class="card-footer">
@@ -262,7 +263,7 @@ fclose($f);
                                         <form id="trackform" action="" method="post">
 
                                             <div class="form-group">
-                                                <label for="sat_field">Cod NORAD</label>
+                                                <label for="sat_field">Cod NORAD / Nume corp</label>
                                                 <input type="text" class="form-control" name="sat" id="sat_field" value="<?php echo $sat;?>">
                                             </div>
 
@@ -331,6 +332,7 @@ fclose($f);
         <script src="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/js/material-dashboard.js"></script>
 
         <script src="assets/js/custom/customtime.js"></script>
+        <script src="assets/js/custom/eroare.js"></script>
 
         <script>
             refreshMode();
