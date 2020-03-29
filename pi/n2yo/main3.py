@@ -90,8 +90,8 @@ def getTLE():
 	elif representsInt(config['sat']['NORAD']):
 		response = urllib.request.urlopen(getRequestURL())
 		data = json.loads(response.read())
-		if data["info"]["satname"]:
-			tle = data["tle"].split("\r\n")
+		if data['tle']:
+			tle = data['tle'].split("\r\n")
 			print("TLE: ")
 			for x in tle:
 				print(x)
