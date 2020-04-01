@@ -710,8 +710,8 @@ void initCompass() {
   // Piatra-Neamt, 6°  15' EST
   Compass.SetDeclination(6, 15, 'E');
 
-  Compass.SetSamplingMode(COMPASS_SINGLE);
-  Compass.SetScale(COMPASS_SCALE_130);
+  Compass.SetSamplingMode(COMPASS_CONTINUOUS);
+  Compass.SetScale(COMPASS_SCALE_810);
   Compass.SetOrientation(COMPASS_HORIZONTAL_X_NORTH);
 }
 
@@ -742,11 +742,6 @@ long long lastTime;
 char unroll_state;
 float initUnrollAngle;
 float heading;
-
-bool ture[4];
-float ture_m[4];
-char last_semn[4];
-
 
 void getCompass() {
   heading = Compass.GetHeadingDegrees();
@@ -821,16 +816,6 @@ void setup()
     }
   }
 
-  float startPoint = 25.0f;
-
-  for (int i = 0; i < 4; ++i) ture[i] = false;
-
-  ture_m[0] = startPoint + 10.0f;
-  ture_m[1] = normalizeazaCerc(startPoint + 90.0f);
-  ture_m[2] = normalizeazaCerc(startPoint + 180.0f);
-  ture_m[3] = normalizeazaCerc(startPoint + 270.0f);
-
-  for (int i = 0; i < 4; ++i) last_semn[i] = -1;
 
 }
 
@@ -935,18 +920,9 @@ void readData(float &azi, float &ele)
       initUnrollAngle = heading;
       return;
     }
-    if (textPacket == "E0") {
-      unroll_state = 3;
-      initUnrollAngle = roll;
-      return;
-    }
-    if (textPacket == "E1") {
-      initUnrollAngle = roll;
-      unroll_state = 4;
-      return;
-    }
 
-    if (textPacket[0] == 'A' && textPacket[1] == 'Z') { //AZ239.0 EL3.0 UP000 XXX DN000 XXX
+    if (textPacket[0] == 'A' && textPacket[1] == 'Z') {
+      unroll_state = -1;  //AZ239.0 EL3.0 UP000 XXX DN000 XXX
       int i = 2;
       for (i; textPacket[i] != ' ' ; ++i) {
         A += textPacket[i];
@@ -1073,34 +1049,6 @@ type sign(type value) {
 }
 
 
-void rutinaTure() {
-  bool s = true;
-  for (int i = 0; i < 4; ++i) {
-    if (sign(heading - ture_m[i]) != last_semn[i]) {
-      ture[i] = !ture[i];
-    }
-    last_semn[i] = sign(heading - ture_m[i]);
-    s = s && ture[i];
-  }
-  if (s) {
-    Serial.println("AM DETECTAT O TURA");
-
-  }
-
-  for (int i = 0; i < 4; ++i) {
-    Serial.print(int(last_semn[i]));
-    Serial.print('\t');
-  }
-  Serial.println();
-  for (int i = 0; i < 4; ++i) {
-    Serial.print(int(ture_m[i]));
-    Serial.print('\t');
-  }
-  Serial.println();
-
-}
-
-
 void alignAzimuth(float t, float h) {
   float delta = deltaAzimuth(t, h);
   /*Serial.print(delta);
@@ -1133,6 +1081,14 @@ void alignElevation(float t, float r) {
 
 #define PRINT_DELAY 500
 
+
+
+float normalizeAngle(float a){
+  if (a < 0) return a + 360.0f;
+  if (a > 360.0f) return a - 360.0f;
+  return a;
+}
+
 void loop()
 {
   getMPUData();
@@ -1162,73 +1118,35 @@ void loop()
     lastTime = millis();
   }
 
-  if (unroll_state != -1) {
-    switch (unroll_state) {
-      case 0: {
-          stopElevation();
-          stopAzimuth();
-          if (debug) {
-            Serial.println("Done unrolling");
-          }
-        } break;
-      case 1: { //A0
-          float delta = deltaAzimuth(initUnrollAngle, heading + 30.0f);
-          if (delta > 5.0f) {
-            alignAzimuth(heading + 30.0f, heading);
-            stopElevation();
-            if (debug) {
-              Serial.println("Unrolling... A0");
-            }
-          } else {
-            stopAzimuth();
-            unroll_state = 0;
-          }
-          // Serial.println("A0");
-        } break;
 
-      case 2: { //A1
-          float delta = deltaAzimuth(initUnrollAngle, heading - 30.0f);
-          if (delta > 5.0f) {
-            alignAzimuth(heading - 30.0f, heading);
-            stopElevation();
-          } else {
-            stopAzimuth();
-            unroll_state = 0;
-          }
-          // Serial.println("A1");
-
-        } break;
-      case 3: {
-          float delta = deltaElevatie(initUnrollAngle, roll + 10.0f);
-          if (delta > 5.0f) {
-            alignElevation(roll + 10.0f, roll);
-            stopAzimuth();
-          } else {
-            stopElevation();
-            unroll_state = 0;
-          }
-          // Serial.println("E0");
-        } break;
-      case 4: {
-          float delta = deltaElevatie(initUnrollAngle, roll - 10.0f);
-          if (delta > 5.0f) {
-            alignElevation(roll - 10.0f, roll);
-            stopAzimuth();
-          } else {
-            stopElevation();
-            unroll_state = 0;
-          }
-          //Serial.println("E1");
-        } break;
-
+  if(unroll_state != -1){
+    if(unroll_state == 1){ //A0
+      float d = deltaAzimuth(initUnrollAngle, heading);
+      float k  = normalizeAngle(initUnrollAngle - 1.0f);
+      float dk = deltaAzimuth(k, heading);
+      if(dk > d){
+        moveAzimuth(sensAzimuth(normalizeAngle(heading + 1.0f), heading), 255);
+      } else {
+        alignAzimuth(normalizeAngle(k - 2.0f), heading);
+        if (deltaAzimuth(normalizeAngle(k - 2.0f), heading) < TOLERANTA_AZIMUTH) unroll_state=-1;
+      }
     }
+
+    if(unroll_state == 2){ //A1
+      float d = deltaAzimuth(initUnrollAngle, heading);
+      float k  = normalizeAngle(initUnrollAngle + 1.0f);
+      float dk = deltaAzimuth(k, heading);
+      if(dk > d){
+        moveAzimuth(sensAzimuth(normalizeAngle(heading - 1.0f), heading), 255);
+      } else {
+        alignAzimuth(normalizeAngle(k + 2.0f), heading);
+        if (deltaAzimuth(normalizeAngle(k + 2.0f), heading) < TOLERANTA_AZIMUTH) unroll_state=-1;
+      }
+    }
+
   } else {
-    alignAzimuth(azimuth, heading);
-    alignElevation(elevation, roll);
+      alignAzimuth(azimuth, heading);
+      alignElevation(elevation, roll);
   }
 
-  // rutinaTure();
-
-  //stopAzimuth();
-  //stopElevation();
 }
