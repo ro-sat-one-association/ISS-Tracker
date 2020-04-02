@@ -1,0 +1,16 @@
+{
+    "azimuth": {
+      "live": 15.95,
+      "target": 17.02
+    },
+    "elevation":{
+      "live": 12.34,
+      "target": 10.22
+    },
+    "time":{
+      "real":"2020-04-01 16:08:51.930225",
+      "simulated":"2020-04-01 16:08:51.930225"
+    },
+    "sat":"SPACE STATION",
+    "err":"No reported error"
+}

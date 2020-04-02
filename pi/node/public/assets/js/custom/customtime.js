@@ -169,54 +169,10 @@ var previous = "";
 var time = "";
 var utc_time = "";
 
-function getLiveData() {
-    var ajax = new XMLHttpRequest();
-    ajax.onreadystatechange = function() {
-        if (ajax.readyState == 4) {
-            if (ajax.responseText != previous) {
-                previous = ajax.responseText;
-                if (this.responseText.search(".") != -1) {
-                    document.getElementById("livedata").innerHTML = this.responseText;
-                    var doc = new DOMParser().parseFromString(this.responseText, "text/html")
-                    document.getElementById("mini_live_azi").innerHTML = doc.getElementById("live_azi").innerHTML;
-                    document.getElementById("mini_live_ele").innerHTML = doc.getElementById("live_ele").innerHTML;
-                    setLiveData();
-                }
-            }
-        }
-    };
-    ajax.open("POST", "livedata.html", true); //Use POST to avoid caching
-    ajax.send();
-}
-
-function getTargetData() {
-    var ajax = new XMLHttpRequest();
-    ajax.onreadystatechange = function() {
-        if (ajax.readyState == 4) {
-            if (ajax.responseText != previous) {
-                document.getElementById("targetdata").innerHTML = this.responseText;
-                var doc = new DOMParser().parseFromString(this.responseText, "text/html")
-                document.getElementById("mini_sat").innerHTML = doc.getElementById("sat").innerHTML;
-                document.getElementById("mini_timp").innerHTML = doc.getElementById("time").innerHTML;
-
-                document.getElementById("mini_target_ele").innerHTML = doc.getElementById("target_ele").innerHTML;
-                document.getElementById("mini_target_azi").innerHTML = doc.getElementById("target_azi").innerHTML;
-
-                time = doc.getElementById("time").innerHTML;
-                utc_time = doc.getElementById("time_utc_now").innerHTML;
-                previous = ajax.responseText;
-                setTargetData();
-            }
-        }
-    };
-    ajax.open("POST", "log.html", true); //Use POST to avoid caching
-    ajax.send();
-}
-
-setInterval(getLiveData, 100);
-setInterval(getTargetData, 1000);
 setInterval(drawBusola, 10);
 setInterval(drawElevatie, 10);
+setInterval(verificaTimpul, 100);
+
 
 actualAzimuth = 0;
 liveAzimuth = 0;
@@ -227,13 +183,13 @@ liveElevatie = 0;
 targetElevatie = 0;
 
 function setLiveData() {
-    liveAzimuth = document.getElementById("live_azi").innerHTML;
-    liveElevatie = document.getElementById("live_ele").innerHTML;
+    liveAzimuth = document.getElementById("mini_live_azi").innerHTML;
+    liveElevatie = document.getElementById("mini_live_ele").innerHTML;
 }
 
 function setTargetData() {
-    targetAzimuth = document.getElementById("target_azi").innerHTML;
-    targetElevatie = document.getElementById("target_ele").innerHTML;
+    targetAzimuth = document.getElementById("mini_target_azi").innerHTML;
+    targetElevatie = document.getElementById("mini_target_ele").innerHTML;
 }
 
 var canvas1 = document.getElementById("canvas1");
@@ -250,10 +206,30 @@ ctx2.translate(radius, radius)
 radius = radius * 0.95;
 
 busolastyle = "rgba(255, 255, 255, 0.2)";
-elevatiestyle = "rgba(255, 255, 255, 0.2)";
+
+elevatiestyle1 = "rgba(255, 255, 255, 0.1)";
+elevatiestyle2 = "rgba(255, 255, 255, 0.2)";
 
 dAzimuth = 10 * 360 / 4000;
 dElevatie = 10 * 360 / 30000;
+
+//constante pentru user
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return false;
+}
+
+
+showRedDot  = false;
+showHorizon = false;
+
+
 
 // u = document.getElementById("target_azi").innerHTML;
 // l = document.getElementById("live_azi").innerHTML;
@@ -280,6 +256,8 @@ function sensAzimuth(t, h) {
 }
 
 function drawBusola() {
+    setTargetData();
+    setLiveData();
     u = targetAzimuth;
     u *= Math.PI / 180;
 
@@ -291,14 +269,18 @@ function drawBusola() {
     l = actualAzimuth;
 
     l *= Math.PI / 180;
-    drawFace(ctx1, radius, busolastyle);
+    drawFace(ctx1, radius, busolastyle, busolastyle);
     drawCardinale(ctx1, radius, 1);
     drawBratTarget(ctx1, radius, u);
     drawBratLive(ctx1, radius, l);
 }
 
 function drawElevatie() {
+    var dot = false;
     u = targetElevatie;
+    if(u < 0) {
+        dot = true;
+    }
     u = u - 90;
     if (u < 0) u += 360;
     u *= Math.PI / 180;
@@ -315,19 +297,27 @@ function drawElevatie() {
     l = l - 90;
     if (l < 0) l += 360;
     l *= Math.PI / 180;
+    if(showHorizon)
+        drawFace(ctx2, radius, elevatiestyle1, elevatiestyle2);
+    else
+        drawFace(ctx2, radius, elevatiestyle2, elevatiestyle2);
 
-    drawFace(ctx2, radius, elevatiestyle);
     drawCardinale(ctx2, radius, 2);
     drawBratTarget(ctx2, radius, u);
     drawBratLive(ctx2, radius, l);
+    if(dot && showRedDot) drawRedDot(ctx2, radius);
 }
 
-function drawFace(ctx, radius, style) {
+function drawFace(ctx, radius, style1, style2) {
     var grad;
     ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = style;
+    ctx.arc(0, 0, radius, 0, Math.PI);
+    ctx.fillStyle = style1;
     ctx.clearRect(-500, -500, 1000, 1000);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, Math.PI, 2 * Math.PI);
+    ctx.fillStyle = style2;
     ctx.fill();
 
     grad = ctx.createRadialGradient(0, 0, radius * 0.8, 0, 0, radius * 1.35);
@@ -341,6 +331,13 @@ function drawFace(ctx, radius, style) {
     ctx.beginPath();
     ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
     ctx.fillStyle = "white";
+    ctx.fill();
+}
+
+function drawRedDot(ctx, radius){
+    ctx.beginPath();
+    ctx.arc(110, 110, radius * 0.04, 0, 2 * Math.PI);
+    ctx.fillStyle = "#e53935";
     ctx.fill();
 }
 
@@ -400,18 +397,9 @@ function showOKNotification(from, align, msg = "Am trimis noile constante", t = 
     });
 }
 
-function SubForm() {
-    $.ajax({
-        url: 'submit_config.php',
-        type: 'post',
-        data: $('#trackform').serialize(),
-        success: function() {
-            showOKNotification();
-        }
-    });
-}
-
 function verificaTimpul() {
+    time = document.getElementById("time").innerHTML;
+    utc_time = document.getElementById("time_utc_now").innerHTML;
     time = time.trim();
     utc_time = utc_time.trim();
     if (time.length > 19) time = time.slice(0, -7);
@@ -425,6 +413,7 @@ function verificaTimpul() {
         document.getElementById("alerta_timp").innerHTML = ("<div class=\"alert alert-warning\" role=\"alert\">Timpul modificat nu este setat!</div>");
     }
 }
+
 
 var lastSat = "";
 
@@ -443,8 +432,16 @@ $(document).ready(function(){
     setTimeout(() => { //cam nasoala rezolvare, dar na, delay 2 sec pt notfiicari
         lastSat = document.getElementById("mini_sat").innerHTML;
         setInterval(verificaSatelit, 100); 
-        setInterval(verificaTimpul, 100);
-    }, 1000);
-
+    }, 2000);
 });
 
+function SubForm() {
+    $.ajax({
+        url: '/submit_conf',
+        type: 'post',
+        data: $('#trackform').serialize(),
+        success: function() {
+            showOKNotification();
+        }
+    });
+}

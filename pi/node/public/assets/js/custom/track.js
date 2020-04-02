@@ -169,53 +169,9 @@ var previous = "";
 var time = "";
 var utc_time = "";
 
-function getLiveData() {
-    var ajax = new XMLHttpRequest();
-    ajax.onreadystatechange = function() {
-        if (ajax.readyState == 4) {
-            if (ajax.responseText != previous) {
-                previous = ajax.responseText;
-                if (this.responseText.search(".") != -1) {
-                    document.getElementById("livedata").innerHTML = this.responseText;
-                    var doc = new DOMParser().parseFromString(this.responseText, "text/html")
-                    document.getElementById("mini_live_azi").innerHTML = doc.getElementById("live_azi").innerHTML;
-                    document.getElementById("mini_live_ele").innerHTML = doc.getElementById("live_ele").innerHTML;
-                    setLiveData();
-                }
-            }
-        }
-    };
-    ajax.open("POST", "livedata.html", true); //Use POST to avoid caching
-    ajax.send();
-}
-
-function getTargetData() {
-    var ajax = new XMLHttpRequest();
-    ajax.onreadystatechange = function() {
-        if (ajax.readyState == 4) {
-            if (ajax.responseText != previous) {
-                document.getElementById("targetdata").innerHTML = this.responseText;
-                var doc = new DOMParser().parseFromString(this.responseText, "text/html")
-                document.getElementById("mini_target_ele").innerHTML = doc.getElementById("target_ele").innerHTML;
-                document.getElementById("mini_target_azi").innerHTML = doc.getElementById("target_azi").innerHTML;
-
-                document.getElementById("mini_sat").innerHTML = doc.getElementById("sat").innerHTML;
-                time = doc.getElementById("time").innerHTML;
-                utc_time = doc.getElementById("time_utc_now").innerHTML;
-                previous = ajax.responseText;
-                setTargetData();
-            }
-        }
-    };
-    ajax.open("POST", "log.html", true); //Use POST to avoid caching
-    ajax.send();
-}
-
-//setInterval(getLiveData, 100);
-//setInterval(getTargetData, 1000);
-//setInterval(drawBusola, 10);
-//setInterval(drawElevatie, 10);
-//setInterval(verificaTimpul, 100);
+setInterval(drawBusola, 10);
+setInterval(drawElevatie, 10);
+setInterval(verificaTimpul, 100);
 
 
 actualAzimuth = 0;
@@ -227,13 +183,13 @@ liveElevatie = 0;
 targetElevatie = 0;
 
 function setLiveData() {
-    liveAzimuth = document.getElementById("live_azi").innerHTML;
-    liveElevatie = document.getElementById("live_ele").innerHTML;
+    liveAzimuth = document.getElementById("mini_live_azi").innerHTML;
+    liveElevatie = document.getElementById("mini_live_ele").innerHTML;
 }
 
 function setTargetData() {
-    targetAzimuth = document.getElementById("target_azi").innerHTML;
-    targetElevatie = document.getElementById("target_ele").innerHTML;
+    targetAzimuth = document.getElementById("mini_target_azi").innerHTML;
+    targetElevatie = document.getElementById("mini_target_ele").innerHTML;
 }
 
 var canvas1 = document.getElementById("canvas1");
@@ -318,6 +274,8 @@ function sensAzimuth(t, h) {
 }
 
 function drawBusola() {
+    setTargetData();
+    setLiveData();
     u = targetAzimuth;
     u *= Math.PI / 180;
 
@@ -457,18 +415,9 @@ function showOKNotification(from, align, msg = "Am trimis noile constante", t = 
     });
 }
 
-function SubForm() {
-    $.ajax({
-        url: 'submit_config.php',
-        type: 'post',
-        data: $('#trackform').serialize(),
-        success: function() {
-            showOKNotification();
-        }
-    });
-}
-
 function verificaTimpul() {
+    time = document.getElementById("time").innerHTML;
+    utc_time = document.getElementById("time_utc_now").innerHTML;
     time = time.trim();
     utc_time = utc_time.trim();
     if (time.length > 19) time = time.slice(0, -7);
@@ -503,3 +452,13 @@ $(document).ready(function(){
     }, 2000);
 });
 
+function SubForm() {
+    $.ajax({
+        url: '/submit_conf',
+        type: 'post',
+        data: $('#trackform').serialize(),
+        success: function() {
+            showOKNotification();
+        }
+    });
+}
