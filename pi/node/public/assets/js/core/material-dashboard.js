@@ -18,7 +18,7 @@
 (function() {
     isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
   
-    if (isWindows) {
+    if (false) {
       // if we are on windows OS we activate the perfectScrollbar function
       $('.sidebar .sidebar-wrapper, .main-panel').perfectScrollbar();
   
