@@ -39,32 +39,32 @@ fs.watchFile(confFile, (curr, prev) => { //s-a modificat configul, trimite noile
   io.emit('conf', getConfig());
 });
 
-app.use(Express.static(__dirname+'/public'));
+app.use(Express.static(__dirname + '/public'));
 
+
+app.get('/', function(req, res){
+  res.sendFile(__dirname + '/public/track.html');
+});
 
 app.get('/track', function(req, res){
-  res.sendFile(__dirname + '/track.html');
+  res.sendFile(__dirname + '/public/track.html');
 });
 
 app.get('/customtime', function(req, res){
-  res.sendFile(__dirname + '/customtime.html');
+  res.sendFile(__dirname + '/public/customtime.html');
 });
 
 app.get('/unghiuri', function(req, res){
-  res.sendFile(__dirname + '/unghiuri.html');
-});
-
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/track.html');
+  res.sendFile(__dirname + '/public/unghiuri.html');
 });
 
 app.get('/config', function(req, res){
-  res.sendFile(__dirname + '/config.html');
+  res.sendFile(__dirname + '/public/config.html');
 });
 
 
 app.get('/upload', function(req, res){
-  res.sendFile(__dirname + '/upload.html');
+  res.sendFile(__dirname + '/public/upload.html');
 });
 
 io.on('connection', function(socket){ //am primit ceva, redirectioneaza
@@ -166,7 +166,7 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
       console.log('Uploaded ' + file.name);
   });
 
-  res.sendFile(__dirname + '/upload.html');
+  res.sendFile(__dirname + '/public/upload.html');
 
   execCommand('sudo python3 /home/pi/upload_arduino.py &');
 
