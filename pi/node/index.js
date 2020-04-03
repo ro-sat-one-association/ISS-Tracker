@@ -6,9 +6,9 @@ const bodyParser = require('body-parser');
 const { exec } = require('child_process');
 
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var io = require('socket.io')(http, { wsEngine: 'ws' });
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 80;
 
 var urlencodedParser = bodyParser.urlencoded({ extended: true });
 

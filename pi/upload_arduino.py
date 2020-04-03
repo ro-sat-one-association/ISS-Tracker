@@ -7,14 +7,17 @@ import subprocess
 import shlex
 import json
 import socketio
+import time
 #sys.stdout = open('/var/www/html/arduino_upload_log.txt', 'w')
 
 config = ""
 
 sio = socketio.Client()
 
+web = 'http://localhost:80'
+
 try:
-	sio.connect('http://localhost:3000')
+	sio.connect(web)
 except:
 	print("Nu m-am putut conecta la interfata")
 	print(sio.sid)	
@@ -22,7 +25,7 @@ except:
 def sendSoc(soc, data):
 	if sio.sid is None:
 		try:
-			sio.connect('http://localhost:3000')
+			sio.connect(web)
 		except:
 			pass
 	try:
@@ -51,14 +54,14 @@ def getFTDIPort():
 	sendSoc("upload", "Listing all available ports...")
 	for p in ports:
 		print(p.description)
-		sendSoc(p.description)
+		sendSoc("upload", p.description)
 	for p in ports:
 		serialDesc = config['arduino']['serial-descriptor']
 		if serialDesc in p.description:
 			port = port + p.name
 			return str(port)
 	print ("No corresponding port was found for - " + serialDesc)
-	sendSoc("No corresponding port was found for - " + serialDesc)
+	sendSoc("upload", "No corresponding port was found for - " + serialDesc)
 	raise Exception("No FTDI port was found")
 
 def execAndPrint(command):
@@ -69,9 +72,13 @@ def execAndPrint(command):
 	output = out + err
 
 	print(output)
-	sendSoc(output)
+	sendSoc("upload", output)
 
 
+for x in range(0, 5):
+	print("Starting in " + str(5-x) + " seconds...")
+	sendSoc("upload", "Starting in " + str(5-x) + " seconds...")
+	time.sleep(1)
 
 port = getFTDIPort()
 fqbn = "arduino:avr:pro:cpu=8MHzatmega328"

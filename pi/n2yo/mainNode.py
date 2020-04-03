@@ -17,10 +17,12 @@ from watchdog.events import FileSystemEventHandler
 config = ""
 nodeData = ""
 
+web = 'http://localhost:80'
+
 sio = socketio.Client()
 
 try:
-	sio.connect('http://localhost:3000')
+	sio.connect(web)
 except:
 	print("Nu m-am putut conecta la interfata")
 	print(sio.sid)	
@@ -28,7 +30,7 @@ except:
 def sendSoc(soc, data):
 	if sio.sid is None:
 		try:
-			sio.connect('http://localhost:3000')
+			sio.connect(web)
 		except:
 			pass
 	try:
@@ -182,7 +184,7 @@ def getLiveData(ser):
 	try:
 		linie = ser.readline().decode('ascii')
 	except:
-		print("Am primit ceva gunoi pe serial")
+		return None
 
 	ser.reset_input_buffer()
 	linie = linie.strip()
@@ -196,7 +198,7 @@ def getLiveData(ser):
 			else:
 				return None
 		except:
-			print("Ceva problema: " + linie)
+			pass
 	return None
 
 def getWriteLiveData(ser):
@@ -209,13 +211,13 @@ home = None
 tle  = None
 sat  = None
 satName = None
+ser  = serial.Serial(getFTDIPort(), 9600, timeout=0)
 
 def redefineSettings():
 	global sat, satName, home, ser
 	refreshConfig()
 	tle  = getTLE()
 	home = getObserver()
-	ser  = serial.Serial(getFTDIPort(), 9600, timeout=0)
 	if tle is not None:
 		if (representsInt(config['sat']['NORAD'])):
 			satName = getName()
@@ -270,7 +272,6 @@ def standardRoutine():
 				sendstr += "!" + csum(sendstr)	
 
 				getWriteLiveData(ser)
-
 				sendSoc("data", nodeData)
 
 
@@ -286,9 +287,13 @@ def standardRoutine():
 			else:
 				nodeData['err'] = "Wrong Coordinates/Altitude"
 				getWriteLiveData(ser)
+				sendSoc("data", nodeData)
+
 		else:
 			nodeData['err'] = "Wrong NORAD"
 			getWriteLiveData(ser)
+			sendSoc("data", nodeData)
+
 			
 
 class MyHandler(FileSystemEventHandler):
@@ -342,9 +347,9 @@ while True:
 			print(sendstr)
 			timeSerialWrite = time.time()
 			
-		if(time.time() - timeSerialRead > 0.5):
-			getWriteLiveData(ser)
-			timeSerialRead = time.time()
+		getWriteLiveData(ser)
+		sendSoc("data", nodeData)
+
 
 	if ("UNROLL" in state):
 		if(sentCommand == False):
@@ -354,8 +359,5 @@ while True:
 			ser.write(sendstr.encode('ascii'))
 			print(sendstr)
 			sentCommand = True
-
-		if(time.time() - timeSerialRead > 0.5):
-			getWriteLiveData(ser)
-			timeSerialRead = time.time()
-
+		getWriteLiveData(ser)
+		sendSoc("data", nodeData)
