@@ -398,19 +398,21 @@ function showOKNotification(from, align, msg = "Am trimis noile constante", t = 
 }
 
 function verificaTimpul() {
-    time = document.getElementById("time").innerHTML;
-    utc_time = document.getElementById("time_utc_now").innerHTML;
-    time = time.trim();
-    utc_time = utc_time.trim();
-    if (time.length > 19) time = time.slice(0, -7);
-    if (utc_time.length > 19) utc_time = utc_time.slice(0, -7);
-    a = new Date(time + ".0000000 GMT+0000");
-    b = new Date(utc_time + ".0000000 GMT+0000");
-    delta = Math.abs(a-b)/1000;
-    if (delta > 2) {
-        document.getElementById("alerta_timp").innerHTML = ("<div class=\"alert alert-info\" role=\"alert\">Timpul modificat este setat - " + a + "</div>");
-    } else {
-        document.getElementById("alerta_timp").innerHTML = ("<div class=\"alert alert-warning\" role=\"alert\">Timpul modificat nu este setat!</div>");
+    if(document.getElementById("time") != null && document.getElementById("time_utc_now") != null){
+        time = document.getElementById("time").innerHTML;
+        utc_time = document.getElementById("time_utc_now").innerHTML;
+        time = time.trim();
+        utc_time = utc_time.trim();
+        if (time.length > 19) time = time.slice(0, -7);
+        if (utc_time.length > 19) utc_time = utc_time.slice(0, -7);
+        a = new Date(time + ".0000000 GMT+0000");
+        b = new Date(utc_time + ".0000000 GMT+0000");
+        delta = Math.abs(a-b)/1000;
+        if (delta > 2) {
+            document.getElementById("alerta_timp").innerHTML = ("<div class=\"alert alert-info\" role=\"alert\">Timpul modificat este setat - " + a + "</div>");
+        } else {
+            document.getElementById("alerta_timp").innerHTML = ("<div class=\"alert alert-warning\" role=\"alert\">Timpul modificat nu este setat!</div>");
+        }
     }
 }
 

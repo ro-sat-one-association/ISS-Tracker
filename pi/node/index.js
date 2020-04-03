@@ -5,9 +5,25 @@ var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({ extended: true });
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+const { exec } = require('child_process');
 var port = process.env.PORT || 3000;
 
 const confFile = '/home/pi/n2yo/config.json';
+const unrollFile = '/home/pi/n2yo/unroll.txt';
+
+
+function execCommand(command){
+  exec(command, (err, stdout, stderr) => {
+    if (err) {
+      //some err occurred
+      console.error(err)
+    } else {
+    // the *entire* stdout and stderr (buffered)
+    console.log(`stdout: ${stdout}`);
+    console.log(`stderr: ${stderr}`);
+    }
+  });
+}
 
 function getConfig(){
   let rawdata = fs.readFileSync(confFile);
@@ -30,8 +46,21 @@ app.get('/customtime', function(req, res){
   res.sendFile(__dirname + '/customtime.html');
 });
 
+app.get('/unghiuri', function(req, res){
+  res.sendFile(__dirname + '/unghiuri.html');
+});
+
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/track.html');
+});
+
+app.get('/config', function(req, res){
+  res.sendFile(__dirname + '/config.html');
+});
+
+
+app.get('/upload', function(req, res){
+  res.send("<h1>Nu am portat inca</h1>");
 });
 
 io.on('connection', function(socket){ //am primit ceva
@@ -93,7 +122,18 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
   if (typeof req.body.deltaelevation !== 'undefined') {
     c['custom-angles']['delta-elevation'] = req.body.deltaelevation;
   }  
-//TO-DO: autostart checkmark
+
+  if (typeof req.body.autostart !== 'undefined') {
+    if(typeof req.body.autostart[1] !== 'undefined'){ //on
+      execCommand('sudo systemctl enable track');
+      c['autostart'] = true;
+      console.log("Autostart on");
+    } else { //off
+      execCommand('sudo systemctl disable track');
+      c['autostart'] = false;
+      console.log("Autostart off");
+    }
+  }  
 
   fs.writeFile(confFile, JSON.stringify(c), function(err) {
     if(err) {
@@ -103,6 +143,28 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
   }); 
   
   res.sendStatus(200);
+ });
+
+
+ app.post('/submit_unroll', urlencodedParser, function (req, res){
+  console.log(req.body.command);
+  
+  fs.writeFile(unrollFile, req.body.command, function(err) {
+    if(err) {
+        return console.log(err);
+    }
+    console.log("Comanda de unroll scrisa in fisier");
+  }); 
+  
+  c = getConfig();
+  c['general-state'] = "UNROLL";
+  fs.writeFile(confFile, JSON.stringify(c), function(err) {
+    if(err) {
+        return console.log(err);
+    }
+    console.log("Am schimbat configuratia!");
+  }); 
+  
  });
 
 http.listen(port, function(){

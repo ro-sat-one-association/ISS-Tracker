@@ -12,8 +12,6 @@
 
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 -->
-
-
     <!DOCTYPE html>
     <html lang="en">
 
@@ -22,7 +20,7 @@
         <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="assets/img/favicon.png">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>Urmărește Satelit</title>
+        <title>Configurare</title>
         <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
         <!--     Fonts and icons     -->
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
@@ -30,9 +28,10 @@
         <!-- CSS Files -->
         <link href="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/css/material-dashboard.min.css" rel="stylesheet" >
         <link href="assets/css/dark-edition.css" rel="stylesheet" >
-        <!-- JS -->
-        <script src="assets/js/core/jquery.js"></script>
+
+        <!--   Core JS Files   -->
         <script src="assets/js/core/popper.min.js"></script>
+        <script src="assets/js/core/jquery.js"></script>
         <script src="assets/js/core/material-dashboard.js"></script>
         <script src="assets/js/core/bootstrap-material-design.min.js"></script>
         <script src="https://unpkg.com/default-passive-events"></script>
@@ -43,15 +42,18 @@
         
         <!--<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>-->
         <script src="assets/js/core/socket.io.js"></script>
+
+        <script src="assets/js/custom/options.js"></script>
     </head>
 
 
     <body id = "body" class="dark-edition">
+        <script>refreshMode();</script>
         <div class="wrapper ">
             <div id = "sidebar" class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
                 <div class="sidebar-wrapper">
                     <ul class="nav">
-                        <li class="nav-item active  ">
+                        <li class="nav-item">
                             <a class="nav-link" href="./track">
                                 <i class="material-icons">explore</i>
                                 <p>Urmărește Satelit</p>
@@ -75,38 +77,18 @@
                                 <p>Arduino Upload</p>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item active">
                             <a class="nav-link" href="./config">
                                 <i class="material-icons">settings_applications</i>
                                 <p>Configurare</p>
                             </a>
                         </li>
-
-<li class="nav-item">
-&nbsp;
-</li>
-
-<div class="text-center">
-<div class="dropdown">
-    <li class="nav-item btn btn-secondary dropdown-toggle " id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Opțiuni
-    </li>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <a class="dropdown-item" onclick="changeMode()">
-            <i id="mode-button" class="material-icons"></i>
-            <p>Schimbă modul</p>
-        </a>
-        <a class="dropdown-item" onclick="changeRedDot()">
-            <i id="mode-button" class="material-icons">stars</i>
-            <p id = "reddot_text">Arată indicatorul roșu</p>
-        </a>
-        <a class="dropdown-item" onclick="changeHorizon()">
-            <i id="mode-button" class="material-icons">horizontal_split</i>
-            <p id = "horizon_text">Arată orizontul</p>
-        </a>
-    </div>
-</div>
-</div>
+                        <li class="nav-item ">
+                            <a class="nav-link" onclick="changeMode()">
+                                <i id="mode-button" class="material-icons"></i>
+                                <p>Schimbă modul</p>
+                            </a>
+                        </li>
                         <!-- <li class="nav-item active-pro ">
                 <a class="nav-link" href="./upgrade.html">
                     <i class="material-icons">unarchive</i>
@@ -121,7 +103,6 @@
                 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top " id="navigation-example">
                     <div class="container-fluid">
                         <div class="navbar-wrapper">
-                            <span id="eroare"></span>
                             <span id="alerta_timp"></span>
                             <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
                             <span class="sr-only">Toggle navigation</span>
@@ -137,123 +118,6 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-sm">
-<div class="card card-chart">
-    <div class="card-header card-header-success">
-        <div class="text-center">
-            <canvas id="canvas1" width="250" height="250"></canvas>
-        </div>
-    </div>
-    <div class="card-body">
-        <div class="row">
-        <div class="col-sm">
-            <h4 class="card-title">Indicator Azimut</h4>
-        </div>
-        <div class="col-sm">
-        <p class="card-category">Azimut actual</p>
-        <h4 class="card-title">
-                    <span id="mini_live_azi">0</span>
-                    <small>°</small>
-                  </h4>
-        </div>
-        <div class="col-sm">
-        <p class="card-category">Azimut țintă</p>
-        <h4 class="card-title">
-                    <span style="font-weight: bold; opacity: 0.5;" id="mini_target_azi">0</span>
-                    <small>°</small>
-                  </h4>
-        </div>
-
-        </div>
-    </div>
-    <div class="card-footer">
-        <div class="stats">
-            <!-- <i class="material-icons">access_time</i> updated 4 minutes ago -->
-        </div>
-    </div>
-</div>
-
-
-                            </div>
-                            <div class="col-sm">
-
-<div class="card card-chart">
-    <div class="card-header card-header-warning">
-        <div class="text-center">
-            <canvas id="canvas2" width="250" height="250"></canvas>
-        </div>
-    </div>
-    <div class="card-body">
-        <div class="row">
-        <div class="col-sm">
-            <h4 class="card-title">Indicator Elevație</h4>
-        </div>
-        <div class="col-sm">
-        <p class="card-category">Elevație actuală</p>
-        <h4 class="card-title">
-                    <span id="mini_live_ele">0</span>
-                    <small>°</small>
-                  </h4>
-        </div>
-        <div class="col-sm">
-        <p class="card-category">Elevație țintă</p>
-        <h4 class="card-title">
-                    <span style="font-weight: bold; opacity: 0.5;" id="mini_target_ele">0</span>
-                    <small>°</small>
-                  </h4>
-        </div>
-
-        </div>
-    </div>
-    <div class="card-footer">
-        <div class="stats">
-            <!--  <i class="material-icons">access_time</i> campaign sent 2 days ago -->
-        </div>
-    </div>
-</div>
-
-
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-sm">
-   
-<div class="card card-stats">
-    <div class="card-header card-header-info card-header-icon">
-        <div class="card-icon">
-            <i class="material-icons">info_outline</i>
-        </div>
-        <p class="card-category">Satelit/corp urmărit</p>
-        <h3 class="card-title"><span id="mini_sat"></span></h3>
-    </div>
-    <div class="card-footer">
-        <div class="stats">
-            <!--<i class="material-icons">local_offer</i> Tracked from Github-->
-        </div>
-    </div>
-</div>
-
-<div class="card card-chart">
-    <div class="card-header card-header-info">
-        <div id="data-brut">
-
-        </div>
-
-    </div>
-    <div class="card-body">
-        <h4 class="card-title">Date brute</h4>
-        <p class="card-category">Datele țintă și actuale</p>
-    </div>
-    <div class="card-footer">
-        <div class="stats">
-        </div>
-    </div>
-</div>
-
-
-
-                            </div>
-                            <div class="col-sm">
                                 <div class="card card-stats">
                                     <div class="card-header card-header-danger card-header-icon">
                                         <div class="card-icon">
@@ -262,30 +126,50 @@
                                         <p class="card-category">Setări</p>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
-                                        <form id="trackform" action="/sub_conf" method="post">
+                                        <form id="trackform" action="" method="post">
 
                                             <div class="form-group">
-                                                <label for="sat_field">Cod NORAD / Nume corp</label>
-                                                <input type="text" class="form-control" name="sat" id="sat_field" value="">
+                                                <label for="key">N2YO Key</label>
+                                                <input type="text" class="form-control" name="key" id="key" value="">
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="lat_field">Latitudinea ta</label>
-                                                <input type="text" class="form-control" name="lat" id="lat_field" value="">
+                                                <label for="fqbn">FQBN</label>
+                                                <input type="text" class="form-control" name="fqbn" id="fqbn" value="">
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="lon_field">Longitudinea ta</label>
-                                                <input type="text" class="form-control" name="lon" id="lon_field" value="">
+                                                <label for="desc">Descriere Serial</label>
+                                                <input type="text" placeholder="UART / Arduino / CH340 / etc." class="form-control" name="desc" id="desc" value="">
                                             </div>
-
                                             <div class="form-group">
-                                                <label for="alt_field">Altitudinea ta</label>
-                                                <input type="text" class="form-control" name="alt" id="alt_field" value="">
+                                                <label for="desc">TLE Custom - 1</label>
+                                                <input type="text" placeholder="Lasă liber daca nu e necesar" class="form-control" name="tle1" id="tle1" value="">
                                             </div>
-                                            <input type="hidden" name="state" value="TRACK">  
-                                        </form>
-                                        <button onClick="SubForm()" class="btn btn-danger">Submit</button>
+                                            <div class="form-group">
+                                                <label for="desc">TLE Custom - 2</label>
+                                                <input type="text" placeholder="Lasă liber daca nu e necesar" class="form-control" name="tle2" id="tle2" value="">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="desc">Delta Azimut</label>
+                                                <input type="text" placeholder="0" class="form-control" name="delta-azimuth" id="delta-azimuth" value="">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="desc">Delta Elevatie</label>
+                                                <input type="text" placeholder="0" class="form-control" name="delta-elevation" id="delta-elevation" value="">
+                                            </div>
+                                            <input type="hidden" name="autostart" value="0" />
+                                            <div class="form-check float-left">
+                                                    <label class="form-check-label">
+                                                        <input class="form-check-input" id = "autostart" name = "autostart" type="checkbox" >
+                                                        Autostart
+                                                        <span class="form-check-sign">
+                                                            <span class="check"></span>
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </form>
+                                         <button onclick="SubForm()" class="btn btn-danger">Submit</button>
                                     </div>
                                     <div class="card-footer">
                                         <div class="stats">
@@ -295,45 +179,62 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
             </div>
            
+            <script>
+                const x = new Date().getFullYear();
+                let date = $('#date');
+                date.innerHTML = '&copy; ' + x + date.innerHTML;
+            </script>
         </div>
         </div>
 
-        <script src="assets/js/custom/track.js"></script>
-        <script src="assets/js/custom/options.js"></script>
+        <script>
+          previous = ""
 
-        <script>        
-        var timp_simulat = "";
-        var timp_utc = "";
+			function showOKNotification(from, align) {
 
-        $(function () {
-        var socket = io();
-        var brut = ""
-        socket.on('data', function(msg){
-         // document.getElementById('data-brut').innerHTML = JSON.stringify(msg);
-          document.getElementById('mini_live_azi').innerHTML   = msg['azimuth']['live'];
-          document.getElementById('mini_target_azi').innerHTML = msg['azimuth']['target'];
-          document.getElementById('mini_live_ele').innerHTML   = msg['elevation']['live'];
-          document.getElementById('mini_target_ele').innerHTML = msg['elevation']['target'];  
-          document.getElementById('mini_sat').innerHTML = msg['sat'];
+			    $.notify({
+			        icon: "add_alert",
+			        message: "Am trimis noile constante"
 
-          brut  = "Target azimuth: " + msg['azimuth']['target'] + "<br>";
-          brut += "Live azimuth: " + msg['azimuth']['live'] + "<br>";
-          brut += "Target elevation: " + msg['elevation']['target'] + "<br>";
-          brut += "Live elevation: " + msg['elevation']['live'] + "<br>";
-          brut += "Satellite: " + msg['sat'] + "<br>";
-          brut += '<span id="time">' + timp_simulat + '</span><br>'; 
-          brut += '<span id="time_utc_now">' + timp_utc + '</span>'; 
-          document.getElementById('data-brut').innerHTML = brut;
+			    }, {
+			        type: 'success',
+			        timer: 2000,
+			        placement: {
+			            from: from,
+			            align: align
+			        }
+			    });
+			}
 
-        });
-        });
+			function SubForm() {
+			    $.ajax({
+			        url: '/submit_conf',
+			        type: 'post',
+			        data: $('#trackform').serialize(),
+			        success: function() {
+			            showOKNotification();
+			        }
+			    });
+			}
 
+        </script>
+
+        <script>
+            if ( window.history.replaceState ) {
+                window.history.replaceState( null, null, window.location.href );
+            }
+        </script>
+
+        <script>refreshMode();</script>
+    </body>
+
+    <script>        
+    
         $(function () {
         var socket = io();
         socket.on('time', function(msg){
@@ -346,16 +247,22 @@
         var socket = io();
         socket.emit('conf', ''); //trimite-mi configuratia, masoano!
         socket.on('conf', function(msg){
-          document.getElementById('lat_field').value   = msg['observer']['latitude'];
-          document.getElementById('lon_field').value = msg['observer']['longitude'];
-          document.getElementById('alt_field').value   = msg['observer']['altitude'];
-          document.getElementById('sat_field').value = msg['sat']['NORAD'];  
-        
+          $('#key').attr('value', msg['observer']['n2yo-key']);
+          $('#fqbn').attr('value', msg['arduino']['fqbn']);
+          $('#desc').attr('value', msg['arduino']['serial-descriptor']);
+          $('#tle1').attr('value', msg['sat']['tle1']);  
+          $('#tle2').attr('value', msg['sat']['tle2']);  
+          $('#delta-azimuth').attr('value', msg['custom-angles']['delta-azimuth']);  
+          $('#delta-elevation').attr('value', msg['custom-angles']['delta-elevation']);  
+          if(msg['autostart'] == true){
+            $("#autostart").prop("checked", true);
+          } else {
+            $("#autostart").prop("checked", false);
+          }
+         // 
         });
         });
 
-        </script>
-
-    </body>
+    </script>
 
     </html>

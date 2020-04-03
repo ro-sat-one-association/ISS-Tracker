@@ -416,19 +416,21 @@ function showOKNotification(from, align, msg = "Am trimis noile constante", t = 
 }
 
 function verificaTimpul() {
-    time = document.getElementById("time").innerHTML;
-    utc_time = document.getElementById("time_utc_now").innerHTML;
-    time = time.trim();
-    utc_time = utc_time.trim();
-    if (time.length > 19) time = time.slice(0, -7);
-    if (utc_time.length > 19) utc_time = utc_time.slice(0, -7);
-    a = new Date(time + ".0000000 GMT+0000");
-    b = new Date(utc_time + ".0000000 GMT+0000");
-    delta = Math.abs(a-b)/1000;
-    if (delta > 2) { //diferenta de timp mai mare de 2 secunde
-        document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-danger\" role=\"alert\">Timpii difera cu " + (delta / 60).toFixed(2) + " minute. Dați din nou Submit pentru a urmări în timp real!</div>";
-    } else {
-        document.getElementById("alerta_timp").innerHTML = "";
+    if(document.getElementById("time") != null && document.getElementById("time_utc_now") != null){
+        time = document.getElementById("time").innerHTML;
+        utc_time = document.getElementById("time_utc_now").innerHTML;
+        time = time.trim();
+        utc_time = utc_time.trim();
+        if (time.length > 19) time = time.slice(0, -7);
+        if (utc_time.length > 19) utc_time = utc_time.slice(0, -7);
+        a = new Date(time + ".0000000 GMT+0000");
+        b = new Date(utc_time + ".0000000 GMT+0000");
+        delta = Math.abs(a-b)/1000;
+        if (delta > 2) { //diferenta de timp mai mare de 2 secunde
+            document.getElementById("alerta_timp").innerHTML = "<div class=\"alert alert-danger\" role=\"alert\">Timpii difera cu " + (delta / 60).toFixed(2) + " minute. Dați din nou Submit pentru a urmări în timp real!</div>";
+        } else {
+            document.getElementById("alerta_timp").innerHTML = "";
+        }
     }
 }
 

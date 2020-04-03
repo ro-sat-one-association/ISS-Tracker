@@ -167,28 +167,6 @@ var previous = "";
 var time = "";
 var utc_time = "";
 
-function getLiveData() {
-    var ajax = new XMLHttpRequest();
-    ajax.onreadystatechange = function() {
-        if (ajax.readyState == 4) {
-            if (ajax.responseText != previous) {
-                previous = ajax.responseText;
-                if (this.responseText.search(".") != -1) {
-                    document.getElementById("livedata").innerHTML = this.responseText;
-                    var doc = new DOMParser().parseFromString(this.responseText, "text/html")
-                    document.getElementById("mini_live_azi").innerHTML = doc.getElementById("live_azi").innerHTML;
-                    document.getElementById("mini_live_ele").innerHTML = doc.getElementById("live_ele").innerHTML;
-                    setLiveData();
-                }
-            }
-        }
-    };
-    ajax.open("POST", "livedata.html", true); //Use POST to avoid caching
-    ajax.send();
-}
-
-setInterval(getLiveData, 100);
-setInterval(setTargetData, 10);
 setInterval(drawBusola, 10);
 setInterval(drawElevatie, 10);
 
@@ -201,8 +179,8 @@ liveElevatie = 0;
 targetElevatie = 0;
 
 function setLiveData() {
-    liveAzimuth = document.getElementById("live_azi").innerHTML;
-    liveElevatie = document.getElementById("live_ele").innerHTML;
+    liveAzimuth = document.getElementById("mini_live_azi").innerHTML;
+    liveElevatie = document.getElementById("mini_live_ele").innerHTML;
 }
 
 function setTargetData() {
@@ -256,6 +234,8 @@ function sensAzimuth(t, h) {
 }
 
 function drawBusola() {
+    setLiveData();
+    setTargetData();
     u = targetAzimuth;
     u *= Math.PI / 180;
 
@@ -392,9 +372,20 @@ function showUnrollOKNotification(from, align) {
     });
 }
 
+function SubFormRoll() {
+    $.ajax({
+        url: '/submit_unroll',
+        type: 'post',
+        data: $('#unrollform').serialize(),
+        success: function() {
+            showOKNotification();
+        }
+    });
+}
+
 function SubForm() {
     $.ajax({
-        url: 'submit_config.php',
+        url: '/submit_conf',
         type: 'post',
         data: $('#trackform').serialize(),
         success: function() {
@@ -403,29 +394,12 @@ function SubForm() {
     });
 }
 
-function SubUnroll(d) {
-    $.ajax({
-        url: 'submit_unroll.php',
-        type: 'get',
-        data: d,
-        success: function() {
-            showUnrollOKNotification();
-        }
-    });
-}
-
 function clockAzi() {
-    SubUnroll("a=A0");
+    document.getElementById("command").value = "A0";
+    SubFormRoll();
 }
 
 function anticlockAzi() {
-    SubUnroll("a=A1");
-}
-
-function clockEle() {
-    SubUnroll("a=E0");
-}
-
-function anticlockEle() {
-    SubUnroll("a=E1");
+    document.getElementById("command").value = "A1";
+    SubFormRoll();
 }

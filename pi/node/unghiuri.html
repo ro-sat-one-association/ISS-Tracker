@@ -12,8 +12,6 @@
 
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 -->
-
-
     <!DOCTYPE html>
     <html lang="en">
 
@@ -22,7 +20,7 @@
         <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
         <link rel="icon" type="image/png" href="assets/img/favicon.png">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <title>Urmărește Satelit</title>
+        <title>Dezcâlcește / Unghiuri</title>
         <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
         <!--     Fonts and icons     -->
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
@@ -30,7 +28,7 @@
         <!-- CSS Files -->
         <link href="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/css/material-dashboard.min.css" rel="stylesheet" >
         <link href="assets/css/dark-edition.css" rel="stylesheet" >
-        <!-- JS -->
+        <!--   Core JS Files   -->
         <script src="assets/js/core/jquery.js"></script>
         <script src="assets/js/core/popper.min.js"></script>
         <script src="assets/js/core/material-dashboard.js"></script>
@@ -45,13 +43,17 @@
         <script src="assets/js/core/socket.io.js"></script>
     </head>
 
-
     <body id = "body" class="dark-edition">
         <div class="wrapper ">
             <div id = "sidebar" class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
+                <!--
+        Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
+
+        Tip 2: you can also add an image using data-image tag
+    -->
                 <div class="sidebar-wrapper">
                     <ul class="nav">
-                        <li class="nav-item active  ">
+                        <li class="nav-item ">
                             <a class="nav-link" href="./track">
                                 <i class="material-icons">explore</i>
                                 <p>Urmărește Satelit</p>
@@ -63,7 +65,7 @@
                                 <p>Timp modificat</p>
                             </a>
                         </li>
-                        <li class="nav-item ">
+                        <li class="nav-item active  ">
                             <a class="nav-link" href="./unghiuri">
                                 <i class="material-icons">cached</i>
                                 <p>Dezcâlcește/Unghiuri</p>
@@ -81,38 +83,13 @@
                                 <p>Configurare</p>
                             </a>
                         </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" onclick="changeMode()">
+                                <i id="mode-button" class="material-icons"></i>
+                                <p>Schimbă modul</p>
+                            </a>
+                        </li>
 
-<li class="nav-item">
-&nbsp;
-</li>
-
-<div class="text-center">
-<div class="dropdown">
-    <li class="nav-item btn btn-secondary dropdown-toggle " id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Opțiuni
-    </li>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <a class="dropdown-item" onclick="changeMode()">
-            <i id="mode-button" class="material-icons"></i>
-            <p>Schimbă modul</p>
-        </a>
-        <a class="dropdown-item" onclick="changeRedDot()">
-            <i id="mode-button" class="material-icons">stars</i>
-            <p id = "reddot_text">Arată indicatorul roșu</p>
-        </a>
-        <a class="dropdown-item" onclick="changeHorizon()">
-            <i id="mode-button" class="material-icons">horizontal_split</i>
-            <p id = "horizon_text">Arată orizontul</p>
-        </a>
-    </div>
-</div>
-</div>
-                        <!-- <li class="nav-item active-pro ">
-                <a class="nav-link" href="./upgrade.html">
-                    <i class="material-icons">unarchive</i>
-                    <p>Upgrade to PRO</p>
-                </a>
-            </li> -->
                     </ul>
                 </div>
             </div>
@@ -121,15 +98,14 @@
                 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top " id="navigation-example">
                     <div class="container-fluid">
                         <div class="navbar-wrapper">
-                            <span id="eroare"></span>
-                            <span id="alerta_timp"></span>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation" data-target="#navigation-example">
                             <span class="sr-only">Toggle navigation</span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                             <span class="navbar-toggler-icon icon-bar"></span>
                         </button>
                         </div>
+
                     </div>
                 </nav>
                 <!-- End Navbar -->
@@ -171,11 +147,9 @@
         </div>
     </div>
 </div>
-
-
                             </div>
-                            <div class="col-sm">
 
+                            <div class="col-sm">
 <div class="card card-chart">
     <div class="card-header card-header-warning">
         <div class="text-center">
@@ -211,150 +185,134 @@
     </div>
 </div>
 
-
                             </div>
-                        </div>
 
+                        </div>
                         <div class="row">
                             <div class="col-sm">
-   
-<div class="card card-stats">
-    <div class="card-header card-header-info card-header-icon">
-        <div class="card-icon">
-            <i class="material-icons">info_outline</i>
-        </div>
-        <p class="card-category">Satelit/corp urmărit</p>
-        <h3 class="card-title"><span id="mini_sat"></span></h3>
-    </div>
-    <div class="card-footer">
-        <div class="stats">
-            <!--<i class="material-icons">local_offer</i> Tracked from Github-->
-        </div>
-    </div>
-</div>
-
-<div class="card card-chart">
-    <div class="card-header card-header-info">
-        <div id="data-brut">
-
-        </div>
-
-    </div>
-    <div class="card-body">
-        <h4 class="card-title">Date brute</h4>
-        <p class="card-category">Datele țintă și actuale</p>
-    </div>
-    <div class="card-footer">
-        <div class="stats">
-        </div>
-    </div>
-</div>
-
-
-
-                            </div>
-                            <div class="col-sm">
                                 <div class="card card-stats">
-                                    <div class="card-header card-header-danger card-header-icon">
+                                    <div class="card-header card-header-info card-header-icon">
                                         <div class="card-icon">
-                                            <i class="material-icons">settings</i>
+                                            <i class="material-icons">cached</i>
                                         </div>
-                                        <p class="card-category">Setări</p>
+                                        <p class="card-category">Unghiuri</p>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
                                         <h3 class="card-title"><span>&nbsp;</span></h3>
-                                        <form id="trackform" action="/sub_conf" method="post">
+                                        <form id="trackform" action="" method="post">
 
                                             <div class="form-group">
-                                                <label for="sat_field">Cod NORAD / Nume corp</label>
-                                                <input type="text" class="form-control" name="sat" id="sat_field" value="">
+                                                <label for="target_azi">Azimut dorit</label>
+                                                <input type="text" class="form-control" name="azi" id="target_azi" value="">
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="lat_field">Latitudinea ta</label>
-                                                <input type="text" class="form-control" name="lat" id="lat_field" value="">
+                                                <label for="target_ele">Elevație dorită</label>
+                                                <input type="text" class="form-control" name="ele" id="target_ele" value="">
                                             </div>
 
-                                            <div class="form-group">
-                                                <label for="lon_field">Longitudinea ta</label>
-                                                <input type="text" class="form-control" name="lon" id="lon_field" value="">
-                                            </div>
+                                            <input type="hidden" name="state" value="UNGHI">
 
-                                            <div class="form-group">
-                                                <label for="alt_field">Altitudinea ta</label>
-                                                <input type="text" class="form-control" name="alt" id="alt_field" value="">
-                                            </div>
-                                            <input type="hidden" name="state" value="TRACK">  
                                         </form>
-                                        <button onClick="SubForm()" class="btn btn-danger">Submit</button>
+                                        <button onclick="SubForm()" class="btn btn-info">Submit</button>
                                     </div>
                                     <div class="card-footer">
                                         <div class="stats">
-                                            <!--<i class="material-icons text-warning">warning</i>
-                                    <a href="#pablo" class="warning-link">Get More Space...</a>-->
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <div class="col-sm">
+                                <div class="card">
+                                        
+                                        
+
+        <div class = "row">
+            <div class = "col-sm">
+                <button onclick="clockAzi()" style="width:100%;" class="btn btn-success btn-lg">
+                    Azimut ceasornic
+                </button>
+
+            </div>
+        </div>
+        &nbsp; 
+        <div class = "row">
+            <div class="col-sm">
+                <button onclick="anticlockAzi()" style="width:100%;" class="btn btn-success btn-lg">
+                    Azimut anti-ceasornic
+                </button>
+            </div>
+        </div>
+
+        <div style="display:none;">
+        
+            <form id="unrollform" action="/" method="post">
+                <input id="command" name="command" value="">
+            </form>
+        
+        </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm">
+                                <div style = "display:none;" id="livedata">
+                                    <span id="live_azi">-</span>
+                                    <span id="live_ele">-</span>
+                                </div>
+                            </div>
+                            <div class="col-sm"></div>
+                            <div class="col-sm"></div>
+
                         </div>
                     </div>
                 </div>
             </div>
-           
+
+            </div>
         </div>
         </div>
 
-        <script src="assets/js/custom/track.js"></script>
+        <script src="assets/js/custom/unghiuri.js"></script>
         <script src="assets/js/custom/options.js"></script>
 
         <script>        
-        var timp_simulat = "";
-        var timp_utc = "";
+            var timp_simulat = "";
+            var timp_utc = "";
+    
+            $(function () {
+            var socket = io();
+            var brut = ""
+            socket.on('data', function(msg){
+             // document.getElementById('data-brut').innerHTML = JSON.stringify(msg);
+              document.getElementById('mini_live_azi').innerHTML   = msg['azimuth']['live'];
+              document.getElementById('mini_live_ele').innerHTML   = msg['elevation']['live'];
+            });
+            });
+    
+            $(function () {
+            var socket = io();
+            socket.on('time', function(msg){
+              timp_simulat  =  String(msg['time']);
+              timp_utc  =  String(msg['utc']);
+            });
+            });
+    
+            $(function () {
+            var socket = io();
+            socket.emit('conf', ''); //trimite-mi configuratia, masoano!
+            socket.on('conf', function(msg){
+              //document.getElementById('lat_field').value   = msg['observer']['latitude'];
+              //document.getElementById('lon_field').value = msg['observer']['longitude'];
+              document.getElementById('target_azi').value   = msg['custom-angles']['azimuth'];
+              document.getElementById('target_ele').value   = msg['custom-angles']['elevation'];  
 
-        $(function () {
-        var socket = io();
-        var brut = ""
-        socket.on('data', function(msg){
-         // document.getElementById('data-brut').innerHTML = JSON.stringify(msg);
-          document.getElementById('mini_live_azi').innerHTML   = msg['azimuth']['live'];
-          document.getElementById('mini_target_azi').innerHTML = msg['azimuth']['target'];
-          document.getElementById('mini_live_ele').innerHTML   = msg['elevation']['live'];
-          document.getElementById('mini_target_ele').innerHTML = msg['elevation']['target'];  
-          document.getElementById('mini_sat').innerHTML = msg['sat'];
+            });
+            });
+    
+            </script>
 
-          brut  = "Target azimuth: " + msg['azimuth']['target'] + "<br>";
-          brut += "Live azimuth: " + msg['azimuth']['live'] + "<br>";
-          brut += "Target elevation: " + msg['elevation']['target'] + "<br>";
-          brut += "Live elevation: " + msg['elevation']['live'] + "<br>";
-          brut += "Satellite: " + msg['sat'] + "<br>";
-          brut += '<span id="time">' + timp_simulat + '</span><br>'; 
-          brut += '<span id="time_utc_now">' + timp_utc + '</span>'; 
-          document.getElementById('data-brut').innerHTML = brut;
-
-        });
-        });
-
-        $(function () {
-        var socket = io();
-        socket.on('time', function(msg){
-          timp_simulat  =  String(msg['time']);
-          timp_utc  =  String(msg['utc']);
-        });
-        });
-
-        $(function () {
-        var socket = io();
-        socket.emit('conf', ''); //trimite-mi configuratia, masoano!
-        socket.on('conf', function(msg){
-          document.getElementById('lat_field').value   = msg['observer']['latitude'];
-          document.getElementById('lon_field').value = msg['observer']['longitude'];
-          document.getElementById('alt_field').value   = msg['observer']['altitude'];
-          document.getElementById('sat_field').value = msg['sat']['NORAD'];  
-        
-        });
-        });
-
-        </script>
 
     </body>
 
