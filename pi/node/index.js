@@ -1,12 +1,16 @@
 const Express = require('express');
 const app = new Express();
 const fs = require('fs');
-var bodyParser = require('body-parser');
-var urlencodedParser = bodyParser.urlencoded({ extended: true });
+const formidable = require('formidable');
+const bodyParser = require('body-parser');
+const { exec } = require('child_process');
+
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-const { exec } = require('child_process');
+
 var port = process.env.PORT || 3000;
+
+var urlencodedParser = bodyParser.urlencoded({ extended: true });
 
 const confFile = '/home/pi/n2yo/config.json';
 const unrollFile = '/home/pi/n2yo/unroll.txt';
@@ -60,10 +64,10 @@ app.get('/config', function(req, res){
 
 
 app.get('/upload', function(req, res){
-  res.send("<h1>Nu am portat inca</h1>");
+  res.sendFile(__dirname + '/upload.html');
 });
 
-io.on('connection', function(socket){ //am primit ceva
+io.on('connection', function(socket){ //am primit ceva, redirectioneaza
   socket.on('data', function(msg){
     io.emit('data', msg);
   });
@@ -72,6 +76,9 @@ io.on('connection', function(socket){ //am primit ceva
   });
   socket.on('time', function(msg){
     io.emit('time', msg);
+  });
+  socket.on('upload', function(msg){
+    io.emit('upload', msg);
   });
 });
 
@@ -146,6 +153,26 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
  });
 
 
+ app.post('/upload', function (req, res){
+  var form = new formidable.IncomingForm();
+
+  form.parse(req);
+
+  form.on('fileBegin', function (name, file){
+      file.path = '/home/pi/upload/' + file.name;
+  });
+
+  form.on('file', function (name, file){
+      console.log('Uploaded ' + file.name);
+  });
+
+  res.sendFile(__dirname + '/upload.html');
+
+  execCommand('sudo python3 /home/pi/upload_arduino.py &');
+
+});
+
+
  app.post('/submit_unroll', urlencodedParser, function (req, res){
   console.log(req.body.command);
   
@@ -155,7 +182,7 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
     }
     console.log("Comanda de unroll scrisa in fisier");
   }); 
-  
+
   c = getConfig();
   c['general-state'] = "UNROLL";
   fs.writeFile(confFile, JSON.stringify(c), function(err) {

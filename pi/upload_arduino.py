@@ -6,9 +6,29 @@ import glob
 import subprocess
 import shlex
 import json
-sys.stdout = open('/var/www/html/arduino_upload_log.txt', 'w')
+import socketio
+#sys.stdout = open('/var/www/html/arduino_upload_log.txt', 'w')
 
 config = ""
+
+sio = socketio.Client()
+
+try:
+	sio.connect('http://localhost:3000')
+except:
+	print("Nu m-am putut conecta la interfata")
+	print(sio.sid)	
+
+def sendSoc(soc, data):
+	if sio.sid is None:
+		try:
+			sio.connect('http://localhost:3000')
+		except:
+			pass
+	try:
+		sio.emit(soc, data)
+	except:
+		pass
 
 def refreshConfig():
 	global config
@@ -28,14 +48,17 @@ def getFTDIPort():
 	port = "/dev/"
 	ports = list(serial.tools.list_ports.comports())
 	print("Listing all available ports...")
+	sendSoc("upload", "Listing all available ports...")
 	for p in ports:
 		print(p.description)
+		sendSoc(p.description)
 	for p in ports:
 		serialDesc = config['arduino']['serial-descriptor']
 		if serialDesc in p.description:
 			port = port + p.name
 			return str(port)
 	print ("No corresponding port was found for - " + serialDesc)
+	sendSoc("No corresponding port was found for - " + serialDesc)
 	raise Exception("No FTDI port was found")
 
 def execAndPrint(command):
@@ -46,13 +69,13 @@ def execAndPrint(command):
 	output = out + err
 
 	print(output)
+	sendSoc(output)
 
 
 
 port = getFTDIPort()
 fqbn = "arduino:avr:pro:cpu=8MHzatmega328"
 fqbn = config['arduino']['fqbn']
-execAndPrint("systemctl stop track")
 
 os.chdir("/home/pi/upload/")
 execAndPrint("unzip /home/pi/upload/*.zip")
@@ -62,6 +85,5 @@ execAndPrint("arduino-cli compile --fqbn " + fqbn + " ./")
 execAndPrint("arduino-cli upload -v -p " + port + " --fqbn " + fqbn + " ./")
 os.chdir("/home/pi/")
 os.system("rm -r /home/pi/upload/*")
-execAndPrint("systemctl start track")
 
 
