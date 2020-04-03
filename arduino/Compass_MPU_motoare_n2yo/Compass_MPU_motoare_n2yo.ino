@@ -1079,7 +1079,7 @@ void alignElevation(float t, float r) {
   }
 }
 
-#define PRINT_DELAY 500
+#define PRINT_DELAY 100
 
 
 
@@ -1112,10 +1112,11 @@ void loop()
     }*/
 
   if (millis() - lastTime > PRINT_DELAY) {
-    Serial.print(heading);
-    Serial.print(" ");
-    Serial.println(roll);
     lastTime = millis();
+    String s = String(heading);
+    s += "&" + String(roll) + "!";
+    s += String(checkSum(s)); 
+    Serial.println(s);
   }
 
 
