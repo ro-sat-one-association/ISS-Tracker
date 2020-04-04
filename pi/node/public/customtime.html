@@ -39,10 +39,9 @@
         <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
         
         <!--<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>-->
+        <script src="assets/js/custom/options.js"></script>
         <script src="assets/js/core/socket.io.js"></script>
 
-        <script src="assets/js/custom/customtime.js"></script>
-        <script src="assets/js/custom/options.js"></script>
     </head>
 
     <body id = "body" class="dark-edition">
@@ -51,7 +50,7 @@
             <div class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
                 <div class="sidebar-wrapper">
                     <ul class="nav">
-                        <li class="nav-item ">
+                        <li class="nav-item">
                             <a class="nav-link" href="./track">
                                 <i class="material-icons">explore</i>
                                 <p>Urmărește Satelit</p>
@@ -81,12 +80,38 @@
                                 <p>Configurare</p>
                             </a>
                         </li>
-                        <li class="nav-item ">
-                            <a class="nav-link" onclick="changeMode()">
-                                <i id="mode-button" class="material-icons"></i>
-                                <p>Schimbă modul</p>
-                            </a>
-                        </li>
+
+<li class="nav-item">
+&nbsp;
+</li>
+
+<div class="text-center">
+<div class="dropdown">
+    <li class="nav-item btn btn-secondary dropdown-toggle " id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Opțiuni
+    </li>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" onclick="changeMode()">
+            <i id="mode-button" class="material-icons"></i>
+            <p>Schimbă modul</p>
+        </a>
+        <a class="dropdown-item" onclick="changeRedDot()">
+            <i id="mode-button" class="material-icons">stars</i>
+            <p id = "reddot_text">Arată indicatorul roșu</p>
+        </a>
+        <a class="dropdown-item" onclick="changeHorizon()">
+            <i id="mode-button" class="material-icons">horizontal_split</i>
+            <p id = "horizon_text">Arată orizontul</p>
+        </a>
+    </div>
+</div>
+</div>
+                        <!-- <li class="nav-item active-pro ">
+                <a class="nav-link" href="./upgrade.html">
+                    <i class="material-icons">unarchive</i>
+                    <p>Upgrade to PRO</p>
+                </a>
+            </li> -->
                     </ul>
                 </div>
             </div>
@@ -309,6 +334,8 @@
 
         </div>
         </div>
+        <script src="assets/js/custom/customtime.js"></script>
+        <script src="assets/js/custom/eroare.js"></script>
 
         <script>      
         
@@ -335,7 +362,6 @@
           brut += '<span id="time">' + timp_simulat + '</span><br>'; 
           brut += '<span id="time_utc_now">' + timp_utc + '</span>'; 
           document.getElementById('data-brut').innerHTML = brut;
-
         });
         });
 
@@ -344,6 +370,7 @@
         socket.on('time', function(msg){
           timp_simulat  =  String(msg['time']);
           timp_utc  =  String(msg['utc']);
+          document.getElementById('mini_timp').innerHTML = timp_simulat;
         });
         });
 

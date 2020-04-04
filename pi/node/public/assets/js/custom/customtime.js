@@ -224,6 +224,26 @@ showRedDot  = false;
 showHorizon = false;
 
 
+function refreshCookies(){
+    showRedDot  = Boolean(getCookie("showRedDot"));
+    showHorizon = Boolean(getCookie("showHorizon"));
+
+
+    if(showHorizon) {
+        document.getElementById("horizon_text").innerHTML = "Ascunde orizontul";
+    } else {
+        document.getElementById("horizon_text").innerHTML = "Arată orizontul";
+    }
+
+    if(showRedDot){
+        document.getElementById("reddot_text").innerHTML = "Ascunde indicatorul roșu";
+    } else {
+        document.getElementById("reddot_text").innerHTML = "Arată indicatorul roșu";
+    }
+}
+
+setInterval(refreshCookies, 1000);
+
 
 // u = document.getElementById("target_azi").innerHTML;
 // l = document.getElementById("live_azi").innerHTML;
