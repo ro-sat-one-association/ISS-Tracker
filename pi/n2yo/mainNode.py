@@ -37,18 +37,17 @@ except:
 	print(sio.sid)	
  
 def sendSoc(soc, data):
-	
-	if sio.sid is None:
-		try:
-			connectInterface()
-		except:
-			pass
 	try:
 		sio.emit(soc, data, namespace = space)
 	except:
 		pass
 
 def sendSocThread(soc, data):
+	if sio.sid is None:
+		try:
+			connectInterface()
+		except:
+			pass
 	th = threading.Thread(target=sendSoc, args=(soc,data))
 	th.start()
  
