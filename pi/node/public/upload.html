@@ -28,7 +28,7 @@
         <link href="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/css/material-dashboard.min.css" rel="stylesheet" >
         <link href="assets/css/dark-edition.css" rel="stylesheet" >
         <link href="assets/css/scroll.css" rel="stylesheet">
-        <script src="assets/js/custom/options.js"></script>
+       
         <!--   Core JS Files   -->
         <script src="assets/js/core/jquery.min.js"></script>
         <script src="assets/js/core/popper.min.js"></script>
@@ -40,10 +40,10 @@
         <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
         <script src="https://cdn.jsdelivr.net/npm/material-dashboard@2.1.0/assets/js/material-dashboard.js"></script>
         <script src="assets/js/core/socket.io.js"></script>
-
+        <script src="assets/js/custom/options.js"></script>
     </head>
     <body id = "body" class="dark-edition">
-    <script>refreshMode();</script>
+      <script>changeBody();</script>
               <div class="wrapper ">
                 <div id = "sidebar" class="sidebar" data-color="danger" data-background-color="black" data-image="assets/img/sidebar.jpg">
                   <div class="sidebar-wrapper">
@@ -183,5 +183,4 @@
                 window.history.replaceState( null, null, window.location.href );
             }
         </script>
-        <script>refreshMode();</script>
 </html>

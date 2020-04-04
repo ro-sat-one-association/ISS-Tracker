@@ -19,17 +19,27 @@ function getCookie(name) {
     return false;
 }
 
+function changeIcon(){
+    if (getCookie("dark-edition") == "true") {
+        document.getElementById("mode-button").innerHTML = "wb_sunny";
+
+    } else {
+        document.getElementById("mode-button").innerHTML = "nights_stay";
+    }
+}
+
+function changeBody(){
+    if (getCookie("dark-edition") == "true") {
+        document.getElementById("body").setAttribute("class", "dark-edition");
+
+    } else {
+        document.getElementById("body").setAttribute("class", "");
+    }
+}
+
 function refreshMode() {
-    $(document).ready(function(){
-        if (getCookie("dark-edition") == "true") {
-            document.getElementById("body").setAttribute("class", "dark-edition");
-            document.getElementById("mode-button").innerHTML = "wb_sunny";
-    
-        } else {
-            document.getElementById("body").setAttribute("class", "");
-            document.getElementById("mode-button").innerHTML = "nights_stay";
-        }
-    });
+    changeBody();
+    changeIcon();
 }
 
 function changeMode() {
@@ -48,3 +58,7 @@ function changeHorizon() {
     setCookie("showHorizon", Boolean(!getCookie("showHorizon")), 1000);
     document.querySelector('.navbar-toggler').click();
 }
+
+$( document ).ready(function() {
+    refreshMode();
+});
