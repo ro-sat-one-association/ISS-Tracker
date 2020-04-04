@@ -433,7 +433,7 @@ var lastSat = "";
 function verificaSatelit(){
     if (lastSat != document.getElementById("mini_sat").innerHTML){
         lastSat = document.getElementById("mini_sat").innerHTML;
-        if (document.getElementById("mini_sat").innerHTML == "-"){
+        if (document.getElementById("err_code").innerHTML == "Wrong NORAD"){
             showOKNotification('top', 'right', 'Nu s-a găsit niciun satelit/corp!', 'danger');
         } else {
             showOKNotification('top', 'right', 'S-a schimbat satelitul/corpul urmărit', 'success');
@@ -442,10 +442,10 @@ function verificaSatelit(){
 }
 
 $(document).ready(function(){
-    setTimeout(() => { //cam nasoala rezolvare, dar na, delay 2 sec pt notfiicari
+    setTimeout(() => { //cam nasoala rezolvare, dar na, delay 3 sec pt notfiicari
         lastSat = document.getElementById("mini_sat").innerHTML;
         setInterval(verificaSatelit, 100); 
-    }, 2000);
+    }, 3000);
 });
 
 function SubForm() {

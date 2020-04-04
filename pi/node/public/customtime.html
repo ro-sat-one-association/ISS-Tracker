@@ -330,7 +330,7 @@
           brut += "Target elevation: " + msg['elevation']['target'] + "<br>";
           brut += "Live elevation: " + msg['elevation']['live'] + "<br>";
           brut += "Satellite: " + msg['sat'] + "<br>";
-
+          brut += 'Eroare: <span id="err_code">' + msg['err'] + "</span><br>";
           brut += '<span id="time">' + timp_simulat + '</span><br>'; 
           brut += '<span id="time_utc_now">' + timp_utc + '</span>'; 
           document.getElementById('data-brut').innerHTML = brut;

@@ -306,7 +306,7 @@
 
         <script src="assets/js/custom/track.js"></script>
         <script src="assets/js/custom/options.js"></script>
-
+        <script src="assets/js/custom/eroare.js"></script>
         <script>        
         var timp_simulat = "";
         var timp_utc = "";
@@ -321,12 +321,13 @@
           document.getElementById('mini_live_ele').innerHTML   = msg['elevation']['live'];
           document.getElementById('mini_target_ele').innerHTML = msg['elevation']['target'];  
           document.getElementById('mini_sat').innerHTML = msg['sat'];
-
+          
           brut  = "Target azimuth: " + msg['azimuth']['target'] + "<br>";
           brut += "Live azimuth: " + msg['azimuth']['live'] + "<br>";
           brut += "Target elevation: " + msg['elevation']['target'] + "<br>";
           brut += "Live elevation: " + msg['elevation']['live'] + "<br>";
           brut += "Satellite: " + msg['sat'] + "<br>";
+          brut += 'Eroare: <span id="err_code">' + msg['err'] + "</span><br>";
           brut += '<span id="time">' + timp_simulat + '</span><br>'; 
           brut += '<span id="time_utc_now">' + timp_utc + '</span>'; 
           document.getElementById('data-brut').innerHTML = brut;

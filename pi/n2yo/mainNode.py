@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import math
-import urllib.request, urllib.error, urllib.parse
+import requests
 import json
 from datetime import datetime
 from datetime import timedelta
@@ -11,6 +11,7 @@ import sys
 import serial.tools.list_ports
 import time
 import socketio
+import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -18,32 +19,46 @@ config = ""
 nodeData = ""
 
 web = 'http://localhost:80'
+space = '/python'
 
 sio = socketio.Client()
 
+@sio.on('connect', namespace=space)
+def on_connect():
+    print("I'm connected to the " + space + " namespace!")
+
+def connectInterface():
+	sio.connect(web, namespaces = [space])
+
 try:
-	sio.connect(web)
+	connectInterface()
 except:
 	print("Nu m-am putut conecta la interfata")
 	print(sio.sid)	
-
+ 
 def sendSoc(soc, data):
+	
 	if sio.sid is None:
 		try:
-			sio.connect(web)
+			connectInterface()
 		except:
 			pass
 	try:
-		sio.emit(soc, data)
+		sio.emit(soc, data, namespace = space)
 	except:
 		pass
+
+def sendSocThread(soc, data):
+	th = threading.Thread(target=sendSoc, args=(soc,data))
+	th.start()
+ 
 
 def refreshConfig():
 	global config
 	with open('/home/pi/n2yo/config.json') as json_file:
 		config = json.load(json_file)
 
-with open('/home/pi/n2yo/nodedata.json') as json_file:
+with open('/home/pi/n2yo/nodedata.json') as json_file: #templates
 	nodeData = json.load(json_file)
 
 with open('/home/pi/n2yo/timedata.json') as json_file:
@@ -107,6 +122,7 @@ def validLongitude(lon):
 		return False
 
 def getTLE():
+	global n2yoName
 	if config['sat']['tle1'] and config['sat']['tle2']:
 		tle = ["", ""]
 		tle[0] = config['sat']['tle1']
@@ -117,27 +133,26 @@ def getTLE():
 			print(x)
 		return tle
 	elif representsInt(config['sat']['NORAD']):
-		response = urllib.request.urlopen(getRequestURL())
-		data = json.loads(response.read())
+		data = requests.get(getRequestURL()).json()
 		if data['tle']:
 			tle = data['tle'].split("\r\n")
 			print("TLE: ")
 			for x in tle:
 				print(x)
 			customTLE = False
+			n2yoName = data['info']['satname']
 			return tle
 		else:
 			return None
 	else:
 		return config['sat']['NORAD']
+	
 
 def getName():
-	response = urllib.request.urlopen(getRequestURL())
-	data = json.loads(response.read())
 	if config['sat']['tle1'] and config['sat']['tle2']:
 		name = "CUSTOM TLE"
 	else:
-		name = data["info"]["satname"]
+		return n2yoName
 	return name
 
 def getCustomTime():
@@ -272,7 +287,7 @@ def standardRoutine():
 				sendstr += "!" + csum(sendstr)	
 
 				getWriteLiveData(ser)
-				sendSoc("data", nodeData)
+				sendSocThread("data", nodeData)
 
 
 				if(time.time() - timeSerialWrite > 1.0):
@@ -281,18 +296,21 @@ def standardRoutine():
 					timeSerialWrite = time.time()
 					timeData['time'] = str(home.date.datetime())
 					timeData['utc'] = str(datetime.utcnow())
-					sendSoc("time", timeData)
+					sendSocThread("time", timeData)
 
 				
 			else:
 				nodeData['err'] = "Wrong Coordinates/Altitude"
 				getWriteLiveData(ser)
-				sendSoc("data", nodeData)
+				sendSocThread("data", nodeData)
 
 		else:
 			nodeData['err'] = "Wrong NORAD"
+			nodeData['sat'] = "Wrong NORAD - " + config['sat']['NORAD']
+			nodeData['azimuth']['target'] = "0"
+			nodeData['elevation']['target'] = "0"
 			getWriteLiveData(ser)
-			sendSoc("data", nodeData)
+			sendSocThread("data", nodeData)
 
 			
 
@@ -348,7 +366,7 @@ while True:
 			timeSerialWrite = time.time()
 			
 		getWriteLiveData(ser)
-		sendSoc("data", nodeData)
+		sendSocThread("data", nodeData)
 
 
 	if ("UNROLL" in state):
@@ -360,4 +378,4 @@ while True:
 			print(sendstr)
 			sentCommand = True
 		getWriteLiveData(ser)
-		sendSoc("data", nodeData)
+		sendSocThread("data", nodeData)

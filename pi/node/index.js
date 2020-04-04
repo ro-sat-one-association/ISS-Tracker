@@ -67,18 +67,27 @@ app.get('/upload', function(req, res){
   res.sendFile(__dirname + '/public/upload.html');
 });
 
-io.on('connection', function(socket){ //am primit ceva, redirectioneaza
+
+const nsp = io.of('/python');
+nsp.on('connection', function(socket){
+  console.log('s-a conectat pythonul');
   socket.on('data', function(msg){
-    io.emit('data', msg);
-  });
-  socket.on('conf', function(msg){
-    io.emit('conf', getConfig());
+  //  console.log('am primit ceva de la python, trimit la interfata');
+    io.volatile.emit('data', msg);
   });
   socket.on('time', function(msg){
     io.emit('time', msg);
   });
   socket.on('upload', function(msg){
     io.emit('upload', msg);
+  });
+});
+
+io.on('connection', function(socket){ //am primit ceva, redirectioneaza
+  console.log('s-a conectat un client');
+  socket.on('conf', function(msg){
+    console.log('am trimis conf la un client');
+    io.emit('conf', getConfig());
   });
 });
 
