@@ -94,49 +94,49 @@ io.on('connection', function(socket){ //am primit ceva, redirectioneaza
 app.post('/submit_conf', urlencodedParser, function (req, res){
   c = getConfig();
   if (typeof req.body.desc !== 'undefined') {
-    c['arduino']['serial-descriptor'] = req.body.desc;
+    c['arduino']['serial-descriptor'] = req.body.desc.trim();
   } 
   if (typeof req.body.key !== 'undefined') {
-    c['observer']['n2yo-key'] = req.body.key;
+    c['observer']['n2yo-key'] = req.body.key.trim();
   } 
   if (typeof req.body.fqbn !== 'undefined') {
-    c['arduino']['fqbn'] = req.body.fqbn;
+    c['arduino']['fqbn'] = req.body.fqbn.trim();
   }
   if (typeof req.body.sat !== 'undefined') {
-    c['sat']['NORAD'] = req.body.sat;
+    c['sat']['NORAD'] = req.body.sat.trim();
   } 
   if (typeof req.body.lat !== 'undefined') {
-    c['observer']['latitude'] = req.body.lat;
+    c['observer']['latitude'] = req.body.lat.trim();
   } 
   if (typeof req.body.lon !== 'undefined') {
-    c['observer']['longitude'] = req.body.lon;
+    c['observer']['longitude'] = req.body.lon.trim();
   } 
   if (typeof req.body.alt !== 'undefined') {
-    c['observer']['altitude'] = req.body.alt;
+    c['observer']['altitude'] = req.body.alt.trim();
   } 
   if (typeof req.body.datestr !== 'undefined') {
-    c['sat']['customtime'] = req.body.datestr;
+    c['sat']['customtime'] = req.body.datestr.trim();
   }
   if (typeof req.body.azi !== 'undefined') {
-    c['custom-angles']['azimuth'] = req.body.azi;
+    c['custom-angles']['azimuth'] = req.body.azi.trim();
   } 
   if (typeof req.body.ele !== 'undefined') {
-    c['custom-angles']['elevation'] = req.body.ele;
+    c['custom-angles']['elevation'] = req.body.ele.trim();
   }  
   if (typeof req.body.state !== 'undefined') {
-    c['general-state'] = req.body.state;
+    c['general-state'] = req.body.state.trim();
   } 
   if (typeof req.body.tle1 !== 'undefined') {
-    c['sat']['tle1'] = req.body.tle1;
+    c['sat']['tle1'] = req.body.tle1.trim();
   } 
   if (typeof req.body.tle2 !== 'undefined') {
-    c['sat']['tle2'] = req.body.tle2;
+    c['sat']['tle2'] = req.body.tle2.trim();
   }
   if (typeof req.body.deltaazimuth !== 'undefined') {
-    c['custom-angles']['delta-azimuth'] = req.body.deltaazimuth;
+    c['custom-angles']['delta-azimuth'] = req.body.deltaazimuth.trim();
   } 
   if (typeof req.body.deltaelevation !== 'undefined') {
-    c['custom-angles']['delta-elevation'] = req.body.deltaelevation;
+    c['custom-angles']['delta-elevation'] = req.body.deltaelevation.trim();
   }  
 
   if (typeof req.body.autostart !== 'undefined') {
@@ -150,6 +150,8 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
       console.log("Autostart off");
     }
   }  
+
+  execCommand('sudo systemctl start track');
 
   fs.writeFile(confFile, JSON.stringify(c), function(err) {
     if(err) {

@@ -236,16 +236,16 @@ def redefineSettings():
 		if (representsInt(config['sat']['NORAD'])):
 			satName = getName()
 			sat 	= ephem.readtle(satName, tle[0], tle[1])
-		elif tle.lower().strip() == "sun":
+		elif tle.lower()== "sun":
 			satName = "Sun"
 			sat  	= ephem.Sun()
-		elif tle.lower().strip() == "moon":
+		elif tle.lower() == "moon":
 			satName = "Moon"
 			sat 	= ephem.Moon()
-		elif tle.lower().strip() == "venus":
+		elif tle.lower() == "venus":
 			satName = "Venus"
 			sat 	= ephem.Venus()
-		elif tle.lower().strip() == "mars":
+		elif tle.lower() == "mars":
 			satName = "Mars"
 			sat 	= ephem.Mars()
 		else:
