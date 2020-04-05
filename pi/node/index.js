@@ -78,9 +78,6 @@ nsp.on('connection', function(socket){
   socket.on('time', function(msg){
     io.emit('time', msg);
   });
-  socket.on('upload', function(msg){
-    io.emit('upload', msg);
-  });
 });
 
 io.on('connection', function(socket){ //am primit ceva, redirectioneaza
@@ -88,6 +85,9 @@ io.on('connection', function(socket){ //am primit ceva, redirectioneaza
   socket.on('conf', function(msg){
     console.log('am trimis conf la un client');
     io.emit('conf', getConfig());
+  });
+  socket.on('upload', function(msg){
+    io.emit('upload', msg);
   });
 });
 
