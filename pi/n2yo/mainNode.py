@@ -200,7 +200,6 @@ def getLiveData(ser):
 	except:
 		return None
 
-	ser.reset_input_buffer()
 	linie = linie.strip()
 	if linie:
 		try:
@@ -208,6 +207,7 @@ def getLiveData(ser):
 				l = linie.split("&")
 				a = l[0]
 				e = l[1][:-2]
+				ser.reset_input_buffer()
 				return (a,e)	
 			else:
 				return None
@@ -225,7 +225,7 @@ home = None
 tle  = None
 sat  = None
 satName = None
-ser  = serial.Serial(getFTDIPort(), 9600, timeout=0)
+ser  = serial.Serial(getFTDIPort(), 9600, timeout=0.5)
 
 def redefineSettings():
 	global sat, satName, home, ser
