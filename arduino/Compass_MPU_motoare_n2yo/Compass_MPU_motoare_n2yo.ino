@@ -1,6 +1,7 @@
 #include <math.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <EEPROM.h>
 
 #include "HMC5883L_Simple.h"
 HMC5883L_Simple Compass;
@@ -742,9 +743,11 @@ long long lastTime;
 char unroll_state;
 float initUnrollAngle;
 float heading;
+float x_off;
+float y_off;
 
-void getCompass() {
-  heading = Compass.GetHeadingDegrees();
+void getCompass(float &x_off, float &y_off) {
+  heading = Compass.GetHeadingDegrees(x_off, y_off);
 }
 
 
@@ -754,9 +757,26 @@ float normalizeazaCerc(float x) {
   return x;
 }
 
+void calibrateCompass(float &x_off, float &y_off){ //TO-DO
+  EEPROM.get(0, x_off);
+  EEPROM.get(sizeof(float), y_off);
+}
+
+void writeCompassOffsets(float x_off, float y_off){
+  EEPROM.put(0, x_off);
+  EEPROM.put(sizeof(float), y_off);
+}
+
+int min_x, max_x;
+int min_y, max_y;
 
 void setup()
 {
+  min_x = 10000;
+  min_y = 10000;
+  max_x = -10000;
+  max_y = -10000;
+
   azimuth = 0.0f;
   elevation = 0.0f;
 
@@ -793,6 +813,8 @@ void setup()
   pinMode(myLed, OUTPUT);
   digitalWrite(myLed, HIGH);
 
+  calibrateCompass(x_off, y_off); 
+
   initCompass();
 
   // Read the WHO_AM_I register, this is a good test of communication
@@ -815,8 +837,11 @@ void setup()
       Serial.println(c, HEX);
     }
   }
-
-
+  Serial.println("#### COMPASS OFFSET ####");
+  Serial.print(x_off);
+  Serial.print(" ");
+  Serial.println(y_off);
+  
 }
 
 //MOTORASE
@@ -1037,8 +1062,6 @@ int putereAzimuth(int d) {
     return MAX_A;
   } else {
     int v = MIN_A + (float)(MAX_A - MIN_A) * (float)(d) / (float)(K_A);
-    Serial.println(v);
-    Serial.println((float)(d) / (float)(K_A));
     return v;
   }
 }
@@ -1082,19 +1105,19 @@ void alignElevation(float t, float r) {
 #define PRINT_DELAY 100
 
 
-
 float normalizeAngle(float a){
   if (a < 0) return a + 360.0f;
   if (a > 360.0f) return a - 360.0f;
   return a;
 }
 
+
+
 void loop()
 {
   getMPUData();
-  getCompass();
+  getCompass(x_off, y_off);
   readData(azimuth, elevation);
-
 
   /*if(debug){
     Serial.print("TA: ");
@@ -1125,11 +1148,34 @@ void loop()
       float d = deltaAzimuth(initUnrollAngle, heading);
       float k  = normalizeAngle(initUnrollAngle - 1.0f);
       float dk = deltaAzimuth(k, heading);
+
+      int x, y;
+
+      Compass.GetRaw(x,y);
+
+      if(x < min_x) min_x = x;
+      if(x > max_x) max_x = x;
+      if(y < min_y) min_y = y;
+      if(y > max_y) max_y = y;
+      
       if(dk > d){
         moveAzimuth(sensAzimuth(normalizeAngle(heading + 1.0f), heading), 255);
       } else {
         alignAzimuth(normalizeAngle(k - 2.0f), heading);
-        if (deltaAzimuth(normalizeAngle(k - 2.0f), heading) < TOLERANTA_AZIMUTH) unroll_state=-1;
+        if (deltaAzimuth(normalizeAngle(k - 2.0f), heading) < TOLERANTA_AZIMUTH) { // am terminat tura
+          unroll_state=-1;
+
+          float x_o = (float)(min_x + max_x)/2.0f;
+          float y_o = (float)(min_y + max_y)/2.0f;
+
+          writeCompassOffsets(x_o, y_o);
+          calibrateCompass(x_off, y_off);
+
+           min_x = -10000;
+           min_y = -10000;
+           max_x =  10000;
+           max_y =  10000;
+        }
       }
     }
 
@@ -1137,11 +1183,33 @@ void loop()
       float d = deltaAzimuth(initUnrollAngle, heading);
       float k  = normalizeAngle(initUnrollAngle + 1.0f);
       float dk = deltaAzimuth(k, heading);
+
+      int x, y;
+
+      Compass.GetRaw(x,y);
+
+      if(x < min_x) min_x = x;
+      if(x > max_x) max_x = x;
+      if(y < min_y) min_y = y;
+      if(y > max_y) max_y = y;
+      
       if(dk > d){
         moveAzimuth(sensAzimuth(normalizeAngle(heading - 1.0f), heading), 255);
       } else {
         alignAzimuth(normalizeAngle(k + 2.0f), heading);
-        if (deltaAzimuth(normalizeAngle(k + 2.0f), heading) < TOLERANTA_AZIMUTH) unroll_state=-1;
+        if (deltaAzimuth(normalizeAngle(k + 2.0f), heading) < TOLERANTA_AZIMUTH) {
+          unroll_state=-1;
+          float x_o = (float)(min_x + max_x)/2.0f;
+          float y_o = (float)(min_y + max_y)/2.0f;
+
+          writeCompassOffsets(x_o, y_o);
+          calibrateCompass(x_off, y_off);
+
+           min_x = -10000;
+           min_y = -10000;
+           max_x =  10000;
+           max_y =  10000;
+        }
       }
     }
 

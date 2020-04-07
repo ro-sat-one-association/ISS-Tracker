@@ -107,11 +107,81 @@ void HMC5883L_Simple::SetOrientation( uint16_t orientation )
 }
 
 /** Get the heading of the compass in degrees. */
-float HMC5883L_Simple::GetHeadingDegrees()
+
+void HMC5883L_Simple::GetRaw(int &x, int &y){
+  // Obtain a sample of the magnetic axes
+  MagnetometerSample sample = ReadAxes();
+  
+/*
+  Serial.print(sample.X);
+  Serial.print(" ");
+  Serial.print(sample.Y);
+  Serial.print(" ");
+  Serial.println(sample.Z);
+*/
+
+  // Determine which of the Axes to use for North and West (when compass is "pointing" north)
+  float mag_north, mag_west;
+   
+  // Z = bits 0-2
+  switch((mode >> 5) & 0x07 )
+  {
+    case COMPASS_NORTH: mag_north = sample.Z; break;
+    case COMPASS_SOUTH: mag_north = 0-sample.Z; break;
+    case COMPASS_WEST:  mag_west  = sample.Z; break;
+    case COMPASS_EAST:  mag_west  = 0-sample.Z; break;
+      
+    // Don't care
+    case COMPASS_UP:
+    case COMPASS_DOWN:
+     break;
+  }
+  
+  // Y = bits 3 - 5
+  switch(((mode >> 5) >> 3) & 0x07 )
+  {
+    case COMPASS_NORTH: mag_north = sample.Y;  break;
+    case COMPASS_SOUTH: mag_north = 0-sample.Y; ;  break;
+    case COMPASS_WEST:  mag_west  = sample.Y;  break;
+    case COMPASS_EAST:  mag_west  = 0-sample.Y;  break;
+      
+    // Don't care
+    case COMPASS_UP:
+    case COMPASS_DOWN:
+     break;
+  }
+  
+  // X = bits 6 - 8
+  switch(((mode >> 5) >> 6) & 0x07 )
+  {
+    case COMPASS_NORTH: mag_north = sample.X; break;
+    case COMPASS_SOUTH: mag_north = 0-sample.X; break;
+    case COMPASS_WEST:  mag_west  = sample.X; break;
+    case COMPASS_EAST:  mag_west  = 0-sample.X; break;
+      
+    // Don't care
+    case COMPASS_UP:
+    case COMPASS_DOWN:
+     break;
+  }
+
+  x = mag_north;
+  y = mag_west;
+  return;
+}
+
+float HMC5883L_Simple::GetHeadingDegrees(float x_off, float y_off)
 {     
   // Obtain a sample of the magnetic axes
   MagnetometerSample sample = ReadAxes();
   
+/*
+  Serial.print(sample.X);
+  Serial.print(" ");
+  Serial.print(sample.Y);
+  Serial.print(" ");
+  Serial.println(sample.Z);
+*/
   float heading;    
   
   // Determine which of the Axes to use for North and West (when compass is "pointing" north)
@@ -160,7 +230,23 @@ float HMC5883L_Simple::GetHeadingDegrees()
   }
     
   // calculate heading from the north and west magnetic axes
-  heading = atan2(mag_west, mag_north);
+  //DATE CALIBRARE
+
+
+
+ // mag_west  Y in cazul clasic
+ // mag_north X in cazul clasic
+
+  //#define X_OFF 12.0f
+  //#define Y_OFF -9.5f
+  
+  float correctedX, correctedY;
+
+  correctedX = mag_north - x_off;
+  correctedY = mag_west - y_off;
+
+
+  heading = atan2(correctedY, correctedX);
   
   // Adjust the heading by the declination
   heading += declination_offset_radians;
@@ -203,6 +289,7 @@ HMC5883L_Simple::MagnetometerSample HMC5883L_Simple::ReadAxes()
   sample.X = (buffer[0] << 8) | buffer[1];  
   sample.Z = (buffer[2] << 8) | buffer[3];
   sample.Y = (buffer[4] << 8) | buffer[5];
+
   
   return sample;
 }

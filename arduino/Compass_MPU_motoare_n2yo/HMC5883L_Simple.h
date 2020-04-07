@@ -120,8 +120,8 @@ class HMC5883L_Simple
     void SetSamplingMode( uint16_t sampling_mode );
     	  
     // Get a heading in degrees
-    float GetHeadingDegrees();
-    
+    float GetHeadingDegrees(float x_off, float y_off);
+    void GetRaw(int &x, int &y);
     
 	protected:
 	  void     Write(uint8_t address, uint8_t byte);
