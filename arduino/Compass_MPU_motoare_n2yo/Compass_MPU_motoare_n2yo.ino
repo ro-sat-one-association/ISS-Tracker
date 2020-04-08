@@ -2,10 +2,10 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <EEPROM.h>
-
+#include "DualVNH5019MotorShield.h"
 #include "HMC5883L_Simple.h"
 HMC5883L_Simple Compass;
-
+DualVNH5019MotorShield md;
 //Magnetometer Registers
 #define AK8963_ADDRESS 0x0C
 #define AK8963_WHO_AM_I 0x00 // should return 0x48
@@ -158,6 +158,15 @@ HMC5883L_Simple Compass;
 #define AK8963_ADDRESS 0x0C  //  Address of magnetometer
 #endif
 
+bool checkI2C(uint8_t dev){
+  Wire.beginTransmission (dev);
+  if (Wire.endTransmission() == 0) {
+      //Serial.print (F("I2C return truedevice found at 0x"));
+      //Serial.println (dev, HEX);
+      return true;
+  }
+  return false;
+}
 // Set initial input parameters
 enum Ascale
 {
@@ -721,22 +730,22 @@ float elevation;
 
 #define TOLERANTA_ELEVATIE 1.0f //in grade
 #define TOLERANTA_AZIMUTH  2.0f
-#define SENS_0_E 1             //pe astea le inversezi dupa teste, daca e nevoie
-#define SENS_1_E 0
+#define SENS_0_E 0             //pe astea le inversezi dupa teste, daca e nevoie
+#define SENS_1_E 1
 #define SENS_0_A 0             //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_A 1
 
 #define ELE_A_PIN 4
-#define ELE_B_PIN 9
+#define ELE_B_PIN 3
 
 #define AZI_A_PIN 7
 #define AZI_B_PIN 8
 
-#define AZI_PWM 5
-#define ELE_PWM 6
+#define AZI_PWM 9
+#define ELE_PWM 10
 
-#define ELE_EN A0
-#define AZI_EN  A1
+#define ELE_EN 6
+#define AZI_EN  12
 
 bool debug;
 long long lastTime;
@@ -769,9 +778,12 @@ void writeCompassOffsets(float x_off, float y_off){
 
 int min_x, max_x;
 int min_y, max_y;
+bool checkMPU, checkCompass;
 
 void setup()
 {
+  md.init();
+
   min_x = 10000;
   min_y = 10000;
   max_x = -10000;
@@ -804,8 +816,7 @@ void setup()
   digitalWrite(ELE_EN,  HIGH);
 
   Wire.begin();
-  //  TWBR = 12;  // 400 kbit/sec I2C speed
-  //Serial.begin(9600);
+  TWBR = 12;  // 400 kbit/sec I2C speed
 
   // Set up the interrupt pin, its set as active high, push-pull
   pinMode(intPin, INPUT);
@@ -849,37 +860,31 @@ void setup()
 void moveAzimuth(bool sens, int putere)
 {
   if (sens) {
-    digitalWrite(AZI_A_PIN, HIGH);
-    digitalWrite(AZI_B_PIN, LOW);
+    md.setM2Speed(putere * 80 / 51);
   } else {
-    digitalWrite(AZI_A_PIN, LOW);
-    digitalWrite(AZI_B_PIN, HIGH);
+    md.setM2Speed(-1 * putere * 80 / 51);
   }
-  analogWrite(AZI_PWM, putere);
 }
 
 void moveElevation(bool sens, int putere)
 {
   if (sens) {
-    digitalWrite(ELE_A_PIN, HIGH);
-    digitalWrite(ELE_B_PIN, LOW);
+    md.setM1Speed(putere * 80 / 51);
   } else {
-    digitalWrite(ELE_A_PIN, LOW);
-    digitalWrite(ELE_B_PIN, HIGH);
+    md.setM1Speed(-1 * putere * 80 / 51);
   }
-  analogWrite(ELE_PWM, putere);
 }
 
 void stopAzimuth()
 {
   digitalWrite(AZI_A_PIN, LOW);
-  digitalWrite(AZI_A_PIN, LOW);
+  digitalWrite(AZI_B_PIN, LOW);
 }
 
 void stopElevation()
 {
   digitalWrite(ELE_A_PIN, LOW);
-  digitalWrite(ELE_A_PIN, LOW);
+  digitalWrite(ELE_B_PIN, LOW);
 }
 
 
@@ -1111,28 +1116,17 @@ float normalizeAngle(float a){
   return a;
 }
 
-
-
 void loop()
 {
-  getMPUData();
-  getCompass(x_off, y_off);
   readData(azimuth, elevation);
 
-  /*if(debug){
-    Serial.print("TA: ");
-    Serial.print(azimuth);
-    Serial.print('\t');
-    Serial.print("H: ");
-    Serial.println(heading);
+  checkMPU = checkI2C(MPU9250_ADDRESS);
+  checkCompass = checkI2C(COMPASS_I2C_ADDRESS);
 
-    Serial.print("TE: ");
-    Serial.print(elevation);
-    Serial.print('\t');
-    Serial.print("R:");
-    Serial.println(roll);
-    Serial.println("-------------");
-    }*/
+  if(checkMPU && checkCompass){ 
+    getMPUData();
+    getCompass(x_off, y_off);
+  }
 
   if (millis() - lastTime > PRINT_DELAY) {
     lastTime = millis();
@@ -1216,6 +1210,29 @@ void loop()
   } else {
       alignAzimuth(azimuth, heading);
       alignElevation(elevation, roll);
+  }
+
+  if(!(checkCompass && checkMPU)){
+      TWCR  = 0;
+      while(true){
+        checkCompass = checkI2C(COMPASS_I2C_ADDRESS);
+        checkMPU = checkI2C(MPU9250_ADDRESS);
+        if(checkCompass && checkMPU){
+            Wire.begin();
+            MPU9250SelfTest(SelfTest); // Start by performing self test and reporting values
+            delay(1000);
+            initMPU9250();
+            initCompass();
+            Serial.println("############# RECONECTAT AMBELE #############");
+            break;
+        }
+        delay(1000);
+        Serial.println("Astept sa se reconecteze ambele...");
+        Serial.print("Busola: "); Serial.print(checkCompass);
+        Serial.print(" MPU: "); Serial.println(checkMPU);
+        stopAzimuth();
+        stopElevation();
+      }
   }
 
 }
