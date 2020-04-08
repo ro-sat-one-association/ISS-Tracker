@@ -780,6 +780,8 @@ int min_x, max_x;
 int min_y, max_y;
 bool checkMPU, checkCompass;
 
+long long lastReadTime;
+
 void setup()
 {
   md.init();
@@ -792,6 +794,7 @@ void setup()
   azimuth = 0.0f;
   elevation = 0.0f;
 
+  lastReadTime = 0;
   unroll_state = -1;
 
   debug = false;
@@ -1047,8 +1050,8 @@ bool sensElevatie(int t, int r) {
 #define MIN_E 50 //puterea minima pwm  
 #define MIN_A 40
 
-#define K_E 10 //cu cate grade inainte sa incetinesc miscarea
-#define K_A 25
+#define K_E 5 //cu cate grade inainte sa incetinesc miscarea
+#define K_A 10
 
 #define MAX_E 255
 #define MAX_A 255
@@ -1108,7 +1111,7 @@ void alignElevation(float t, float r) {
 }
 
 #define PRINT_DELAY 100
-
+#define READ_DELAY 50
 
 float normalizeAngle(float a){
   if (a < 0) return a + 360.0f;
@@ -1123,7 +1126,7 @@ void loop()
   checkMPU = checkI2C(MPU9250_ADDRESS);
   checkCompass = checkI2C(COMPASS_I2C_ADDRESS);
 
-  if(checkMPU && checkCompass){ 
+  if(checkMPU && checkCompass && millis() - lastReadTime > READ_DELAY){ 
     getMPUData();
     getCompass(x_off, y_off);
   }
@@ -1135,7 +1138,6 @@ void loop()
     s += String(checkSum(s)); 
     Serial.println(s);
   }
-
 
   if(unroll_state != -1){
     if(unroll_state == 1){ //A0
