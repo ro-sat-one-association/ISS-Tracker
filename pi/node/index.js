@@ -62,6 +62,9 @@ app.get('/config', function(req, res){
   res.sendFile(__dirname + '/public/config.html');
 });
 
+app.get('/aprs', function(req, res){
+  res.sendFile(__dirname + '/public/aprs.html');
+});
 
 app.get('/upload', function(req, res){
   res.sendFile(__dirname + '/public/upload.html');
@@ -104,6 +107,8 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
   }
   if (typeof req.body.sat !== 'undefined') {
     c['sat']['NORAD'] = req.body.sat.trim();
+    execCommand('sudo systemctl stop aprs');
+    execCommand('sudo systemctl start track');
   } 
   if (typeof req.body.lat !== 'undefined') {
     c['observer']['latitude'] = req.body.lat.trim();
@@ -139,6 +144,12 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
     c['custom-angles']['delta-elevation'] = req.body.deltaelevation.trim();
   }  
 
+  if (typeof req.body.callsign !== 'undefined') {
+    c['target']['callsign'] = req.body.callsign.trim();
+    execCommand('sudo systemctl stop track');
+    execCommand('sudo systemctl start aprs');
+  }  
+
   if (typeof req.body.autostart !== 'undefined') {
     if(typeof req.body.autostart[1] !== 'undefined'){ //on
       execCommand('sudo systemctl enable track');
@@ -150,8 +161,6 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
       console.log("Autostart off");
     }
   }  
-
-  execCommand('sudo systemctl start track');
 
   fs.writeFile(confFile, JSON.stringify(c), function(err) {
     if(err) {

@@ -1,16 +1,17 @@
 {
     "azimuth": {
-      "live": 15.95,
-      "target": 17.02
+      "live": 0,
+      "target": 90
     },
     "elevation":{
-      "live": 12.34,
-      "target": 10.22
+      "live": 90,
+      "target": 0
     },
     "time":{
       "real":"2020-04-01 16:08:51.930225",
       "simulated":"2020-04-01 16:08:51.930225"
     },
-    "sat":"SPACE STATION",
-    "err":"No reported error"
+    "callsign":"-",
+    "sat":"-",
+    "err":"Initialising data"
 }
