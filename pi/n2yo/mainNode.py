@@ -225,13 +225,19 @@ home = None
 tle  = None
 sat  = None
 satName = None
-ser  = serial.Serial(getFTDIPort(), 9600, timeout=0.5)
+#ser  = serial.Serial(getFTDIPort(), 9600, timeout=0.5)
+ser = None
+lastPort = ""
 
 def redefineSettings():
-	global sat, satName, home, ser
+	global sat, satName, home, ser, lastPort
 	refreshConfig()
 	tle  = getTLE()
 	home = getObserver()
+	port = getFTDIPort()
+	if port is not lastPort:
+		ser  = serial.Serial(port, 9600, timeout=0.5)
+		lastPort = port
 	if tle is not None:
 		if (representsInt(config['sat']['NORAD'])):
 			satName = getName()

@@ -162,7 +162,7 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
     }
   }  
 
-  fs.writeFile(confFile, JSON.stringify(c), function(err) {
+  fs.writeFileSync(confFile, JSON.stringify(c), function(err) {
     if(err) {
         return console.log(err);
     }
@@ -196,7 +196,7 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
  app.post('/submit_unroll', urlencodedParser, function (req, res){
   console.log(req.body.command);
   
-  fs.writeFile(unrollFile, req.body.command, function(err) {
+  fs.writeFileSync(unrollFile, req.body.command, function(err) {
     if(err) {
         return console.log(err);
     }
@@ -205,7 +205,7 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
 
   c = getConfig();
   c['general-state'] = "UNROLL";
-  fs.writeFile(confFile, JSON.stringify(c), function(err) {
+  fs.writeFileSync(confFile, JSON.stringify(c), function(err) {
     if(err) {
         return console.log(err);
     }

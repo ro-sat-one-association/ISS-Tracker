@@ -12,5 +12,8 @@ function verificaEroare(){
         if(document.getElementById("err_code").innerHTML == "No reported error"){
             document.getElementById("eroare").innerHTML = "";
         }
+        if(document.getElementById("err_code").innerHTML == "Wrong Callsign"){
+            document.getElementById("eroare").innerHTML = "<div class=\"alert alert-danger\" role=\"alert\">Callsign-ul este nevalid!</div>";
+        }
     }
 }

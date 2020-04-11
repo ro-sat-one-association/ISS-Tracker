@@ -10,7 +10,7 @@ import serial
 import serial.tools.list_ports
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-
+import maidenhead as mh
 
 nodeData = ""
 config = ""
@@ -21,6 +21,10 @@ web = 'http://localhost:80'
 space = '/python'
 
 sio = socketio.Client()
+
+reqDelay = 300
+lastTime = time.time()
+serialTime = 0
 
 @sio.on('connect', namespace=space)
 def on_connect():
@@ -86,27 +90,37 @@ def getReqURL():
 
 def getLatLonAlt():
     data = requests.get(getReqURL()).json()
-    lat = data['entries'][0]['lat']
-    lon = data['entries'][0]['lng']
-    try:
-        alt = data['entries'][0]['altitude']
-    except:
-        alt = "-"
-    print(str(lat) + " " + str(lon))
-    return (lat,lon,alt)
+    if data['found'] != 0:
+        lat = data['entries'][0]['lat']
+        lon = data['entries'][0]['lng']
+        try:
+            alt = data['entries'][0]['altitude']
+        except:
+            alt = "-"
+        print(str(lat) + " " + str(lon))
+        return (lat,lon,alt)
+    else:
+        return ("-", "-", "-")
 
 obs = {}
 target = {}
 
 def redefineTarget():
-    global target
-    data = getLatLonAlt()
-    target['lat'] = data[0]
-    target['lon'] = data[1]
-    if data[2] is not "-":
-        target['alt'] = data[2]
-    else:
+    global target, lastTime, callsign
+    if isGridLocator(callsign) is not False:
+        target['lat'] = isGridLocator(callsign)[0]
+        target['lon'] = isGridLocator(callsign)[1]
         target['alt'] = obs['alt']
+    else:
+        callsign = callsign.upper()
+        data = getLatLonAlt()
+        target['lat'] = data[0]
+        target['lon'] = data[1]
+        if data[2] is not "-":
+            target['alt'] = data[2]
+        else:
+            target['alt'] = obs['alt']
+    lastTime = time.time()
 
 def redefineSettings():
     global obs, callsign
@@ -117,6 +131,12 @@ def redefineSettings():
     callsign  = config['target']['callsign']
     redefineTarget()
  
+def isGridLocator(x):
+    try:
+        return mh.toLoc(x)
+    except: 
+        return False
+
 def getDist(observer, target):
     return Geodesic.WGS84.Inverse(float(observer['lat']), float(observer['lon']), float(target['lat']), float(target['lon']))['s12']
 
@@ -179,26 +199,31 @@ observer.start()
 
 redefineSettings()
 
-reqDelay = 300
-lastTime = time.time()
-serialTime = 0
+
 
 while True:
     if(time.time() - lastTime > reqDelay):
         lastTime = time.time()
         redefineSettings()
 
-    azi = "%.2f" % float(getAzi(obs, target))
-    ele = "%.2f" % float(getEle(obs, target))
+    if target['lat'] is not "-":
+        azi = "%.2f" % float(getAzi(obs, target))
+        ele = "%.2f" % float(getEle(obs, target))
+        nodeData['err'] = "No reported error"
+        nodeData['callsign'] = callsign
+    else:
+        azi = "0.0"
+        ele = "0.0"
+        nodeData['err'] = "Wrong Callsign"
+        nodeData['callsign'] = "-"
 
     sendstr  = "!" + azi + "&" + ele
     sendstr += "!" + csum(sendstr)
 
     nodeData['azimuth']['target'] = azi
     nodeData['elevation']['target'] = ele
-    nodeData['callsign'] = callsign
-    nodeData['err'] = "No reported error"
-
+    
+    
     getWriteLiveData(ser)
     sendSocThread("data", nodeData)
 
