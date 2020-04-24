@@ -18,7 +18,7 @@ from watchdog.events import FileSystemEventHandler
 config = ""
 nodeData = ""
 
-web = 'http://localhost:80'
+web = 'http://localhost:3000'
 space = '/python'
 
 sio = socketio.Client()

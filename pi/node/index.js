@@ -8,7 +8,7 @@ const { exec } = require('child_process');
 var http = require('http').Server(app);
 var io = require('socket.io')(http, { wsEngine: 'ws' });
 
-var port = process.env.PORT || 80;
+var port = process.env.PORT || 3000;
 
 var urlencodedParser = bodyParser.urlencoded({ extended: true });
 
@@ -94,85 +94,6 @@ io.on('connection', function(socket){ //am primit ceva, redirectioneaza
   });
 });
 
-app.post('/submit_conf', urlencodedParser, function (req, res){
-  c = getConfig();
-  if (typeof req.body.desc !== 'undefined') {
-    c['arduino']['serial-descriptor'] = req.body.desc.trim();
-  } 
-  if (typeof req.body.key !== 'undefined') {
-    c['observer']['n2yo-key'] = req.body.key.trim();
-  } 
-  if (typeof req.body.fqbn !== 'undefined') {
-    c['arduino']['fqbn'] = req.body.fqbn.trim();
-  }
-  if (typeof req.body.sat !== 'undefined') {
-    c['sat']['NORAD'] = req.body.sat.trim();
-    execCommand('sudo systemctl stop aprs');
-    execCommand('sudo systemctl start track');
-  } 
-  if (typeof req.body.lat !== 'undefined') {
-    c['observer']['latitude'] = req.body.lat.trim();
-  } 
-  if (typeof req.body.lon !== 'undefined') {
-    c['observer']['longitude'] = req.body.lon.trim();
-  } 
-  if (typeof req.body.alt !== 'undefined') {
-    c['observer']['altitude'] = req.body.alt.trim();
-  } 
-  if (typeof req.body.datestr !== 'undefined') {
-    c['sat']['customtime'] = req.body.datestr.trim();
-  }
-  if (typeof req.body.azi !== 'undefined') {
-    c['custom-angles']['azimuth'] = req.body.azi.trim();
-  } 
-  if (typeof req.body.ele !== 'undefined') {
-    c['custom-angles']['elevation'] = req.body.ele.trim();
-  }  
-  if (typeof req.body.state !== 'undefined') {
-    c['general-state'] = req.body.state.trim();
-  } 
-  if (typeof req.body.tle1 !== 'undefined') {
-    c['sat']['tle1'] = req.body.tle1.trim();
-  } 
-  if (typeof req.body.tle2 !== 'undefined') {
-    c['sat']['tle2'] = req.body.tle2.trim();
-  }
-  if (typeof req.body.deltaazimuth !== 'undefined') {
-    c['custom-angles']['delta-azimuth'] = req.body.deltaazimuth.trim();
-  } 
-  if (typeof req.body.deltaelevation !== 'undefined') {
-    c['custom-angles']['delta-elevation'] = req.body.deltaelevation.trim();
-  }  
-
-  if (typeof req.body.callsign !== 'undefined') {
-    c['target']['callsign'] = req.body.callsign.trim();
-    execCommand('sudo systemctl stop track');
-    execCommand('sudo systemctl start aprs');
-  }  
-
-  if (typeof req.body.autostart !== 'undefined') {
-    if(typeof req.body.autostart[1] !== 'undefined'){ //on
-      execCommand('sudo systemctl enable track');
-      c['autostart'] = true;
-      console.log("Autostart on");
-    } else { //off
-      execCommand('sudo systemctl disable track');
-      c['autostart'] = false;
-      console.log("Autostart off");
-    }
-  }  
-
-  fs.writeFileSync(confFile, JSON.stringify(c), function(err) {
-    if(err) {
-        return console.log(err);
-    }
-    console.log("Am schimbat configuratia!");
-  }); 
-  
-  res.sendStatus(200);
- });
-
-
  app.post('/upload', function (req, res){
   var form = new formidable.IncomingForm();
 
@@ -191,28 +112,6 @@ app.post('/submit_conf', urlencodedParser, function (req, res){
   execCommand('sudo python3 /home/pi/upload_arduino.py &');
 
 });
-
-
- app.post('/submit_unroll', urlencodedParser, function (req, res){
-  console.log(req.body.command);
-  
-  fs.writeFileSync(unrollFile, req.body.command, function(err) {
-    if(err) {
-        return console.log(err);
-    }
-    console.log("Comanda de unroll scrisa in fisier");
-  }); 
-
-  c = getConfig();
-  c['general-state'] = "UNROLL";
-  fs.writeFileSync(confFile, JSON.stringify(c), function(err) {
-    if(err) {
-        return console.log(err);
-    }
-    console.log("Am schimbat configuratia!");
-  }); 
-  
- });
 
 http.listen(port, function(){
   console.log('listening on *:' + port);

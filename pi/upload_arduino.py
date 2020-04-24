@@ -14,7 +14,7 @@ config = ""
 
 sio = socketio.Client()
 
-web = 'http://localhost:80'
+web = 'http://localhost:3000'
 
 try:
 	sio.connect(web)
@@ -79,6 +79,9 @@ for x in range(0, 5):
 	print("Starting in " + str(5-x) + " seconds...")
 	sendSoc("upload", "Starting in " + str(5-x) + " seconds...")
 	time.sleep(1)
+
+execAndPrint("sudo systemctl stop track")
+execAndPrint("sudo systemctl stop aprs")
 
 port = getFTDIPort()
 fqbn = "arduino:avr:pro:cpu=8MHzatmega328"

@@ -17,7 +17,7 @@ config = ""
 callsign = ""
 key = "106305.jkH03UDkNWrZX5zf"
 
-web = 'http://localhost:80'
+web = 'http://localhost:3000'
 space = '/python'
 
 sio = socketio.Client()

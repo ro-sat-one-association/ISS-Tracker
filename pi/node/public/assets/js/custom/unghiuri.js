@@ -370,7 +370,7 @@ function showUnrollOKNotification(from, align) {
 
 function SubFormRoll() {
     $.ajax({
-        url: '/submit_unroll',
+        url: '/submit_unroll.php',
         type: 'post',
         data: $('#unrollform').serialize(),
         success: function() {
@@ -381,7 +381,7 @@ function SubFormRoll() {
 
 function SubForm() {
     $.ajax({
-        url: '/submit_conf',
+        url: '/submit_config.php',
         type: 'post',
         data: $('#trackform').serialize(),
         success: function() {

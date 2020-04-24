@@ -446,7 +446,7 @@ $(document).ready(function(){
 
 function SubForm() {
     $.ajax({
-        url: '/submit_conf',
+        url: '/submit_config.php',
         type: 'post',
         data: $('#trackform').serialize(),
         success: function() {
