@@ -236,7 +236,7 @@ def redefineSettings():
 	home = getObserver()
 	port = getFTDIPort()
 	if port is not lastPort:
-		ser  = serial.Serial(port, 9600, timeout=0.5)
+		ser  = serial.Serial(port, 115200, timeout=0.5)
 		lastPort = port
 	if tle is not None:
 		if (representsInt(config['sat']['NORAD'])):

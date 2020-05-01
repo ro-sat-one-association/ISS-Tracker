@@ -800,7 +800,7 @@ void setup()
   debug = false;
   lastTime = 0;
 
-  Serial.begin(9600);
+  Serial.begin(57600);
   Serial.setTimeout(50);
 
   pinMode(ELE_EN, OUTPUT);
@@ -1111,7 +1111,7 @@ void alignElevation(float t, float r) {
 }
 
 #define PRINT_DELAY 100
-#define READ_DELAY 50
+#define READ_DELAY 100
 
 float normalizeAngle(float a){
   if (a < 0) return a + 360.0f;
