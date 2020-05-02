@@ -47,6 +47,15 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 #define ELE_EN 6
 #define AZI_EN  12
 
+#define MIN_E 50 //puterea minima pwm  
+#define MIN_A 40
+
+#define K_E 5 //cu cate grade inainte sa incetinesc miscarea
+#define K_A 10
+
+#define MAX_E 150
+#define MAX_A 150
+
 
 int min_x, max_x;
 int min_y, max_y;
@@ -154,6 +163,7 @@ void setup()
   digitalWrite(AZI_EN,  HIGH);
   digitalWrite(ELE_EN,  HIGH);
  
+  calibrateCompass(x_off, y_off);
   Serial.println("#### COMPASS OFFSET ####");
   Serial.print(x_off);
   Serial.print(" ");
@@ -351,15 +361,6 @@ bool sensElevatie(int t, int r) {
   }
 }
 
-#define MIN_E 50 //puterea minima pwm  
-#define MIN_A 40
-
-#define K_E 5 //cu cate grade inainte sa incetinesc miscarea
-#define K_A 10
-
-#define MAX_E 255
-#define MAX_A 255
-
 int putereElevatie(int d) {
   if (d > K_E) {
     return MAX_E;
@@ -426,7 +427,7 @@ void getCompass(float &x_off, float &y_off) {
   heading = Compass.GetHeadingDegrees(x_off, y_off);
 }
 
-void calibrateCompass(float &x_off, float &y_off){ //TO-DO
+void calibrateCompass(float &x_off, float &y_off){ 
   EEPROM.get(0, x_off);
   EEPROM.get(sizeof(float), y_off);
 }
