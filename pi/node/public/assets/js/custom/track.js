@@ -163,16 +163,14 @@ var previous = "";
 var time = "";
 var utc_time = "";
 
-setInterval(drawBusola, 10);
-setInterval(drawElevatie, 10);
+setInterval(drawBusola, 40);
+setInterval(drawElevatie, 40);
 setInterval(verificaTimpul, 100);
 
 
-actualAzimuth = 0;
 liveAzimuth = 0;
 targetAzimuth = 0;
 
-actualElevatie = 0;
 liveElevatie = 0;
 targetElevatie = 0;
 
@@ -273,12 +271,7 @@ function drawBusola() {
     u = targetAzimuth;
     u *= Math.PI / 180;
 
-    if (actualAzimuth < 0) actualAzimuth += 360;
-
-    actualAzimuth = actualAzimuth % 360;
-
-    if (deltaAzimuth(liveAzimuth, actualAzimuth) > 1) actualAzimuth += sensAzimuth(liveAzimuth, actualAzimuth) * dAzimuth;
-    l = actualAzimuth;
+    l = liveAzimuth;
 
     l *= Math.PI / 180;
     drawFace(ctx1, radius, busolastyle, busolastyle);
@@ -297,15 +290,11 @@ function drawElevatie() {
     if (u < 0) u += 360;
     u *= Math.PI / 180;
 
-    ae = parseFloat(actualElevatie);
     le = parseFloat(liveElevatie);
 
-    if (ae < 0) ae += 360.0;
     if (le < 0) le += 360.0;
-
-    if (deltaAzimuth(le, ae) > 1) actualElevatie += sensAzimuth(le, ae) * dElevatie;
-
-    l = ae;
+    
+    l = le;
     l = l - 90;
     if (l < 0) l += 360;
     l *= Math.PI / 180;

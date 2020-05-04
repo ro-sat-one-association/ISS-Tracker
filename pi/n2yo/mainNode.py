@@ -218,8 +218,8 @@ def getLiveData(ser):
 def getWriteLiveData(ser):
 	data = getLiveData(ser)
 	if data is not None:
-		nodeData['azimuth']['live']   = data[0]
-		nodeData['elevation']['live'] = data[1]
+		nodeData['azimuth']['live']   = "%.2f" % (float(data[0]) - float(config['custom-angles']['delta-azimuth']))
+		nodeData['elevation']['live'] = "%.2f" % (float(data[1]) - float(config['custom-angles']['delta-elevation']))
 
 home = None
 tle  = None
@@ -278,8 +278,8 @@ def standardRoutine():
 				sat.compute(home)
 				deltaAzimuth   = float(config['custom-angles']['delta-azimuth'])
 				deltaElevation = float(config['custom-angles']['delta-elevation'])
-				azi  = "%.2f" %  (sat.az  * 180.0 / math.pi + deltaAzimuth)
-				ele  = "%.2f" %  (sat.alt * 180.0 / math.pi + deltaElevation)
+				azi  = "%.2f" %  (sat.az  * 180.0 / math.pi)
+				ele  = "%.2f" %  (sat.alt * 180.0 / math.pi)
 
 				nodeData['azimuth']['target'] = azi
 				nodeData['elevation']['target'] = ele
@@ -287,6 +287,9 @@ def standardRoutine():
 				nodeData['time']['simulated'] = str(home.date.datetime())
 				nodeData['time']['real'] = str(datetime.utcnow())
 				nodeData['err'] = "No reported error"
+
+				azi = "%.2f" % (float(azi) + deltaAzimuth)
+				ele = "%.2f" % (float(ele) + deltaElevation)
 
 				sendstr  = "!" + azi + "&" + ele 
 				sendstr += "!" + csum(sendstr)	
