@@ -81,7 +81,7 @@ def getFTDIPort():
 			return str(port)
 	raise Exception("No FTDI port was found")
 
-ser  = serial.Serial(getFTDIPort(), 9600, timeout=0.5)
+ser  = serial.Serial(getFTDIPort(), 115200, timeout=0.5)
 
 def getReqURL():
     reqURL = "https://api.aprs.fi/api/get?name=" + callsign + "&what=loc&apikey=" + key + "&format=json"
@@ -183,8 +183,8 @@ def getWriteLiveData(ser):
     global nodeData
     data = getLiveData(ser)
     if data is not None:
-        nodeData['azimuth']['live']   = data[0]
-        nodeData['elevation']['live'] = data[1]
+        nodeData['azimuth']['live']   = "%.2f" % (float(data[0]) - float(config['custom-angles']['delta-azimuth']))
+        nodeData['elevation']['live'] = "%.2f" % (float(data[1]) - float(config['custom-angles']['delta-elevation']))
 
 class MyHandler(FileSystemEventHandler):
 	def on_modified(self, event):
@@ -202,6 +202,8 @@ redefineSettings()
 
 
 while True:
+    deltaAzimuth   = float(config['custom-angles']['delta-azimuth'])
+    deltaElevation = float(config['custom-angles']['delta-elevation'])
     if(time.time() - lastTime > reqDelay):
         lastTime = time.time()
         redefineSettings()
@@ -217,12 +219,14 @@ while True:
         nodeData['err'] = "Wrong Callsign"
         nodeData['callsign'] = "-"
 
-    sendstr  = "!" + azi + "&" + ele
-    sendstr += "!" + csum(sendstr)
-
     nodeData['azimuth']['target'] = azi
     nodeData['elevation']['target'] = ele
     
+    azi = "%.2f" % (float(azi) + deltaAzimuth)
+    ele = "%.2f" % (float(ele) + deltaElevation)
+
+    sendstr  = "!" + azi + "&" + ele
+    sendstr += "!" + csum(sendstr)
     
     getWriteLiveData(ser)
     sendSocThread("data", nodeData)
