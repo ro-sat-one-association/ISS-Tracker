@@ -427,7 +427,7 @@ void loop()
       if(y > max_y) max_y = y;
       
       if(dk > d){
-        moveAzimuth(sensAzimuth(normalizeAngle(heading + 1.0f), heading), 255);
+        moveAzimuth(sensAzimuth(normalizeAngle(heading + 1.0f), heading), MAX_A);
       } else {
         alignAzimuth(normalizeAngle(k - 2.0f), heading);
         if (deltaAzimuth(normalizeAngle(k - 2.0f), heading) < TOLERANTA_AZIMUTH) { // am terminat tura
@@ -462,7 +462,7 @@ void loop()
       if(y > max_y) max_y = y;
       
       if(dk > d){
-        moveAzimuth(sensAzimuth(normalizeAngle(heading - 1.0f), heading), 255);
+        moveAzimuth(sensAzimuth(normalizeAngle(heading - 1.0f), heading), MAX_A);
       } else {
         alignAzimuth(normalizeAngle(k + 2.0f), heading);
         if (deltaAzimuth(normalizeAngle(k + 2.0f), heading) < TOLERANTA_AZIMUTH) {

@@ -1,0 +1,7 @@
+requests==2.22.0
+geographiclib==1.50
+python-engineio==3.13.0
+python-socketio==4.6.0
+maidenhead==1.4.0
+pyserial==3.4
+watchdog==0.10.3

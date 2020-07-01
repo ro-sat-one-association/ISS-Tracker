@@ -92,7 +92,7 @@ execAndPrint("unzip /home/pi/upload/*.zip")
 for i in glob.iglob('/home/pi/upload/*/'):
 	os.chdir(i)
 execAndPrint("arduino-cli compile --fqbn " + fqbn + " ./")
-execAndPrint("arduino-cli upload -v -p " + port + " --fqbn " + fqbn + " ./")
+execAndPrint("arduino-cli upload -v -p " + port + " --fqbn " + fqbn)
 os.chdir("/home/pi/")
 os.system("rm -r /home/pi/upload/*")
 

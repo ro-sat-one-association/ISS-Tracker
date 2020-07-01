@@ -1,0 +1,7 @@
+requests==2.22.0
+python-engineio==3.13.0
+python-socketio==4.6.0
+pyephem==3.7.7.0
+pyserial==3.4
+watchdog==0.10.3
+ephem==3.7.7.1
