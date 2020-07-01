@@ -413,6 +413,8 @@ void loop()
 
   if(unroll_state != -1){
     if(unroll_state == 1){ //A0
+      x_off = 0.0f;
+      y_off = 0.0f;
       float d = deltaAzimuth(initUnrollAngle, heading);
       float k  = normalizeAngle(initUnrollAngle - 1.0f);
       float dk = deltaAzimuth(k, heading);
@@ -439,15 +441,17 @@ void loop()
           writeCompassOffsets(x_o, y_o);
           calibrateCompass(x_off, y_off);
 
-           min_x = -10000;
-           min_y = -10000;
-           max_x =  10000;
-           max_y =  10000;
+           min_x = 10000;
+           min_y = 10000;
+           max_x = -10000;
+           max_y = -10000;
         }
       }
     }
 
     if(unroll_state == 2){ //A1
+      x_off = 0.0f;
+      y_off = 0.0f;
       float d = deltaAzimuth(initUnrollAngle, heading);
       float k  = normalizeAngle(initUnrollAngle + 1.0f);
       float dk = deltaAzimuth(k, heading);
@@ -473,10 +477,10 @@ void loop()
           writeCompassOffsets(x_o, y_o);
           calibrateCompass(x_off, y_off);
 
-           min_x = -10000;
-           min_y = -10000;
-           max_x =  10000;
-           max_y =  10000;
+           min_x = 10000;
+           min_y = 10000;
+           max_x = -10000;
+           max_y = -10000;
         }
       }
     }
