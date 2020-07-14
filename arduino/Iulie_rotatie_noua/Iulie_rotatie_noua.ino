@@ -43,6 +43,8 @@ long long lastReadTime;
 long long lastTime;
 
 float initUnrollAngle;
+long long initUnrollTime;
+unsigned long deltaT;
 
 float pitch;
 float heading;
@@ -76,6 +78,8 @@ void setup()
 
   md.init();
 
+  deltaT = 0;
+  
   min_x = 10000;
   min_y = 10000;
   max_x = -10000;
@@ -216,7 +220,8 @@ void readData(float &azi, float &ele)
       y_off = 0.0f;
       getCompass(x_off, y_off);
       initUnrollAngle = heading;
-      delay(100);
+      initUnrollTime = millis();
+      deltaT = 0;
       return;
     }
     if (textPacket == "A1") {
@@ -225,7 +230,8 @@ void readData(float &azi, float &ele)
       y_off = 0.0f;
       getCompass(x_off, y_off);
       initUnrollAngle = heading;
-      delay(100);
+      initUnrollTime = millis();
+      deltaT = 0;
       return;
     }
 
@@ -433,28 +439,18 @@ void loop()
   if(unroll_state != -1){
     if(unroll_state == 1){ //A0
       stopElevation();
-      float d = deltaAzimuth(initUnrollAngle, heading);
-      float k  = normalizeAngle(initUnrollAngle - 1.0f);
-      float dk = deltaAzimuth(k, heading);
+      moveAzimuth(sensAzimuth(normalizeAngle(heading + 1.0f), heading), MAX_A);
 
-      int x, y;
-      Compass.GetRaw(x,y);
+      if(millis() - initUnrollTime > 1000 && deltaT == 0){
+        float omega = deltaAzimuth(initUnrollAngle, heading) / (float)(millis() - initUnrollTime);
+        deltaT  = 360.0f/omega;
+        //Serial.print("omega: "); Serial.print(omega); Serial.print(" deltaT: "); Serial.println(deltaT);
+      }
 
-      if(x < min_x) min_x = x;
-      if(x > max_x) max_x = x;
-      if(y < min_y) min_y = y;
-      if(y > max_y) max_y = y;
-      
-      if(dk > d){
-        moveAzimuth(sensAzimuth(normalizeAngle(heading + 1.0f), heading), MAX_A);
-      } else {
-        alignAzimuth(normalizeAngle(k - 2.0f), heading);
-        if (deltaAzimuth(normalizeAngle(k - 2.0f), heading) < TOLERANTA_AZIMUTH) { // am terminat tura
-          unroll_state = -1;
-
+      if (millis() - initUnrollTime > deltaT && deltaT != 0) {
           float x_o = (float)(min_x + max_x)/2.0f;
           float y_o = (float)(min_y + max_y)/2.0f;
-
+    
           if (calibrate) {
            writeCompassOffsets(x_o, y_o);
            calibrateCompass(x_off, y_off);
@@ -462,44 +458,44 @@ void loop()
           } else {
            Serial.println("Offsets NOT writen!");
           }
-
-           Serial.print("x_o: ");
-           Serial.print(x_o);
-           Serial.print(" y_o:");
-           Serial.println(y_o);
-          
-           min_x = 10000;
-           min_y = 10000;
-           max_x = -10000;
-           max_y = -10000;
-        }
+  
+         Serial.print("x_o: ");
+         Serial.print(x_o);
+         Serial.print(" y_o:");
+         Serial.println(y_o);
+        
+         min_x = 10000;
+         min_y = 10000;
+         max_x = -10000;
+         max_y = -10000;
+         
+         unroll_state = -1;
       }
+      
+      int x, y;
+      Compass.GetRaw(x,y);
+
+      if(x < min_x) min_x = x;
+      if(x > max_x) max_x = x;
+      if(y < min_y) min_y = y;
+      if(y > max_y) max_y = y;       
     }
+    
 
     if(unroll_state == 2){ //A1
       stopElevation();
-      float d = deltaAzimuth(initUnrollAngle, heading);
-      float k  = normalizeAngle(initUnrollAngle + 1.0f);
-      float dk = deltaAzimuth(k, heading);
+      moveAzimuth(sensAzimuth(normalizeAngle(heading - 1.0f), heading), MAX_A);
 
-      int x, y;
+      if(millis() - initUnrollTime > 1000 && deltaT == 0){
+        float omega = deltaAzimuth(initUnrollAngle, heading) / (float)(millis() - initUnrollTime);
+        deltaT  = 360.0f/omega;
+        //Serial.print("omega: "); Serial.print(omega); Serial.print(" deltaT: "); Serial.println(deltaT);
+      }
 
-      Compass.GetRaw(x,y);
-
-      if(x < min_x) min_x = x;
-      if(x > max_x) max_x = x;
-      if(y < min_y) min_y = y;
-      if(y > max_y) max_y = y;
-      
-      if(dk > d){
-        moveAzimuth(sensAzimuth(normalizeAngle(heading - 1.0f), heading), MAX_A);
-      } else {
-        alignAzimuth(normalizeAngle(k + 2.0f), heading);
-        if (deltaAzimuth(normalizeAngle(k + 2.0f), heading) < TOLERANTA_AZIMUTH) {
-          unroll_state=-1;
+      if (millis() - initUnrollTime > deltaT && deltaT != 0) {
           float x_o = (float)(min_x + max_x)/2.0f;
           float y_o = (float)(min_y + max_y)/2.0f;
-
+    
           if (calibrate) {
            writeCompassOffsets(x_o, y_o);
            calibrateCompass(x_off, y_off);
@@ -507,18 +503,27 @@ void loop()
           } else {
            Serial.println("Offsets NOT writen!");
           }
-
-           Serial.print("x_o: ");
-           Serial.print(x_o);
-           Serial.print(" y_o:");
-           Serial.println(y_o);
-
-           min_x = 10000;
-           min_y = 10000;
-           max_x = -10000;
-           max_y = -10000;
-        }
+  
+         Serial.print("x_o: ");
+         Serial.print(x_o);
+         Serial.print(" y_o:");
+         Serial.println(y_o);
+        
+         min_x = 10000;
+         min_y = 10000;
+         max_x = -10000;
+         max_y = -10000;
+        
+         unroll_state = -1;
       }
+      
+      int x, y;
+      Compass.GetRaw(x,y);
+
+      if(x < min_x) min_x = x;
+      if(x > max_x) max_x = x;
+      if(y < min_y) min_y = y;
+      if(y > max_y) max_y = y;
     }
 
   } else {
