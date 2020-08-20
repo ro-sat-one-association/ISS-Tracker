@@ -22,6 +22,7 @@ web = 'http://localhost:3000'
 space = '/python'
 
 sio = socketio.Client()
+sioSensor = socketio.Client()
 
 @sio.on('connect', namespace=space)
 def on_connect():
@@ -30,12 +31,17 @@ def on_connect():
 def connectInterface():
 	sio.connect(web, namespaces = [space])
 
+@sio.event
+def my_message(data):
+    print('message received with ', data)
+    sio.emit('my response', {'response': 'my response'})
+
 try:
 	connectInterface()
 except:
 	print("Nu m-am putut conecta la interfata")
 	print(sio.sid)	
- 
+
 def sendSoc(soc, data):
 	try:
 		sio.emit(soc, data, namespace = space)
@@ -49,6 +55,7 @@ def sendSocThread(soc, data):
 		except:
 			pass
 	th = threading.Thread(target=sendSoc, args=(soc,data))
+	th.setDaemon(True)
 	th.start()
  
 
@@ -342,8 +349,15 @@ observer.schedule(event_handler, path='/home/pi/n2yo', recursive=False)
 observer.start()
 
 
+def sendPhoneData():
+	f = open('/home/pi/n2yo/phonedata.txt', 'r')
+	ser.write(f.readline().encode('ascii'))
+	
+
 while True:
 	state = config['general-state']
+
+	sendPhoneData()
 
 	if ("TRACK" in state):
 		base = 0

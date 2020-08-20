@@ -1,0 +1,14 @@
+[Unit]
+Description=ISS-Tracker Node Sensors-Android reciever
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/bin/node /home/pi/node-sensors/index.js
+
+[Install]
+WantedBy=multi-user.target

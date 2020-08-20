@@ -61,6 +61,8 @@ bool calibrate;
 float x_off;
 float y_off;
 
+bool primitTelefon;
+
 void initCompass() {
   // The declination for your area can be obtained from http://www.magnetic-declination.com/
   // Piatra-Neamt, 6°  15' EST
@@ -73,6 +75,8 @@ void initCompass() {
 
 void setup()
 {
+  primitTelefon = false;
+  
   Wire.begin();
 
   Serial.begin(115200);
@@ -237,14 +241,23 @@ void readData(float &azi, float &ele)
       return;
     }
 
+    if (textPacket[0] == 'S' && textPacket[1] == 'N' && textPacket[2] == 'Z'){
+      primitTelefon = true;
+      for(int i=4; (textPacket[i] != ' ' && textPacket[i] != '\0'); ++i){
+        A += textPacket[i];
+      }
+      heading = A.toFloat();
+      return;
+    }
+
     if (textPacket[0] == 'A' && textPacket[1] == 'Z') {
       unroll_state = -1;  //AZ239.0 EL3.0 UP000 XXX DN000 XXX
       int i = 2;
-      for (i; textPacket[i] != ' ' ; ++i) {
+      for (i; textPacket[i] != ' ' && textPacket[i] != '\0' ; ++i) {
         A += textPacket[i];
       }
       i += 3;
-      for (i; textPacket[i] != ' '; ++i) {
+      for (i; textPacket[i] != ' ' && textPacket[i] != '\0' ; ++i) {
         E += textPacket[i];
       }
       azi = A.toFloat();
@@ -393,7 +406,7 @@ float normalizeAngle(float a){
 }
 
 void getCompass(float &x_off, float &y_off) {
-  heading = Compass.GetHeadingDegrees(x_off, y_off);
+  //heading = Compass.GetHeadingDegrees(x_off, y_off);
 }
 
 void calibrateCompass(float &x_off, float &y_off){ 
@@ -422,11 +435,8 @@ void getPitch() {
     pitch = -(atan2(filtered.XAxis, sqrt(filtered.YAxis*filtered.YAxis + filtered.ZAxis*filtered.ZAxis))*180.0)/M_PI;
 }
 
-void loop()
+void routine()
 {
-  readData(azimuth, elevation);
-
-
   getPitch();
   getCompass(x_off, y_off);
 
@@ -531,5 +541,12 @@ void loop()
   } else {
       alignAzimuth(azimuth, heading);
       alignElevation(elevation, pitch);
+  }
+}
+
+void loop(){
+  readData(azimuth, elevation);
+  if(primitTelefon){
+    routine();
   }
 }
