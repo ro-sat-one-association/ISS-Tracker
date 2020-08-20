@@ -225,8 +225,11 @@ def getLiveData(ser):
 def getWriteLiveData(ser):
 	data = getLiveData(ser)
 	if data is not None:
-		nodeData['azimuth']['live']   = "%.2f" % (float(data[0]) - float(config['custom-angles']['delta-azimuth']))
-		nodeData['elevation']['live'] = "%.2f" % (float(data[1]) - float(config['custom-angles']['delta-elevation']))
+		try:
+			nodeData['azimuth']['live']   = "%.2f" % (float(data[0]) - float(config['custom-angles']['delta-azimuth']))
+			nodeData['elevation']['live'] = "%.2f" % (float(data[1]) - float(config['custom-angles']['delta-elevation']))
+		except:
+			pass
 
 home = None
 tle  = None
@@ -270,14 +273,20 @@ def redefineSettings():
 
 redefineSettings()
 
+
+azi = ""
+ele = ""
 timeSerialWrite = 0
 timeSerialRead  = 0
 timeCalc 	= 0
+lastSNZTime = 0
+lastSNZData = ""
 base  = 0
 state = ""
 sentCommand = False
 
 def standardRoutine():
+		global azi, ele
 		global timeSerialRead
 		global timeSerialWrite
 		if sat is not None:
@@ -350,14 +359,20 @@ observer.start()
 
 
 def sendPhoneData():
+	global lastSNZData
+	global lastSNZTime
 	f = open('/home/pi/n2yo/phonedata.txt', 'r')
-	ser.write(f.readline().encode('ascii'))
+	data = f.readline()
+	if data != lastSNZData:
+		ser.write(data.encode('ascii'))
+		lastSNZTime = time.time()
+		lastSNZData = data
+	elif time.time() - lastSNZTime > 2.0:
+		ser.write(('SNZ ' + azi + ' ' + ele + '\n').encode('ascii'))
 	
 
 while True:
 	state = config['general-state']
-
-	sendPhoneData()
 
 	if ("TRACK" in state):
 		base = 0
@@ -401,3 +416,5 @@ while True:
 			sentCommand = True
 		getWriteLiveData(ser)
 		sendSocThread("data", nodeData)
+
+	sendPhoneData()
