@@ -35,16 +35,16 @@ import com.google.android.gms.location.LocationServices
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var sensorManager: SensorManager
-    private val accelerometerReading = FloatArray(3)
-    private val magnetometerReading = FloatArray(3)
+    private val mGravity = FloatArray(3)
+    private val mGeomagnetic = FloatArray(3)
     private val mOrientationAngles = FloatArray(3)
     private val rotationMatrix = FloatArray(9)
-    private val orientationAngles = FloatArray(3)
+    private val P = FloatArray(9)
+    private val I = FloatArray(9)
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    private val averageValues = 5
-    private var azimuthArray = FloatArray(averageValues)
-    private var azimuthCounter : Int = 0
+    private var azimuth = 0f
+    private var elevation = 0f
 
     private var aziS = ""
     private var eleS = ""
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private val sendDataTask = object : Runnable {
         override fun run() {
             sendData()
-            mainHandler.postDelayed(this, 100)
+            mainHandler.postDelayed(this, 50)
         }
     }
 
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     fun reconnectSocket(){
         socket.disconnect()
-        var ipView = findViewById(R.id.ipView) as EditText
+        var ipView = findViewById<EditText>(R.id.ipView)
         socket = IO.socket("http://" + ipView.text)
         socket.connect()
             .on(Socket.EVENT_CONNECT) { Log.d("DEBUG","connected") }
@@ -173,8 +173,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         SensorManager.getRotationMatrix(
                 rotationMatrix,
                 null,
-                accelerometerReading,
-                magnetometerReading
+                mGravity,
+                mGeomagnetic
         )
 
         // "mRotationMatrix" now has up-to-date information.
@@ -189,38 +189,40 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val azimuthView =  findViewById<View>(R.id.azimuthView) as TextView
         val elevationView =  findViewById<View>(R.id.elevationView) as TextView
 
-        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-            System.arraycopy(event.values, 0, accelerometerReading, 0, accelerometerReading.size)
+        val alpha = 0.85f //0.97
+        synchronized(this) {
+            if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+                mGravity[0] = alpha * mGravity[0] + (1 - alpha) * event.values[0]
+                mGravity[1] = alpha * mGravity[1] + (1 - alpha) * event.values[1]
+                mGravity[2] = alpha * mGravity[2] + (1 - alpha) * event.values[2]
 
-            //val elevationView =  findViewById<View>(R.id.elevationView) as TextView
-            var ele = round(mOrientationAngles[1] * 180 / Math.PI * 100)/100.0f * -1 //*-1 pt a fi cu ecranul in sus
-            eleS = ele.toString()
-            elevationView.text = eleS
+                // mGravity = event.values;
 
-        } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
-            System.arraycopy(event.values, 0, magnetometerReading, 0, magnetometerReading.size)
-
-            // azimuthView = findViewById<View>(R.id.azimuthView) as TextView
-            var azi = round(mOrientationAngles[0] * 180 / Math.PI * 100)/100.0f
-            if (azi < 0) azi += 360
-            azimuthArray[azimuthCounter] = azi
-            azimuthCounter += 1
-
-            if(azimuthCounter == averageValues){
-                aziS = (round(azimuthArray.average() * 100)/100.0f).toString()
+                // Log.e(TAG, Float.toString(mGravity[0]));
+            }
+            if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
+                // mGeomagnetic = event.values;
+                mGeomagnetic[0] = alpha * mGeomagnetic[0] + (1 - alpha) * event.values[0]
+                mGeomagnetic[1] = alpha * mGeomagnetic[1] + (1 - alpha) * event.values[1]
+                mGeomagnetic[2] = alpha * mGeomagnetic[2] + (1 - alpha) * event.values[2]
+                // Log.e(TAG, Float.toString(event.values[0]));
+            }
+            val success = SensorManager.getRotationMatrix(P, I, mGravity, mGeomagnetic)
+            if (success) {
+                val orientation = FloatArray(3)
+                SensorManager.getOrientation(P, orientation)
+                // Log.d(TAG, "azimuth (rad): " + azimuth);
+                azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat() // orientation
+                azimuth = (azimuth + 360) % 360
+                aziS = round(azimuth).toString()
                 azimuthView.text = aziS
-                azimuthCounter = 0
+
+                elevation = -Math.toDegrees(orientation[1].toDouble()).toFloat()
+                eleS = round(elevation).toString()
+                elevationView.text = eleS
+                // Log.d(TAG, "azimuth (deg): " + azimuth
             }
         }
-
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location : Location? ->
-               latS = location?.latitude.toString()
-               lonS = location?.longitude.toString()
-               altS = location?.altitude.toString()
-            }
-
-        updateOrientationAngles()
     }
 
     private fun sendData(){

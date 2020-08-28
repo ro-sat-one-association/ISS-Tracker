@@ -1,15 +1,8 @@
-
-#include <Wire.h>
-#include "ADXL345.h"
-#include "HMC5883L_Simple.h"
 #include "DualVNH5019MotorShield.h"
-#include <EEPROM.h>
 DualVNH5019MotorShield md;
-HMC5883L_Simple Compass;
-ADXL345 accelerometer;
 
 #define TOLERANTA_ELEVATIE 1.0f //in grade
-#define TOLERANTA_AZIMUTH  1.0f
+#define TOLERANTA_AZIMUTH  2.0f
 #define SENS_0_E 0             //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_E 1
 #define SENS_0_A 0             //pe astea le inversezi dupa teste, daca e nevoie
@@ -38,9 +31,6 @@ ADXL345 accelerometer;
 
 #define UNROLL_SAMPLE 5000 //calc viteza unghiulara in X ms
 
-int min_x, max_x;
-int min_y, max_y;
-
 long long lastReadTime;
 long long lastTime;
 
@@ -58,26 +48,12 @@ char unroll_state;
 bool debug;
 bool calibrate;
 
-float x_off;
-float y_off;
-
 bool primitTelefon;
-
-void initCompass() {
-  // The declination for your area can be obtained from http://www.magnetic-declination.com/
-  // Piatra-Neamt, 6°  15' EST
-  Compass.SetDeclination(6, 15, 'E');
-
-  Compass.SetSamplingMode(COMPASS_SINGLE);
-  Compass.SetScale(COMPASS_SCALE_810);
-  Compass.SetOrientation(COMPASS_HORIZONTAL_X_NORTH);
-}
 
 void setup()
 {
   primitTelefon = false;
   
-  Wire.begin();
 
   Serial.begin(115200);
   Serial.setTimeout(50);
@@ -85,11 +61,6 @@ void setup()
   md.init();
 
   deltaT = 0;
-  
-  min_x = 10000;
-  min_y = 10000;
-  max_x = -10000;
-  max_y = -10000;
 
   azimuth = 0.0f;
   elevation = 0.0f;
@@ -115,16 +86,6 @@ void setup()
 
   digitalWrite(AZI_EN,  HIGH);
   digitalWrite(ELE_EN,  HIGH);
- 
-  calibrateCompass(x_off, y_off);
-  Serial.println("#### COMPASS OFFSET ####");
-  Serial.print(x_off);
-  Serial.print(" ");
-  Serial.println(y_off);
-
-  while(!accelerometer.begin()){Serial.println("Nu merge AXL"); delay(100);}
-  accelerometer.setRange(ADXL345_RANGE_2G);
-  initCompass();
 }
 
 
@@ -222,9 +183,6 @@ void readData(float &azi, float &ele)
 
     if (textPacket == "A0") {
       unroll_state = 1;
-      x_off = 0.0f;
-      y_off = 0.0f;
-      getCompass(x_off, y_off);
       initUnrollAngle = heading;
       initUnrollTime = millis();
       deltaT = 0;
@@ -232,9 +190,6 @@ void readData(float &azi, float &ele)
     }
     if (textPacket == "A1") {
       unroll_state = 2;
-      x_off = 0.0f;
-      y_off = 0.0f;
-      getCompass(x_off, y_off);
       initUnrollAngle = heading;
       initUnrollTime = millis();
       deltaT = 0;
@@ -243,10 +198,23 @@ void readData(float &azi, float &ele)
 
     if (textPacket[0] == 'S' && textPacket[1] == 'N' && textPacket[2] == 'Z'){
       primitTelefon = true;
-      for(int i=4; (textPacket[i] != ' ' && textPacket[i] != '\0'); ++i){
+      int i = 4;
+      for(i; (textPacket[i] != ' ' && textPacket[i] != '\0'); ++i){
         A += textPacket[i];
       }
       heading = A.toFloat();
+      ++i;
+      for(i; (textPacket[i] != ' ' && textPacket[i] != '\0'); ++i){
+        E += textPacket[i];
+      }
+      pitch = E.toFloat();
+
+      if(debug){
+        Serial.print(A);
+        Serial.print(' ');
+        Serial.println(E);
+      }
+      
       return;
     }
 
@@ -405,40 +373,8 @@ float normalizeAngle(float a){
   return a;
 }
 
-void getCompass(float &x_off, float &y_off) {
-  //heading = Compass.GetHeadingDegrees(x_off, y_off);
-}
-
-void calibrateCompass(float &x_off, float &y_off){ 
-  EEPROM.get(0, x_off);
-  EEPROM.get(sizeof(float), y_off);
-}
-
-void writeCompassOffsets(float x_off, float y_off){
-  EEPROM.put(0, x_off);
-  EEPROM.put(sizeof(float), y_off);
-}
-
-bool checkI2C(uint8_t dev){
-  Wire.beginTransmission (dev);
-  if (Wire.endTransmission() == 0) {
-      //Serial.print (F("I2C return truedevice found at 0x"));
-      //Serial.println (dev, HEX);
-      return true;
-  }
-  return false;
-}
-
-void getPitch() {
-    Vector norm = accelerometer.readNormalize();
-    Vector filtered = accelerometer.lowPassFilter(norm, 0.5);
-    pitch = -(atan2(filtered.XAxis, sqrt(filtered.YAxis*filtered.YAxis + filtered.ZAxis*filtered.ZAxis))*180.0)/M_PI;
-}
-
 void routine()
 {
-  getPitch();
-  getCompass(x_off, y_off);
 
   if (millis() - lastTime > PRINT_DELAY) {
     lastTime = millis();
@@ -459,38 +395,10 @@ void routine()
         //Serial.print("omega: "); Serial.print(omega); Serial.print(" deltaT: "); Serial.println(deltaT);
       }
 
-      if (millis() - initUnrollTime > deltaT && deltaT != 0) {
-          float x_o = (float)(min_x + max_x)/2.0f;
-          float y_o = (float)(min_y + max_y)/2.0f;
-    
-          if (calibrate) {
-           writeCompassOffsets(x_o, y_o);
-           calibrateCompass(x_off, y_off);
-           Serial.println("Offsets written!");
-          } else {
-           Serial.println("Offsets NOT writen!");
-          }
-  
-         Serial.print("x_o: ");
-         Serial.print(x_o);
-         Serial.print(" y_o:");
-         Serial.println(y_o);
-        
-         min_x = 10000;
-         min_y = 10000;
-         max_x = -10000;
-         max_y = -10000;
-         
+      if (millis() - initUnrollTime > deltaT && deltaT != 0) { 
          unroll_state = -1;
       }
-      
-      int x, y;
-      Compass.GetRaw(x,y);
-
-      if(x < min_x) min_x = x;
-      if(x > max_x) max_x = x;
-      if(y < min_y) min_y = y;
-      if(y > max_y) max_y = y;       
+            
     }
     
 
@@ -505,37 +413,8 @@ void routine()
       }
 
       if (millis() - initUnrollTime > deltaT && deltaT != 0) {
-          float x_o = (float)(min_x + max_x)/2.0f;
-          float y_o = (float)(min_y + max_y)/2.0f;
-    
-          if (calibrate) {
-           writeCompassOffsets(x_o, y_o);
-           calibrateCompass(x_off, y_off);
-           Serial.println("Offsets written!");
-          } else {
-           Serial.println("Offsets NOT writen!");
-          }
-  
-         Serial.print("x_o: ");
-         Serial.print(x_o);
-         Serial.print(" y_o:");
-         Serial.println(y_o);
-        
-         min_x = 10000;
-         min_y = 10000;
-         max_x = -10000;
-         max_y = -10000;
-        
          unroll_state = -1;
       }
-      
-      int x, y;
-      Compass.GetRaw(x,y);
-
-      if(x < min_x) min_x = x;
-      if(x > max_x) max_x = x;
-      if(y < min_y) min_y = y;
-      if(y > max_y) max_y = y;
     }
 
   } else {
