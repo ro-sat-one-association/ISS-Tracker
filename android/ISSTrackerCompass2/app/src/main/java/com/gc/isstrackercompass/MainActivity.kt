@@ -1,14 +1,11 @@
 package com.gc.isstrackercompass
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -19,18 +16,18 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.EditText
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import com.gc.isstrackercompass.R
+import com.github.nkzawa.socketio.client.IO
+import com.github.nkzawa.socketio.client.Socket
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import java.lang.Math.round
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import kotlin.math.sign
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -188,8 +185,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         val azimuthView =  findViewById<View>(R.id.azimuthView) as TextView
         val elevationView =  findViewById<View>(R.id.elevationView) as TextView
+        val alphaView = findViewById<View>(R.id.alphaView) as TextView
+        val alphaSlider = findViewById<View>(R.id.alphaSlider) as SeekBar
 
-        val alpha = 0.85f //0.97
+        var alpha = alphaSlider.progress.toFloat() / 100.0f
+        alphaView.text = alpha.toString()
+
+       // val alpha = 0.85f //0.97
         synchronized(this) {
             if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
                 mGravity[0] = alpha * mGravity[0] + (1 - alpha) * event.values[0]
@@ -209,6 +211,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
             val success = SensorManager.getRotationMatrix(P, I, mGravity, mGeomagnetic)
             if (success) {
+                updateOrientationAngles()
                 val orientation = FloatArray(3)
                 SensorManager.getOrientation(P, orientation)
                 // Log.d(TAG, "azimuth (rad): " + azimuth);
@@ -218,6 +221,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 azimuthView.text = aziS
 
                 elevation = -Math.toDegrees(orientation[1].toDouble()).toFloat()
+
+                val inclination = round(
+                    Math.toDegrees(
+                        Math.acos(
+                            rotationMatrix[8].toDouble()
+                        )
+                    )
+                ).toInt()
+
+                //if(inclination > 90) elevation = sign(elevation) * 90
+
+                elevation = sign(elevation) * inclination
+
                 eleS = round(elevation).toString()
                 elevationView.text = eleS
                 // Log.d(TAG, "azimuth (deg): " + azimuth
