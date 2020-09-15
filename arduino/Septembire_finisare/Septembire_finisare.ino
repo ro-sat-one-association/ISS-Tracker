@@ -1,11 +1,5 @@
-#include <Wire.h>
-#include "ADXL345.h"
-#include "HMC5883L_Simple.h"
 #include "DualVNH5019MotorShield.h"
-#include <EEPROM.h>
 DualVNH5019MotorShield md;
-HMC5883L_Simple Compass;
-ADXL345 accelerometer;
 
 #define TOLERANTA_ELEVATIE 1.0f //in grade
 #define TOLERANTA_AZIMUTH  2.0f
@@ -30,19 +24,19 @@ ADXL345 accelerometer;
 #define MIN_A 40
 
 #define K_E 5 //cu cate grade inainte sa incetinesc miscarea
-#define K_A 10
+#define K_A 60
 
-#define MAX_E 150
-#define MAX_A 150
+#define MAX_E 255
+#define MAX_A 255
 
-
-int min_x, max_x;
-int min_y, max_y;
+#define UNROLL_SAMPLE 5000 //calc viteza unghiulara in X ms
 
 long long lastReadTime;
 long long lastTime;
 
 float initUnrollAngle;
+long long initUnrollTime;
+unsigned long deltaT;
 
 float pitch;
 float heading;
@@ -54,32 +48,19 @@ char unroll_state;
 bool debug;
 bool calibrate;
 
-float x_off;
-float y_off;
-
-void initCompass() {
-  // The declination for your area can be obtained from http://www.magnetic-declination.com/
-  // Piatra-Neamt, 6°  15' EST
-  Compass.SetDeclination(6, 15, 'E');
-
-  Compass.SetSamplingMode(COMPASS_CONTINUOUS);
-  Compass.SetScale(COMPASS_SCALE_810);
-  Compass.SetOrientation(COMPASS_HORIZONTAL_X_NORTH);
-}
+bool primitTelefon;
 
 void setup()
 {
-  Wire.begin();
+  primitTelefon = false;
+  
 
   Serial.begin(115200);
   Serial.setTimeout(50);
 
   md.init();
 
-  min_x = 10000;
-  min_y = 10000;
-  max_x = -10000;
-  max_y = -10000;
+  deltaT = 0;
 
   azimuth = 0.0f;
   elevation = 0.0f;
@@ -105,21 +86,12 @@ void setup()
 
   digitalWrite(AZI_EN,  HIGH);
   digitalWrite(ELE_EN,  HIGH);
- 
-  calibrateCompass(x_off, y_off);
-  Serial.println("#### COMPASS OFFSET ####");
-  Serial.print(x_off);
-  Serial.print(" ");
-  Serial.println(y_off);
-
-  while(!accelerometer.begin()){Serial.println("Nu merge AXL"); delay(100);}
-  accelerometer.setRange(ADXL345_RANGE_2G);
-  initCompass();
 }
 
 
 void moveAzimuth(bool sens, int putere)
 {
+  digitalWrite(AZI_EN, HIGH);
   if (sens) {
     md.setM2Speed(putere * 80 / 51);
   } else {
@@ -129,6 +101,7 @@ void moveAzimuth(bool sens, int putere)
 
 void moveElevation(bool sens, int putere)
 {
+  digitalWrite(ELE_EN, HIGH);
   if (sens) {
     md.setM1Speed(putere * 80 / 51);
   } else {
@@ -138,14 +111,16 @@ void moveElevation(bool sens, int putere)
 
 void stopAzimuth()
 {
-  digitalWrite(AZI_A_PIN, LOW);
-  digitalWrite(AZI_B_PIN, LOW);
+  digitalWrite(AZI_EN, LOW);
+  digitalWrite(AZI_A_PIN, HIGH);
+  digitalWrite(AZI_B_PIN, HIGH);
 }
 
 void stopElevation()
 {
-  digitalWrite(ELE_A_PIN, LOW);
-  digitalWrite(ELE_B_PIN, LOW);
+  digitalWrite(ELE_EN, LOW);
+  digitalWrite(ELE_A_PIN, HIGH);
+  digitalWrite(ELE_B_PIN, HIGH);
 }
 
 
@@ -212,31 +187,49 @@ void readData(float &azi, float &ele)
 
     if (textPacket == "A0") {
       unroll_state = 1;
-      x_off = 0.0f;
-      y_off = 0.0f;
-      getCompass(x_off, y_off);
       initUnrollAngle = heading;
-      delay(100);
+      initUnrollTime = millis();
+      deltaT = 0;
       return;
     }
     if (textPacket == "A1") {
       unroll_state = 2;
-      x_off = 0.0f;
-      y_off = 0.0f;
-      getCompass(x_off, y_off);
       initUnrollAngle = heading;
-      delay(100);
+      initUnrollTime = millis();
+      deltaT = 0;
+      return;
+    }
+
+    if (textPacket[0] == 'S' && textPacket[1] == 'N' && textPacket[2] == 'Z'){
+      primitTelefon = true;
+      int i = 4;
+      for(i; (textPacket[i] != ' ' && textPacket[i] != '\0'); ++i){
+        A += textPacket[i];
+      }
+      heading = A.toFloat();
+      ++i;
+      for(i; (textPacket[i] != ' ' && textPacket[i] != '\0'); ++i){
+        E += textPacket[i];
+      }
+      pitch = E.toFloat();
+
+      if(debug){
+        Serial.print(A);
+        Serial.print(' ');
+        Serial.println(E);
+      }
+      
       return;
     }
 
     if (textPacket[0] == 'A' && textPacket[1] == 'Z') {
       unroll_state = -1;  //AZ239.0 EL3.0 UP000 XXX DN000 XXX
       int i = 2;
-      for (i; textPacket[i] != ' ' ; ++i) {
+      for (i; textPacket[i] != ' ' && textPacket[i] != '\0' ; ++i) {
         A += textPacket[i];
       }
       i += 3;
-      for (i; textPacket[i] != ' '; ++i) {
+      for (i; textPacket[i] != ' ' && textPacket[i] != '\0' ; ++i) {
         E += textPacket[i];
       }
       azi = A.toFloat();
@@ -384,43 +377,8 @@ float normalizeAngle(float a){
   return a;
 }
 
-void getCompass(float &x_off, float &y_off) {
-  heading = Compass.GetHeadingDegrees(x_off, y_off);
-}
-
-void calibrateCompass(float &x_off, float &y_off){ 
-  EEPROM.get(0, x_off);
-  EEPROM.get(sizeof(float), y_off);
-}
-
-void writeCompassOffsets(float x_off, float y_off){
-  EEPROM.put(0, x_off);
-  EEPROM.put(sizeof(float), y_off);
-}
-
-bool checkI2C(uint8_t dev){
-  Wire.beginTransmission (dev);
-  if (Wire.endTransmission() == 0) {
-      //Serial.print (F("I2C return truedevice found at 0x"));
-      //Serial.println (dev, HEX);
-      return true;
-  }
-  return false;
-}
-
-void getPitch() {
-    Vector norm = accelerometer.readNormalize();
-    Vector filtered = accelerometer.lowPassFilter(norm, 0.5);
-    pitch = -(atan2(filtered.XAxis, sqrt(filtered.YAxis*filtered.YAxis + filtered.ZAxis*filtered.ZAxis))*180.0)/M_PI;
-}
-
-void loop()
+void routine()
 {
-  readData(azimuth, elevation);
-
-
-  getPitch();
-  getCompass(x_off, y_off);
 
   if (millis() - lastTime > PRINT_DELAY) {
     lastTime = millis();
@@ -433,96 +391,45 @@ void loop()
   if(unroll_state != -1){
     if(unroll_state == 1){ //A0
       stopElevation();
-      float d = deltaAzimuth(initUnrollAngle, heading);
-      float k  = normalizeAngle(initUnrollAngle - 1.0f);
-      float dk = deltaAzimuth(k, heading);
+      moveAzimuth(sensAzimuth(normalizeAngle(heading + 1.0f), heading), MAX_A);
 
-      int x, y;
-      Compass.GetRaw(x,y);
-
-      if(x < min_x) min_x = x;
-      if(x > max_x) max_x = x;
-      if(y < min_y) min_y = y;
-      if(y > max_y) max_y = y;
-      
-      if(dk > d){
-        moveAzimuth(sensAzimuth(normalizeAngle(heading + 1.0f), heading), MAX_A);
-      } else {
-        alignAzimuth(normalizeAngle(k - 2.0f), heading);
-        if (deltaAzimuth(normalizeAngle(k - 2.0f), heading) < TOLERANTA_AZIMUTH) { // am terminat tura
-          unroll_state = -1;
-
-          float x_o = (float)(min_x + max_x)/2.0f;
-          float y_o = (float)(min_y + max_y)/2.0f;
-
-          if (calibrate) {
-           writeCompassOffsets(x_o, y_o);
-           calibrateCompass(x_off, y_off);
-           Serial.println("Offsets written!");
-          } else {
-           Serial.println("Offsets NOT writen!");
-          }
-
-           Serial.print("x_o: ");
-           Serial.print(x_o);
-           Serial.print(" y_o:");
-           Serial.println(y_o);
-          
-           min_x = 10000;
-           min_y = 10000;
-           max_x = -10000;
-           max_y = -10000;
-        }
+      if(millis() - initUnrollTime > UNROLL_SAMPLE && deltaT == 0){
+        float omega = deltaAzimuth(initUnrollAngle, heading) / (float)(millis() - initUnrollTime);
+        deltaT  = 360.0f/omega - UNROLL_SAMPLE;
+        //Serial.print("omega: "); Serial.print(omega); Serial.print(" deltaT: "); Serial.println(deltaT);
       }
+
+      if (millis() - initUnrollTime > deltaT && deltaT != 0) { 
+         unroll_state = -1;
+      }
+            
     }
+    
 
     if(unroll_state == 2){ //A1
       stopElevation();
-      float d = deltaAzimuth(initUnrollAngle, heading);
-      float k  = normalizeAngle(initUnrollAngle + 1.0f);
-      float dk = deltaAzimuth(k, heading);
+      moveAzimuth(sensAzimuth(normalizeAngle(heading - 1.0f), heading), MAX_A);
 
-      int x, y;
+      if(millis() - initUnrollTime > UNROLL_SAMPLE && deltaT == 0){
+        float omega = deltaAzimuth(initUnrollAngle, heading) / (float)(millis() - initUnrollTime);
+        deltaT  = 360.0f/omega - UNROLL_SAMPLE;
+        //Serial.print("omega: "); Serial.print(omega); Serial.print(" deltaT: "); Serial.println(deltaT);
+      }
 
-      Compass.GetRaw(x,y);
-
-      if(x < min_x) min_x = x;
-      if(x > max_x) max_x = x;
-      if(y < min_y) min_y = y;
-      if(y > max_y) max_y = y;
-      
-      if(dk > d){
-        moveAzimuth(sensAzimuth(normalizeAngle(heading - 1.0f), heading), MAX_A);
-      } else {
-        alignAzimuth(normalizeAngle(k + 2.0f), heading);
-        if (deltaAzimuth(normalizeAngle(k + 2.0f), heading) < TOLERANTA_AZIMUTH) {
-          unroll_state=-1;
-          float x_o = (float)(min_x + max_x)/2.0f;
-          float y_o = (float)(min_y + max_y)/2.0f;
-
-          if (calibrate) {
-           writeCompassOffsets(x_o, y_o);
-           calibrateCompass(x_off, y_off);
-           Serial.println("Offsets written!");
-          } else {
-           Serial.println("Offsets NOT writen!");
-          }
-
-           Serial.print("x_o: ");
-           Serial.print(x_o);
-           Serial.print(" y_o:");
-           Serial.println(y_o);
-
-           min_x = 10000;
-           min_y = 10000;
-           max_x = -10000;
-           max_y = -10000;
-        }
+      if (millis() - initUnrollTime > deltaT && deltaT != 0) {
+         unroll_state = -1;
       }
     }
 
   } else {
       alignAzimuth(azimuth, heading);
       alignElevation(elevation, pitch);
+  }
+}
+
+void loop(){
+  readData(azimuth, elevation);
+  if(primitTelefon){
+    routine();
   }
 }
