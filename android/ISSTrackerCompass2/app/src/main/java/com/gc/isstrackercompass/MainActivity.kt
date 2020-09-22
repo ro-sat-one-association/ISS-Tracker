@@ -6,10 +6,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -49,7 +46,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lonS = ""
     private var altS = ""
 
-    private var socket = IO.socket("http://10.8.0.5:3001")
+    private var socket = IO.socket("http://10.8.0.3:3001")
 
     lateinit var mainHandler: Handler
 
@@ -59,6 +56,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             mainHandler.postDelayed(this, 50)
         }
     }
+
+    private val reconnectTask = object : Runnable {
+        override fun run() {
+            if(!socket.connected()) {
+                reconnectSocket()
+                Log.d("DEBUG", "socketul nu e conectat")
+            }
+            mainHandler.postDelayed(this, 1000)
+        }
+    }
+
 
     fun sendSocket(msg : String) {
         socket.emit("sensordata", msg)
@@ -75,6 +83,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        val wakeLock: PowerManager.WakeLock =
+            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TRCKR::WL").apply {
+                    acquire()
+                }
+            }
+        wakeLock.acquire()
 
         socket.connect()
             .on(Socket.EVENT_CONNECT) { Log.d("DEBUG","connected")}
@@ -137,6 +152,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         mainHandler.post(sendDataTask)
+        mainHandler.post(reconnectTask)
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
@@ -181,7 +197,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // "mOrientationAngles" now has up-to-date information.
     }
 
-    @SuppressLint("MissingPermission")
     override fun onSensorChanged(event: SensorEvent) {
         val azimuthView =  findViewById<View>(R.id.azimuthView) as TextView
         val elevationView =  findViewById<View>(R.id.elevationView) as TextView
@@ -230,15 +245,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     )
                 ).toInt()
 
-                //if(inclination > 90) elevation = sign(elevation) * 90
-
-                elevation = sign(elevation) * inclination
+                if(inclination > 90) elevation = sign(elevation) * inclination
 
                 eleS = round(elevation).toString()
                 elevationView.text = eleS
                 // Log.d(TAG, "azimuth (deg): " + azimuth
             }
         }
+    }
+
+    override fun onPause(){
+        super.onPause()
+        onResume()
     }
 
     private fun sendData(){

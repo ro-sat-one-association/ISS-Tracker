@@ -264,6 +264,9 @@ def redefineSettings():
 		elif tle.lower() == "mars":
 			satName = "Mars"
 			sat 	= ephem.Mars()
+		elif tle.lower() == "uranus":
+			satName = "Uranus"
+			sat 	= ephem.Uranus()
 		else:
 			sat = None
 			satName = ""
@@ -367,8 +370,9 @@ def sendPhoneData():
 		ser.write(data.encode('ascii'))
 		lastSNZTime = time.time()
 		lastSNZData = data
-	elif time.time() - lastSNZTime > 2.0:
-		ser.write(('SNZ ' + azi + ' ' + ele + '\n').encode('ascii'))
+	elif time.time() - lastSNZTime > 1.0:
+		ser.write(('SNZ ' + azi + ' ' + ele + ' \n').encode('ascii'))
+		#print(azi + ' ' + ele)
 	
 
 while True:

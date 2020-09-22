@@ -200,6 +200,21 @@ observer.start()
 redefineSettings()
 
 
+lastSNZTime = 0
+lastSNZData = ""
+
+def sendPhoneData():
+	global lastSNZData
+	global lastSNZTime
+	f = open('/home/pi/n2yo/phonedata.txt', 'r')
+	data = f.readline()
+	if data != lastSNZData:
+		ser.write(data.encode('ascii'))
+		lastSNZTime = time.time()
+		lastSNZData = data
+	elif time.time() - lastSNZTime > 2.0:
+		ser.write(('SNZ ' + azi + ' ' + ele + '\n').encode('ascii'))
+
 
 while True:
     deltaAzimuth   = float(config['custom-angles']['delta-azimuth'])
@@ -239,6 +254,6 @@ while True:
         timeData['utc'] = str(datetime.utcnow())
         sendSocThread("time", timeData)
         serialTime = time.time()
+    sendPhoneData()
     
     
-

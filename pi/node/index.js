@@ -2,8 +2,8 @@ const Express = require('express');
 const app = new Express();
 const fs = require('fs');
 const formidable = require('formidable');
-const bodyParser = require('body-parser');
 const { exec } = require('child_process');
+const bodyParser = require('body-parser');
 
 var http = require('http').Server(app);
 var io = require('socket.io')(http, { wsEngine: 'ws' });
@@ -40,7 +40,8 @@ fs.watchFile(confFile, (curr, prev) => { //s-a modificat configul, trimite noile
 });
 
 app.use(Express.static(__dirname + '/public'));
-
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/track.html');
@@ -111,6 +112,18 @@ io.on('connection', function(socket){ //am primit ceva, redirectioneaza
 
   execCommand('sudo python3 /home/pi/upload_arduino.py &');
 
+});
+
+app.post('/track', function(req, res){
+  if (req.body.action == "START"){
+    console.log('Pornesc senzorii!');
+    execCommand('sudo systemctl start node-sensors &');
+  }
+  if (req.body.action == "STOP"){
+    console.log('Opresc senzorii!');
+    execCommand('sudo systemctl stop node-sensors &');
+  }
+  res.end();
 });
 
 http.listen(port, function(){

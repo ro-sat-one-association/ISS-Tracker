@@ -113,6 +113,32 @@
     </div>
 </div>
 </div>
+
+
+<li class="nav-item">
+    &nbsp;
+</li>
+
+
+
+<div class="text-center">
+
+    <div class="nav-item">
+        <button onclick="subStart()" style="width: 60%;" class="btn btn-success btn-lg">
+            ON
+        </button>
+    </div>
+    <div class="nav-item">                 
+        <button onclick="subStop()" style="width: 60%;" class="btn btn-danger btn-lg">
+            STOP
+        </button>
+    </div>
+    </div>
+
+    <form id="startstopForm" action="">
+        <input type="hidden" id="action" name="action" value="">
+    </form>
+
                         <!-- <li class="nav-item active-pro ">
                 <a class="nav-link" href="./upgrade.html">
                     <i class="material-icons">unarchive</i>
@@ -359,6 +385,27 @@
         
         });
         });
+
+        function SubForm() {
+            $.ajax({
+                url: '/track',
+                type: 'post',
+                data: JSON.parse('{"action": "' +  document.getElementById("action").value + '"}'),
+                success: function() {
+                    showOKNotification('top', 'right', 'Am trimis comanda', 'info');
+                }
+            });
+        }
+
+        function subStart(){
+            document.getElementById("action").value = "START";
+            SubForm();
+        }
+
+        function subStop(){
+            document.getElementById("action").value = "STOP";
+            SubForm();
+        }
 
         </script>
 

@@ -3,8 +3,8 @@ DualVNH5019MotorShield md;
 
 #define TOLERANTA_ELEVATIE 1.0f //in grade
 #define TOLERANTA_AZIMUTH  2.0f
-#define SENS_0_E 0             //pe astea le inversezi dupa teste, daca e nevoie
-#define SENS_1_E 1
+#define SENS_0_E 1             //pe astea le inversezi dupa teste, daca e nevoie
+#define SENS_1_E 0
 #define SENS_0_A 0             //pe astea le inversezi dupa teste, daca e nevoie
 #define SENS_1_A 1
 
