@@ -1,1 +1,29 @@
-{"observer":{"latitude":"46.96035","longitude":"26.433274","altitude":"480","n2yo-key":"BMDSE6-VEC9T4-Y6YANC-47A9"},"sat":{"NORAD":"25544","customtime":"2020-03-02 01:50:01","tle1":"","tle2":""},"custom-angles":{"azimuth":"123","elevation":"-10","delta-azimuth":"0.0","delta-elevation":"0.0"},"arduino":{"serial-descriptor":"ACM","fqbn":"arduino:avr:uno"},"target":{"callsign":"KN36ew"},"general-state":"TRACK","autostart":true}
+{
+   "observer":{
+      "latitude":"46.96035",
+      "longitude":"26.433274",
+      "altitude":"480",
+      "n2yo-key":"BMDSE6-VEC9T4-Y6YANC-47A9"
+   },
+   "sat":{
+      "NORAD":"25544",
+      "customtime":"2020-03-02 01:50:01",
+      "tle1":"",
+      "tle2":""
+   },
+   "custom-angles":{
+      "azimuth":"123",
+      "elevation":"-10",
+      "delta-azimuth":"0.0",
+      "delta-elevation":"0.0"
+   },
+   "arduino":{
+      "serial-descriptor":"USB",
+      "fqbn":"arduino:avr:uno"
+   },
+   "target":{
+      "callsign":"KN36ew"
+   },
+   "general-state":"TRACK",
+   "autostart":true
+}
