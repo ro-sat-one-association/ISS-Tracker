@@ -62,6 +62,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             if(!socket.connected()) {
                 reconnectSocket()
                 Log.d("DEBUG", "socketul nu e conectat")
+            } else{
+                Log.d("DEBUG", "e conectat")
             }
             mainHandler.postDelayed(this, 1000)
         }
@@ -73,9 +75,23 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun reconnectSocket(){
+        val wakeLock: PowerManager.WakeLock =
+            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TRCKR::WL").apply {
+                    acquire()
+                }
+            }
+        if(!wakeLock.isHeld) wakeLock.acquire()
+
         socket.disconnect()
         var ipView = findViewById<EditText>(R.id.ipView)
-        socket = IO.socket("http://" + ipView.text)
+        if(ipView.text.toString() != ""){
+            socket = IO.socket("http://" + ipView.text)
+        } else {
+            socket = IO.socket("http://127.0.0.1")
+            Log.d("DEBUG", "ipview gol")
+        }
+
         socket.connect()
             .on(Socket.EVENT_CONNECT) { Log.d("DEBUG","connected") }
             .on(Socket.EVENT_DISCONNECT) { Log.d("DEBUG","disconnected") }
@@ -83,13 +99,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        val wakeLock: PowerManager.WakeLock =
-            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TRCKR::WL").apply {
-                    acquire()
-                }
-            }
-        wakeLock.acquire()
 
         socket.connect()
             .on(Socket.EVENT_CONNECT) { Log.d("DEBUG","connected")}

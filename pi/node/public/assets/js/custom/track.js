@@ -437,7 +437,7 @@ $(document).ready(function(){
     }, 3000);
 });
 
-function SubForm() {
+function SubFormConf() {
     $.ajax({
         url: '/submit_config.php',
         type: 'post',
