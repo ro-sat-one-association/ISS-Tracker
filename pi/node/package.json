@@ -8,7 +8,7 @@
     "express": "^4.17.1",
     "formidable": "^1.2.2",
     "index.js": "0.0.3",
-    "socket.io": "^1.7.4"
+    "socket.io": "^2.4.0"
   },
   "devDependencies": {},
   "scripts": {
