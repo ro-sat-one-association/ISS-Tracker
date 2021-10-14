@@ -16,4 +16,4 @@ All of this is monitored and configured through a web interface written in Node.
 
 * Configuration editor
 
-!([2]https://raw.githubusercontent.com/ro-sat-one-association/ISS-Tracker/master/2.png)
+![2](https://raw.githubusercontent.com/ro-sat-one-association/ISS-Tracker/master/2.png)
